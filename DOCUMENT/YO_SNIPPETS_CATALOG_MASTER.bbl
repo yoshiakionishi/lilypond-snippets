@@ -1,0 +1,114 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{cms/global//global/global}
+    \entry{RN1695}{book}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=d6b95c83010b7761b5f5349cff0aad57}{%
+           family={Levine},
+           familyi={L\bibinitperiod},
+           given={Carin},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a1ccfd83f2f62aa31770847f8582bff0}{%
+           family={Mitropoulos-Bott},
+           familyi={M\bibinithyphendelim B\bibinitperiod},
+           given={Christina},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Kassel ; New York}%
+      }
+      \list{publisher}{1}{%
+        {Bärenreiter}%
+      }
+      \strng{namehash}{ad911ad274ef3cf5542a7df74d3216c9}
+      \strng{fullhash}{ad911ad274ef3cf5542a7df74d3216c9}
+      \strng{bibnamehash}{ad911ad274ef3cf5542a7df74d3216c9}
+      \strng{authorbibnamehash}{ad911ad274ef3cf5542a7df74d3216c9}
+      \strng{authornamehash}{ad911ad274ef3cf5542a7df74d3216c9}
+      \strng{authorfullhash}{ad911ad274ef3cf5542a7df74d3216c9}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{The techniques of flute playing = Die Spieltechnik der Flöte}
+      \field{year}{2003}
+    \endentry
+    \entry{RN4}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=204b61c9dd47eca79edd266fb395730d}{%
+           family={Salzedo},
+           familyi={S\bibinitperiod},
+           given={Carlos},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {New York - Boston,}%
+      }
+      \list{publisher}{1}{%
+        {G. Schirmer}%
+      }
+      \strng{namehash}{204b61c9dd47eca79edd266fb395730d}
+      \strng{fullhash}{204b61c9dd47eca79edd266fb395730d}
+      \strng{bibnamehash}{204b61c9dd47eca79edd266fb395730d}
+      \strng{authorbibnamehash}{204b61c9dd47eca79edd266fb395730d}
+      \strng{authornamehash}{204b61c9dd47eca79edd266fb395730d}
+      \strng{authorfullhash}{204b61c9dd47eca79edd266fb395730d}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{L'étude moderne de la harpe... Modern study of the harp}
+      \field{year}{1921}
+      \field{pages}{3 p.l.\bibrangessep 53 p.}
+      \range{pages}{-1}
+    \endentry
+    \entry{HS2012}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=1e58baa8047ba69a7eb5b335a01e6e43}{%
+           family={Sparnaay},
+           familyi={S\bibinitperiod},
+           given={Harry},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Periferia Sheet Music}%
+      }
+      \strng{namehash}{1e58baa8047ba69a7eb5b335a01e6e43}
+      \strng{fullhash}{1e58baa8047ba69a7eb5b335a01e6e43}
+      \strng{bibnamehash}{1e58baa8047ba69a7eb5b335a01e6e43}
+      \strng{authorbibnamehash}{1e58baa8047ba69a7eb5b335a01e6e43}
+      \strng{authornamehash}{1e58baa8047ba69a7eb5b335a01e6e43}
+      \strng{authorfullhash}{1e58baa8047ba69a7eb5b335a01e6e43}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{The Bass Clarinet: A Personal History}
+      \field{year}{2012}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
