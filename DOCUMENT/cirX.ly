@@ -30,7 +30,7 @@ cirX = #(define-music-function (note) (ly:music?)
                (let* ((stem (ly:grob-object grob 'stem))
                       (dir (ly:grob-property stem 'direction UP))
                       (is-up (eqv? dir UP)))
-                 (cons dir (if is-up -0 -0.2))))
+                 (cons dir (if is-up 0.2 -0.2))))
             #note
             \revert NoteHead.stencil
             \revert NoteHead.text

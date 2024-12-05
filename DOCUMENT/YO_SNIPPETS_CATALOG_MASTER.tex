@@ -1,4 +1,7 @@
-
+% Run lualatex-shell, then pdflatexmk, then lualatex-shell twice.
+%
+%
+%
 
 \documentclass[11pt, oneside]{book}   	% use "amsart" instead of "article" for AMSLaTeX format
 
@@ -112,7 +115,7 @@ Of course, it is not my intent to claim that all composers should abandon their 
 
 \item All notation programs, owing to the ways they operate, exert some degree of influence on the way composers compose. As early as the 1980s, Finale's \textit{Mass Mover}, \textit{Note Mover}, and MIDI playback features were already influential in shaping the way composers worked on their music.\footnote{For example, watch from 15:20 of \url{https://youtu.be/T1IRlg87Qks}.} On one hand, these features may have helped composers save time. On the other hand, their ready availability may have invited overuse. 
 
-The lack or underdevelopment of certain functionalities may also push composers to work in certain ways rather than others. Finale benefitted from having the flexibility to implement graphical notation, but even then, many of my composer friends found it practical to use external graphical editing programs to further refine their scores. Even from my personal experience using Finale, I encountered situations where I had to devise creative alternatives to meet my notational goals. 
+\item The lack or underdevelopment of certain functionalities may also push composers to work in certain ways rather than others. Finale benefitted from having the flexibility to implement graphical notation, but even then, many of my composer friends found it practical to use external graphical editing programs to further refine their scores. Even from my personal experience using Finale, I encountered situations where I had to devise creative alternatives to meet my notational goals. 
 \end{enumerate}
 
 These points implicitly highlight the benefits of learning an additional notation program, ideally an open-source one, alongside the program one primarily uses. LilyPond resonated with me most because of its text-based interface, which I have become increasingly familiar with through my involvement in computer programming. As other users have remarked, I have also found it to be very flexible and extensible. All the snippets I list in this document can be reused with relative ease, allowing me to save time in the long run when using specialized notations in my music. This was not necessarily the case when working on the music notation of extended techniques in Finale.
@@ -619,6 +622,10 @@ These functions replace an ordinary notehead with a dashed or a continuous line.
 
 \subsection{Code}
 \begin{verbatim}
+
+% See the entry on "Noteheadless" for its code; 
+% it is required for the snippet to run properly.
+
 dashedLineNotehead =
 #(define-music-function
   (beginning end x-distance) (ly:music? ly:music? number?)
@@ -710,7 +717,7 @@ modularLineNotehead =
 
 \score {
   {
-
+    \omit Staff.Clef
     \dashedLineNotehead g'4 a' #6
     \modularLineNotehead a' d'' #15 #150 #6
     \override TupletNumber.text = #tuplet-number::calc-fraction-text
@@ -1119,14 +1126,12 @@ cirX = #(define-music-function (note) (ly:music?)
                (let* ((stem (ly:grob-object grob 'stem))
                       (dir (ly:grob-property stem 'direction UP))
                       (is-up (eqv? dir UP)))
-                 (cons dir (if is-up -0 -0.2))))
+                 (cons dir (if is-up 0.2 -0.2))))
             #note
             \revert NoteHead.stencil
             \revert NoteHead.text
             \revert NoteHead.stem-attachment
           #})
-
-
 {
   \cirX c'4 \cirX d' \cirX e' \cirX f'
   \cirX a''4 \cirX g'' \cirX f'' \cirX  e''

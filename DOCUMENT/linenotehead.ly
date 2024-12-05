@@ -1,13 +1,96 @@
 \version "2.24.4"
 
-\include "YO_Snippets.ly"
+noteheadless = \once \override Voice.NoteHead.stencil = ##f
+dashedLineNotehead =
+#(define-music-function
+  (beginning end x-distance) (ly:music? ly:music? number?)
+  (let*
+   (
+     (p1 (ly:music-property beginning 'pitch))
+     (p2 (ly:music-property end 'pitch))
+     (steps
+      (-
+       (+ (* 7 (ly:pitch-octave p2)) (ly:pitch-notename p2))
+       (+ (* 7 (ly:pitch-octave p1)) (ly:pitch-notename p1))
+       )
+      )
+     )
+   #{
+     {
+       \once \override Voice.NoteHead.stencil = #ly:text-interface::print
+       \once \override Voice.NoteHead.stem-attachment = #'(0 . 0)
+       \once \override Staff.LedgerLineSpanner.stencil = ##f
+       \once \override Voice.NoteHead.text = \markup 	{
+         % \translate #(cons 0 0)
+         \postscript
+         #(string-append
+           "newpath 1 setlinecap 
+              0.15 setlinewidth 
+              0 0 moveto 
+              [.4 .4 .4 .4] 3 setdash "
+           (number->string x-distance)  " " (number->string (* steps 0.5))
+           " rlineto stroke"
+           )
+       }
+       #beginning
+       \revert Voice.NoteHead.stencil
+       \revert Staff.LedgerLineSpanner.stencil
+     }
+   #})
+  )
 
+modularLineNotehead =
+#(define-music-function
+  (beginning end beginningThickness endingThickness x-distance)
+  (ly:music? ly:music? number? number? number?)
+  (let*
+   (
+     (p1 (ly:music-property beginning 'pitch))
+     (p2 (ly:music-property end 'pitch))
+     (steps
+      (-
+       (+ (* 7 (ly:pitch-octave p2)) (ly:pitch-notename p2))
+       (+ (* 7 (ly:pitch-octave p1)) (ly:pitch-notename p1))
+       )
+      )
+     )
+   #{
+     {
 
+       \once \override Voice.NoteHead.stencil = #ly:text-interface::print
+       \once \override Voice.NoteHead.stem-attachment = #'(0 . 0)
+       \once \override Voice.LedgerLineSpanner.transparent = ##t
+       \once \override Voice.NoteHead.text = \markup 	{
+         \postscript
+         #(string-append
+           "newpath 1 setlinecap 0.1 setlinewidth -0.05 0 moveto 0 "
+           (number->string (* beginningThickness 0.005)) " rlineto "
+           (number->string x-distance) " "
+           (number->string (+ (- (* endingThickness 0.005)
+                                 (* beginningThickness 0.005) )
+                              (* steps 0.5)))
+           " rlineto 0 "
+           (number->string  (* endingThickness -0.01))  " rlineto "
+           (number->string (* -1 x-distance))  " "
+           (number->string (- (* endingThickness 0.005)
+                              (* beginningThickness 0.005)
+                              (* steps 0.5)))
+           " rlineto 
+              closepath 
+              fill"
+           )
+       }
+       #beginning
+       \revert Voice.NoteHead.stencil
+       \revert Staff.LedgerLineSpanner.stencil
+     }
+   #})
+  )
 
 
 \score {
   {
-
+    \omit Staff.Clef
     \dashedLineNotehead g'4 a' #6
     \modularLineNotehead a' d'' #15 #150 #6
     \override TupletNumber.text = #tuplet-number::calc-fraction-text
