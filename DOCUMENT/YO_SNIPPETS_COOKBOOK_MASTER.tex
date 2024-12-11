@@ -1,4 +1,4 @@
-% Run lualatex-shell, then pdflatexmk, then lualatex-shell twice.
+% Run lualatex-shell, then pdflatexmk, ignoring all errors, then lualatex-shell twice.
 %
 %
 %
@@ -32,7 +32,7 @@
 %SetFonts
 
 
-\title{Original LilyPond Snippets and Their Grammars}
+\title{LilyPond Contemporary Notation Cookbook: \\ Snippets and Their Grammars}
 \author{Yoshiaki Onishi\\School of Music, University of Delaware \\ \href{mailto:info@yoshionishi.com}{info@yoshionishi.com}}
 \date{Version: \today}					
 
@@ -68,6 +68,7 @@ Cite: Y. Onishi, “Original LilyPond Snippets and Their Grammars,” (Version \
 
 \frontmatter
 \tableofcontents
+\label{sec:toc}
 \clearpage
 \vfill \break
 %\addcontentsline{toc}{chapter}{Foreword}
@@ -90,13 +91,13 @@ If you have found any of the codes useful, please feel free to use them in your 
 % https://github.com/yoshiakionishi/lilypond-snippets
 \end{verbatim}
 
-In the interest of making my codes available to as many people as possible, I have avoided using copyrighted musical examples. However, wherever appropriate, I have provided bibliographical sources.
+In the interest of making the codes found in this document available to as many people as possible, I have avoided using copyrighted musical examples. However, wherever appropriate, I have provided bibliographical sources. Furthermore, I acknowledge that, just as academic work in humanities goes, my ideas are built on those that are formulated by others; as such, whenever there is a direct source of inspiration for formulating a code, I provide sources. 
 
 In creating this document, I make no claim that my notational choices represent an absolute standard that everyone should adhere to. Once the basic principles of notation and typesetting are established (e.g., avoiding collisions, etc.), notation becomes a personal decision for each composer, shaped by careful study of preexisting scores and an evaluation of their musical contexts. 
 
 For example, in his book \textit{The Bass Clarinet – A Personal History}, Harry Sparnaay lists nine variants of noteheads for the slap tongue technique.\autocite[66]{HS2012} In my work, I created two subcategories of the slap tongue technique: one followed by a pitch and another followed by an air sound (which produces the slap tongue effect that sounds "empty"). To distinguish between the two, I decided to use encircled noteheads—both filled and hollow—and attribute them to each subcategory. Again, this is a method that I have found works for my music, but I would be reluctant to suggest that others should follow the same.\footnote{This particular notation becomes quickly problematic in terms of rhythmic notation when a bar is longer than a half note (e.g. 1/2, 2/4, 4/8...) For this reason, I tend to favor time signatures that avoids the use of a half note, such as 3/8 or 5/16.} 
 
-Readers are encouraged to modify my codes in order to suit their desired techniques. This document serves as a record of how I arrived at certain notational choices, because learning LilyPond meant that I would also become familiar with Scheme, which proved to be somewhat challenging—even though I have used Common Lisp before owing to programming in OpenMusic—because I had to make many guessworks as I navigated various Scheme codes in other snippets available online. 
+Readers are encouraged to modify my codes in order to suit their desired techniques. This document serves as a record of how I arrived at certain notational choices, because learning LilyPond meant that I would also need to become familiar with Scheme, which proved to be somewhat challenging—even though I have used Common Lisp before owing to programming in OpenMusic—because I had to make many guessworks as I navigated various Scheme codes in other snippets available online. I have also gained familiarity in PostScript language as I continued to familiarize myself with LilyPond.\footnote{See Appendix A for some resources I referred to for Scheme- and PostScript-related matters.}
 \section{Background}
 
 After \href{https://www.makemusic.com/}{MakeMusic} announced that they would cease development of the music notation software program \href{https://www.finalemusic.com/}{Finale}, which I had used for the past twenty-four years, I decided to explore a few other music notation programs to determine the best alternative. At the time of writing this document in late November 2024, a little under three months have passed since I started using \href{https://lilypond.org/}{LilyPond} for my daily typesetting needs. I now open LilyPond more often than Finale and am committed to using it for the foreseeable future. LilyPond appears to me as the way forward both as a composer and a musical typesetter, as other proprietary notation programs, such as Dorico (which MakeMusic has claimed to be the leading program in the industry) and Sibelius, fall short of what I wish to accomplish. 
@@ -370,7 +371,7 @@ wiggleBeamStemAdjust =
 \item Admittedly, while the current setup allows great flexibility in making the wiggle beams appear, it is entirely possible that some of the parameters be automated. 
 \item When using many wiggle beams, it may be easier to make the score proportionally notated, in order to avoid the micromanagement of the parameters. 
 \end{enumerate}
-
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
 
 %%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%
@@ -495,7 +496,6 @@ normalClef = {
   \strPosClef c'4 e' g' b' d'' f'' a''
 }
 \end{verbatim}
-\vfill \break
 
 \subsection{Discussion}
 \begin{enumerate}
@@ -521,7 +521,9 @@ newpath
 \item See \textbf{Combinations} chapter for a possible use of this clef.
 \end{enumerate}
 
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
 
+\vfill \break
 
 
 
@@ -545,26 +547,28 @@ Implementation of the jet whistle, as described in \textit{The Techniques of Flu
 \end{verbatim}
 \subsection{Code}
 \begin{verbatim}
-
-
 jet = #(define-music-function (pitchthing width) (ly:music? number?)
          (define p1 (ly:music-property pitchthing 'pitch))
          (define steps (+ -6 (ly:pitch-steps p1)))
          (define radToDeg (* 180 (/ 1 3.141592653589793)))
          #{ #pitchthing ^\markup {
-           \postscript 
+           \postscript
            #(string-append "gsave newpath 0.2 setlinewidth 1.15 "
-               (number->string (+ -2.5 (* 0.5 steps))) " moveto "
-               (number->string (* 0.5 width)) " 4 rlineto "
-               (number->string (* 0.5 width)) " -4 rlineto
+                           (number->string 
+                           	(+ -2.5 (* 0.5 steps))) " moveto "
+                           (number->string 
+                           	(* 0.5 width)) " 4 rlineto "
+                           (number->string 
+                           	(* 0.5 width)) " -4 rlineto
                   stroke
                   newpath
                   0.1 setlinewidth "
-               (number->string (+ 1.15 width)) " "
-               (number->string (+ -2.55 (* 0.5 steps)))
-               " moveto "
-               (number->string   (* radToDeg (atan (/ (* width 0.5) 4))))
-               " rotate
+                           (number->string (+ 1.15 width)) " "
+                           (number->string (+ -2.55 (* 0.5 steps)))
+                           " moveto "
+                           (number->string   
+                            (* radToDeg (atan (/ (* width 0.5) 4))))
+                           " rotate
                   0 -1 rlineto
                   -0.35 1 rlineto
                   0.7 0 rlineto
@@ -574,8 +578,6 @@ jet = #(define-music-function (pitchthing width) (ly:music? number?)
                   grestore
                   ")
          } #})
-
-
 
 \score {
   {
@@ -592,7 +594,60 @@ jet = #(define-music-function (pitchthing width) (ly:music? number?)
     }
   }
 }
+
+jet = #(define-music-function (pitchthing width) (ly:music? number?)
+         (define p1 (ly:music-property pitchthing 'pitch))
+         (define steps (+ -6 (ly:pitch-steps p1)))
+         (define radToDeg (* 180 (/ 1 3.141592653589793)))
+
+
+         #{ #pitchthing ^\markup {
+           \postscript
+           #(string-append
+             "gsave newpath 
+              0.25 setlinewidth 
+              1.05 " (number->string
+                      (+ -2.65 (* 0.5 steps))) " moveto "
+             (number->string (* 0.5 width)) " 4 rlineto "
+             (number->string (* 0.5 width)) " -4 rlineto
+                stroke
+                newpath
+                0.1 setlinewidth 
+                 "
+             (number->string (+ 1.15 width)) " "
+             (number->string
+              (+ -2.55 (* 0.5 steps))) " moveto "
+             (number->string
+              (* radToDeg (atan (/ (* width 0.5) 4))))
+             " rotate
+                -0.125 -0.75 rlineto
+                -0.35 1 rlineto
+                0.7 0 rlineto
+                -0.35 -1 rlineto
+                closepath              
+                fill
+                grestore ")
+         } #})
+
+
+\score {
+  {
+    \jet e'2^\markup {\fontsize #-5 {[jet]}} #8
+    \jet c'4 #3
+    \stemDown  \jet b'8 #1.5
+    \jet d'8 #1.5
+  }
+
+  \layout {
+    \context {
+      \Score proportionalNotationDuration = #(ly:make-moment 1/10)    
+      \override SpacingSpanner.uniform-stretching = ##t
+    }
+  }
+}
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 
@@ -745,6 +800,8 @@ modularLineNotehead =
 
 
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 
@@ -804,6 +861,8 @@ noteheadlessOff = {
 }
 
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 
@@ -829,7 +888,9 @@ slapA = #(define-music-function (note)   (ly:music?)
               \markup {
                 \concat {
                   \musicglyph "noteheads.s2"
-                  \postscript "newpath -0.675 0.025 0.75 0 360 arc closepath stroke"
+                  \postscript "newpath 
+                  -0.675 0.025 0.75 0 360 arc 
+                  closepath stroke"
                 }
               }
               $note #})
@@ -839,6 +900,8 @@ slapA = #(define-music-function (note)   (ly:music?)
   \slapA f'' \slapA e'' \slapA d'' \slapA c''
 }
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 %%%%%%%%%%%%%%%%%%%
@@ -863,7 +926,9 @@ slapB = #(define-music-function (note)   (ly:music?)
               \markup {
                 \concat {
                   \musicglyph "noteheads.s1"
-                  \postscript "newpath -0.675 0.025 0.75 0 360 arc closepath stroke"
+                  \postscript "newpath 
+                  -0.675 0.025 0.75 0 360 arc 
+                  closepath stroke"
                 }
               }
               $note #})
@@ -875,7 +940,140 @@ slapB = #(define-music-function (note)   (ly:music?)
 \end{verbatim}
 \subsection{Discussion}
 As the musical example shows, when the Type B Slap Tongue notehead is applied to a quarter note, it could invite confusion in terms of rhythm. As a slap tongue itself is a short sound, I only use the slap tongue noteheads on eighth notes or shorter note durations. 
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
 
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+\section {Slashed Notehead}
+\lilypondfile[staffsize=24]{/slashnotes.ly}
+\hfill
+\subsection{Description}
+Noteheads with backslashes applied.\footnote{The code provided by Jean Abou Samra in the following discussion thread on lilypond-user was very helpful in creating this code: \url{https://lists.gnu.org/archive/html/lilypond-user/2022-11/msg00333.html}} I use this notehead to indicate, for example, notes on the piano whose strings are prepared, thus producing pitch/sound different from what is expected normally. 
+
+\subsection{Grammar}
+\begin{verbatim}
+\slashNote NOTE
+\slashNoteOn NOTE
+\slashNoteOff 
+\end{verbatim}
+\textbf{NB} \verb|\slashNote| only affects one note, owing to the \verb|\once \override| functions within the code. For a group of notes to have slashes applied, use \verb|\slashNoteOn|. \verb|\slashNoteOff| cancels the application.
+\subsection{Code}
+\begin{verbatim}
+
+% Inspired by the code provided by Jean Abou Samra
+% https://lists.gnu.org/archive/html/lilypond-user/2022-11/msg00333.html
+
+slashNote =
+\once \override Voice.NoteHead.stencil =
+#(grob-transformer
+  'stencil
+  (lambda (grob original)
+    (let* ((added-markup
+            #{
+              \markup \general-align #Y #CENTER
+              #(case (ly:grob-property grob 'duration-log)
+                 ((0) #{ \markup \concat {
+                   \musicglyph "noteheads.s0"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -2.3 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+
+                 ((1) #{ \markup \concat {
+                   \musicglyph "noteheads.s1"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+
+                 ((2) #{ \markup \concat {
+                   \musicglyph "noteheads.s2"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #}))
+            #})
+           (added-stencil (grob-interpret-markup grob added-markup)))
+      (if (ly:stencil? original)
+          (ly:stencil-add original added-stencil)
+          added-stencil))))
+
+
+
+slashNoteOn =
+\override Voice.NoteHead.stencil =
+#(grob-transformer
+  'stencil
+  (lambda (grob original)
+    (let* ((added-markup
+            #{
+              \markup \general-align #Y #CENTER
+              #(case (ly:grob-property grob 'duration-log)
+                 ((0) #{ \markup \concat {
+                   \musicglyph "noteheads.s0"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -2.3 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+                 ((1) #{ \markup \concat {
+                   \musicglyph "noteheads.s1"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+                 ((2) #{ \markup \concat {
+                   \musicglyph "noteheads.s2"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #}))
+            #})
+           (added-stencil (grob-interpret-markup grob added-markup)))
+      (if (ly:stencil? original)
+          (ly:stencil-add original added-stencil)
+          added-stencil))))
+
+
+slashNoteOff = \revert Voice.NoteHead.stencil
+
+{
+  \time 7/4
+  \slashNote c'4
+  \slashNote d'2
+  \slashNote e'1
+  \slashNoteOn g''4 f''2 d''1
+  \slashNoteOff c''1 \bar "||"
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
 
 %%%%%%%%%%%%%%%%%%%
 
@@ -1021,11 +1219,14 @@ toneClusterBarWhole =
 }
 \end{verbatim}
 \subsection{Discussion}
-There have been some discussions on \verb|lilypond-user| mailing list in the past that readers may consult for further ideas on implementing different types of tone cluster notation: \begin{itemize}
+There have been some discussions on \verb|lilypond-user| mailing list in the past that readers may consult for further ideas on implementing different types of tone cluster notation: 
+\begin{itemize}
 \item \url{https://lists.gnu.org/archive/html/lilypond-user/2008-10/msg00484.html} (This one in particular lists other notational conventions established by other composers)
 \item \url{https://lists.gnu.org/archive/html/lilypond-user/2020-12/msg00130.html}
 
 \end{itemize}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \clearpage
 
 
@@ -1080,6 +1281,9 @@ tgr = #(define-music-function (note1) (ly:music?)
 \end{verbatim}
 \subsection{Discussion}
 I want to improve this code so that I can add markups to the note. It is slightly awkward at the moment.
+
+
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
 \clearpage
 
 
@@ -1137,6 +1341,8 @@ cirX = #(define-music-function (note) (ly:music?)
   \cirX a''4 \cirX g'' \cirX f'' \cirX  e''
 }
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 
@@ -1177,7 +1383,10 @@ newpath
 stroke"
 
 { c'2. r4^\mutesign }
+
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 
@@ -1237,6 +1446,8 @@ MOnStemOff = {
   \MOnStemOn a'' d'' \MOnStemOff g' c'
 }
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 %%%%%%%%%%%%%%%%%%%
@@ -1289,6 +1500,8 @@ SOnStemOff = {
   \SOnStemOn a'' d'' \SOnStemOff g' c'
 }
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 %%%%%%%%%%%%%%%%%%%
@@ -1343,6 +1556,8 @@ VOnStemOff = {
   \VOnStemOn a'' d'' \VOnStemOff g' c'
 }
 \end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
 \vfill \break
 
 %%%%%%%%%%%%%%%%%%%
@@ -1357,14 +1572,56 @@ VOnStemOff = {
 
 
 
-
-
 \backmatter
 
 \printbibliography[heading=bibintoc, title={Bibliography}]
 
 \begin{appendices}
 \chapter{Appendix A: Resources}
+
+As I taught LilyPond in a special topic course at the University of Delaware in Fall 2024, I compiled a list of links to useful websites and pages. It is in no way intended as a comprehensive list; instead, I list some essential pages that I have frequently looked up and found very useful. This page is subject to frequent revision.
+
+\textbf{On LilyPond}
+\begin{itemize}
+\item Website:	\url{https://lilypond.org/}
+\item Installing: \url{https://lilypond.org/doc/v2.24/Documentation/learning/installing}
+\item Manuals: \url{https://lilypond.org/manuals.html} 
+\end{itemize}
+\textbf{Text Editor for LilyPond}
+\begin{itemize}
+\item Frescobaldi (Editor):	\url{https://frescobaldi.org/}
+\end{itemize}
+\textbf{Coding LilyPond}
+\begin {itemize}
+\item Cheat Sheet:	\url{https://lilypond.org/doc/v2.24/Documentation/notation/cheat-sheet}
+\item Snippets:	\url{https://lilypond.org/doc/v2.24/Documentation/web/snippets}
+\item LilyPond Snippet Repository:	\url{https://lsr.di.unimi.it/}
+\end{itemize}
+\textbf{Mailing List}
+\begin {itemize}
+\item Mailing list:		\url{https://lists.gnu.org/mailman/listinfo/lilypond-user} 
+\item Archives 1 \url{https://lists.gnu.org/archive/html/lilypond-user/}
+\item Archives 2 \url{https://www.mail-archive.com/lilypond-user@gnu.org/} 
+\end{itemize}
+\textbf{Advanced Topic on LilyPond}
+\begin {itemize}
+\item LilyPond – Extending v2.24.4: \url{https://lilypond.org/doc/v2.24/Documentation/extending/index#top} 
+\item Scheme (in LilyPond):	\url{https://scheme-book.readthedocs.io/en/latest/} 
+\item Extending LilyPond: \url{https://extending-lilypond.gitlab.io/en/extending/index.html}
+\item PostScript Manual: \url{https://www.adobe.com/jp/print/postscript/pdfs/PLRM.pdf}
+\item PostScript Tutorial: \url{https://paulbourke.net/dataformats/postscript/}
+\end{itemize}
+\textbf{Troubleshooting}
+\begin{itemize}
+\item \href{https://github.com/Homebrew/homebrew-core/pull/118260#issuecomment-1368249969}{The default text font for LilyPond doesn’t seem to work (Mac)}
+\item \href{https://github.com/frescobaldi/frescobaldi/issues/1793}{Frescobaldi freezes upon loading}
+\end{itemize}
+
+\textbf{Miscellaneous Items}
+\begin{itemize}
+\item About Emmentaler font: \url{https://lilypond.org/doc/v2.25/Documentation/notation/the-emmentaler-font}
+\end{itemize}
+
 
 \end{appendices}
 
