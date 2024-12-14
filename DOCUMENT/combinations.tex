@@ -1,0 +1,77 @@
+%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+
+
+\chapter {Combinations}
+
+This chapter presents examples that combine several snippets from the previous chapters. \textbf{Variables Used} provides a comprehensive list of all the variables required to generate the snippet. Among these, indented variables indicate "variables of a variable," i.e., dependent variables necessary for the main variables to function. The \textbf{Code} section only lists the score portion of the LilyPond code.
+
+\section {Prescriptive Notation for String Instruments}
+\label{sec:comb_strings}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/pres_notation_strings.ly}
+\hfill
+
+\subsection{Description}
+An example of a prescriptive notation for a string instrument. Vertical placement of the notehead corresponds to the position at which bowing takes place. Horizontally it shows the change of the bow pressure against the string(s).
+\subsection{Variables Used}
+\begin{verbatim}
+
+\strPosClef
+		\strPosClefDesign
+		\strPosClefSize
+\dashedLineNotehead
+\modularLineNotehead
+\noteheadless
+\end{verbatim}
+\subsection{Code}
+\begin{verbatim}
+
+\score {
+  {
+    \override Staff.StaffSymbol.line-positions = #'(6  -6)
+    \strPosClef 
+    \dashedLineNotehead g'4
+    	^\markup {\fontsize #-4 \italic flaut.}
+    	^\markup \translate #'(-2.5 . -0) \center-column 
+			{\translate #'(0 . -1.5) \fontsize #-4 II 
+			\fontsize #-4 III} 
+		a' #6
+    \modularLineNotehead a'
+    	^\markup \column {\translate #'(0 . -1.5) 
+			\fontsize #-4 \italic apply \fontsize #-4 
+			\italic pressure} 
+		d'' #15 #150 #6
+    \override TupletNumber.text = #tuplet-number::calc-fraction-text
+    \stemUp  \tuplet 5/4 {
+      \modularLineNotehead d''8 b' #150 #50 #2.5
+      \modularLineNotehead b' f'' #50 #175 #2.5
+      \modularLineNotehead f'' a' #175 #70 #2.5
+      \modularLineNotehead a' c'' #70 #120 #2.5
+      \modularLineNotehead c'' e' #120 #15 #3.5
+    }
+    |
+    \modularLineNotehead e'4
+    	^\markup {\fontsize #-4 \italic ord.} 
+		e' #15 #15 #12
+    \noteheadless e'
+    \dashedLineNotehead e'
+    	^\markup {\fontsize #-4 \italic (flaut.)} 
+		e' #5
+  }
+
+  \layout {
+    \context {
+      \Score proportionalNotationDuration = #(ly:make-moment 1/10)    
+      		\override SpacingSpanner.uniform-stretching = ##t
+    }
+  }
+}
+
+\end{verbatim}
+
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+

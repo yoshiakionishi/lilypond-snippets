@@ -126,6 +126,7 @@ jet = #(define-music-function (pitchthing width) (ly:music? number?)
 
 
 \section {Line as a Notehead}
+\label{sec:line_notehead}
 \lilypondfile[staffsize=24]{/linenotehead.ly}
 \hfill
 
@@ -271,6 +272,9 @@ modularLineNotehead =
 
 
 \end{verbatim}
+\subsection{Discussion}
+
+See \hyperref[sec:comb_strings]{Prescriptive Notation for String Instruments} for a possible use of this notehead. \\
 \hyperref[sec:toc]{\\ \textbf{Table of Contents}}
 
 \vfill \break
@@ -287,7 +291,7 @@ modularLineNotehead =
 This snippet is hardly my own idea, as I largely quoted this technique from one of the snippets available on LSR.\footnote{See: \url{http://lsr.di.unimi.it/LSR/Item?id=796}} However, I list it here because: 
 \begin{enumerate} 
 \item it took a while for me to find the workaround for maintaining the musical spacing as a result of omitting noteheads. It is worth noting that because merely disabling \verb|NoteHead.stencil| will render the spacing to be squished, the approach of specifying \verb|##t| for \verb|NoteHead.transparent| (which itself will \textit{not} eliminate the ledger lines) then \verb|##t| for \verb|NoteHead.no-ledgers| is effective in maintaining the general spacing.
-\item I use this in conjunction with other notehead alterations, e.g. "Line as a notehead." 
+\item I use this in conjunction with other notehead alterations, e.g. \hyperref[sec:line_notehead]{Line as a notehead}. 
 \end{enumerate}
 
 \subsection{Grammar}
@@ -370,6 +374,7 @@ slapA = #(define-music-function (note)   (ly:music?)
   \slapA c'4 \slapA d' \slapA e' \slapA f'
   \slapA f'' \slapA e'' \slapA d'' \slapA c''
 }
+
 \end{verbatim}
 \hyperref[sec:toc]{\\ \textbf{Table of Contents}}
 

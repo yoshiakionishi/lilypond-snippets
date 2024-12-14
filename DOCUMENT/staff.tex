@@ -1,5 +1,25 @@
-\version "2.24.4"
-\language "english"
+
+\chapter {Staff}
+
+
+\section {Expanding, Shrinking and Bloated Staff Lines}
+\lilypondfile[staffsize=24]{/ExpandBloatShrinkStaff.ly}
+\hfill
+
+\subsection{Description}
+I made this code as a proof of concept after having read some excellent snippets on LSR.\footnote{See: \url{https://lsr.di.unimi.it/LSR/Item?id=878}, \url{https://lsr.di.unimi.it/LSR/Item?id=1005}, and \url{https://lsr.di.unimi.it/LSR/Item?id=1007}. }
+
+\subsection{Grammar}
+\begin{verbatim}
+
+\expandingStaff #X-length
+\shrinkingStaff #X-length
+\bloatedStaff
+\normalStaff
+
+\end{verbatim}
+\subsection{Code}
+\begin{verbatim}
 
 shrinkingStaff =
 #(define-music-function
@@ -11,13 +31,13 @@ shrinkingStaff =
     \once  \override Staff.StaffSymbol.stencil = #ly:text-interface::print
     \once  \override Staff.StaffSymbol.text = \markup {
       \postscript #(string-append
-                    "newpath 
+          "newpath 
           0 4 moveto 
           0 4 6 2 " (number->string staffDist) " 2 curveto 
           0 2 moveto 
           0 2 6 1 " (number->string staffDist) " 1 curveto
           0 0 moveto "
-                    (number->string staffDist) " 0 lineto
+          (number->string staffDist) " 0 lineto
           0 -2 moveto 
           0 -2 6 -1 " (number->string staffDist) " -1 curveto
           0 -4 moveto
@@ -25,15 +45,15 @@ shrinkingStaff =
           stroke")
 
 
-    }
+    }    
     \override Staff.StaffSymbol.line-positions = #'(-4 -2 0 2 4 )
     \startStaff
   #})
 
 normalStaff = {
-  \stopStaff
-  \revert Staff.StaffSymbol.line-positions
-  \revert Staff.StaffSymbol.stencil
+  \stopStaff 
+  \revert Staff.StaffSymbol.line-positions 
+  \revert Staff.StaffSymbol.stencil 
   \startStaff
 }
 
@@ -47,14 +67,14 @@ expandingStaff =
     \stopStaff
     \once  \override Staff.StaffSymbol.stencil = #ly:text-interface::print
     \once  \override Staff.StaffSymbol.text = \markup {
-      \postscript #(string-append
-                    "newpath 
+      \postscript #(string-append 
+          "newpath 
           0 2 moveto 
           0 2 6 2 " (number->string staffDist) " 4 curveto 
           0 1 moveto
           0 1 6 1 " (number->string staffDist) " 2 curveto 
           0 0 moveto "
-                    (number->string staffDist) " 0 lineto
+          (number->string staffDist) " 0 lineto
           0 -1 moveto 
           0 -1 6 -1 " (number->string staffDist) " -2 curveto 
           0 -2 moveto
@@ -67,11 +87,10 @@ expandingStaff =
   #})
 
 bloatedStaff = {
-  \stopStaff
-  \override Staff.StaffSymbol.line-positions = #'(-8 -4 0 4 8 )
-  \override Staff.LedgerLineSpanner.stencil = ##f
-  \startStaff
-}
+  \stopStaff  
+  \override Staff.StaffSymbol.line-positions = #'(-8 -4 0 4 8 )   
+  \override Staff.LedgerLineSpanner.stencil = ##f 
+  \startStaff}
 
 
 
@@ -93,7 +112,7 @@ bloatedStaff = {
   \once \override Staff.BarLine.bar-extent = #'(-2.5 . 2.5)
 
 
-  e''4 \bloatedStaff c''8 d'' e'' fs''
+  e''4 \bloatedStaff c''8 d'' e'' fs'' 
   \once \override Staff.BarLine.bar-extent = #'(-4 . 4)
 
   \shrinkingStaff #13.5
@@ -109,4 +128,11 @@ bloatedStaff = {
   }
 }
 
+
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
 
