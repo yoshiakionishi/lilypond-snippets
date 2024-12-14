@@ -1,0 +1,167 @@
+
+\chapter {Stems}
+
+
+\section {"M" on Stem}
+\lilypondfile[staffsize=24]{/MOnStem.ly}
+\hfill
+
+\subsection{Description}
+This function attaches "M" to the stem. I have used this to indicate \textbf{M}ultiphonics on woodwind instruments in my pieces. This function lengthens the stem in order to give a balanced look, especially combined with stems/flags. 
+\subsection{Grammar}
+\begin{verbatim}
+\MOnStemOn NOTE ...
+\MOnStemOff
+\end{verbatim}
+\textbf{NB} \verb |\MOnStemOn| toggles the feature on, while \verb|\MOnStemOff| toggles it off.
+
+\subsection{Code}
+\begin{verbatim}
+MOnStemOn = {
+  \override Stem.length = #12
+  \override Stem.details.beamed-lengths = #'(5.5)
+  \override Stem.stencil =
+  #(lambda (grob)
+     (let* ((x-parent (ly:grob-parent grob X))
+            (is-rest? (ly:grob? (ly:grob-object x-parent 'rest))))
+       (if is-rest?
+           empty-stencil
+           (ly:stencil-combine-at-edge
+            (ly:stem::print grob)
+            Y
+            (- (ly:grob-property grob 'direction))
+            (grob-interpret-markup grob
+                                   (markup
+                                    #:center-align
+                                    #:teeny #:sans #:bold "M"))
+            -3.5))))
+}
+
+MOnStemOff = {
+  \revert Stem.length
+  \revert Stem.details.beamed-lengths
+  \revert Stem.stencil
+  \revert Flag.stencil
+}
+
+{
+  \MOnStemOn c'4 g' \MOnStemOff d'' a''
+  \MOnStemOn a'' d'' \MOnStemOff g' c'
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {"S" on Stem}
+\lilypondfile[staffsize=24]{/SOnStem.ly}
+\hfill
+
+\subsection{Description}
+This function attaches "S" to the stem. I have used this to indicate \textbf{S}plit tone on clarinet/bass clarinet in my pieces. This function lengthens the stem in order to give a balanced look, especially combined with stems/flags. 
+\subsection{Grammar}
+\begin{verbatim}
+\SOnStemOn NOTE ...
+\SOnStemOff
+\end{verbatim}
+\textbf{NB} \verb|\SOnStemOn| toggles the feature on, while \verb|\SOnStemOff| toggles it off.
+
+\subsection{Code}
+\begin{verbatim}
+SOnStemOn = {
+  \override Stem.length = #12
+  \override Stem.details.beamed-lengths = #'(5.5)
+  \override Stem.stencil =
+  #(lambda (grob)
+     (let* ((x-parent (ly:grob-parent grob X))
+            (is-rest? (ly:grob? (ly:grob-object x-parent 'rest))))
+       (if is-rest?
+           empty-stencil
+           (ly:stencil-combine-at-edge
+            (ly:stem::print grob)
+            Y
+            (- (ly:grob-property grob 'direction))
+            (grob-interpret-markup grob
+                                   (markup
+                                    #:center-align
+                                    #:teeny #:sans #:bold "S"))
+            -3.5))))
+}
+
+SOnStemOff = {
+  \revert Stem.length
+  \revert Stem.details.beamed-lengths
+  \revert Stem.stencil
+  \revert Flag.stencil
+}
+
+{
+  \SOnStemOn c'4 g' \SOnStemOff d'' a''
+  \SOnStemOn a'' d'' \SOnStemOff g' c'
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
+\section {"V" on Stem}
+\lilypondfile[staffsize=24]{/VOnStem.ly}
+\hfill
+
+\subsection{Description}
+This function attaches "V" to the stem. I have used this to designate a note with a differentiated timbre from others, for example "brassy tone" for bassoon in my \textit{Gz III} (2019-21) for bass clarinet and bassoon. This function lengthens the stem in order to give a balanced look, especially combined with stems/flags. 
+\subsection{Grammar}
+\begin{verbatim}
+\VOnStemOn NOTE ...
+\VOnStemOff
+\end{verbatim}
+\textbf{NB} \verb|\VOnStemOn| toggles the feature on, while \verb|\VOnStemOff| toggles it off.
+
+\subsection{Code}
+\begin{verbatim}
+VOnStemOn = {
+  \override Stem.no-stem-extend = ##f
+  \override Stem.length = #12
+  \override Stem.details.beamed-lengths = #'(5.5)
+  \override Stem.stencil =
+  #(lambda (grob)
+     (let* ((x-parent (ly:grob-parent grob X))
+            (is-rest? (ly:grob? (ly:grob-object x-parent 'rest))))
+       (if is-rest?
+           empty-stencil
+           (ly:stencil-combine-at-edge
+            (ly:stem::print grob)
+            Y
+            (- (ly:grob-property grob 'direction))
+            (grob-interpret-markup grob
+                                   (markup
+                                    #:center-align
+                                    #:teeny #:sans #:musicglyph "scripts.upbow"))
+            -3.5))))
+}
+
+VOnStemOff = {
+  \revert Stem.length
+  \revert Stem.stencil
+  \revert Flag.stencil
+}
+
+
+{
+  \VOnStemOn c'4 g' \VOnStemOff d'' a''
+  \VOnStemOn a'' d'' \VOnStemOff g' c'
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+

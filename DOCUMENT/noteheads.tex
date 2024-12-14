@@ -1,0 +1,818 @@
+%%%%%%%%%%%%%%%%%%%
+% N O T E H E A D S
+%%%%%%%%%%%%%%%%%%%
+\chapter {Noteheads}
+
+
+
+\section {Jet Whistle (for flute)}
+\lilypondfile[staffsize=24]{/jet.ly}
+\hfill
+
+\subsection{Description}
+Implementation of the jet whistle, as described in \textit{The Techniques of Flute Playing} by Carin Levine and Christina Mitropoulos-Bott.\autocite[18]{RN1695} 
+
+\subsection{Grammar}
+\begin{verbatim}
+\jet NOTE #X-length
+\end{verbatim}
+\subsection{Code}
+\begin{verbatim}
+jet = #(define-music-function (pitchthing width) (ly:music? number?)
+         (define p1 (ly:music-property pitchthing 'pitch))
+         (define steps (+ -6 (ly:pitch-steps p1)))
+         (define radToDeg (* 180 (/ 1 3.141592653589793)))
+         #{ #pitchthing ^\markup {
+           \postscript
+           #(string-append "gsave newpath 0.2 setlinewidth 1.15 "
+                           (number->string 
+                           	(+ -2.5 (* 0.5 steps))) " moveto "
+                           (number->string 
+                           	(* 0.5 width)) " 4 rlineto "
+                           (number->string 
+                           	(* 0.5 width)) " -4 rlineto
+                  stroke
+                  newpath
+                  0.1 setlinewidth "
+                           (number->string (+ 1.15 width)) " "
+                           (number->string (+ -2.55 (* 0.5 steps)))
+                           " moveto "
+                           (number->string   
+                            (* radToDeg (atan (/ (* width 0.5) 4))))
+                           " rotate
+                  0 -1 rlineto
+                  -0.35 1 rlineto
+                  0.7 0 rlineto
+                  -0.35 -1 rlineto
+                  closepath
+                  fill
+                  grestore
+                  ")
+         } #})
+
+\score {
+  {
+    \jet e'2^\markup {\fontsize #-5 {[jet]}} #8
+    \jet c'4 #3
+    \stemDown  \jet b'8 #1.5
+    \jet d'8 #1.5
+  }
+
+  \layout {
+    \context {
+      \Score proportionalNotationDuration = #(ly:make-moment 1/10)
+      \override SpacingSpanner.uniform-stretching = ##t
+    }
+  }
+}
+
+jet = #(define-music-function (pitchthing width) (ly:music? number?)
+         (define p1 (ly:music-property pitchthing 'pitch))
+         (define steps (+ -6 (ly:pitch-steps p1)))
+         (define radToDeg (* 180 (/ 1 3.141592653589793)))
+
+
+         #{ #pitchthing ^\markup {
+           \postscript
+           #(string-append
+             "gsave newpath 
+              0.25 setlinewidth 
+              1.05 " (number->string
+                      (+ -2.65 (* 0.5 steps))) " moveto "
+             (number->string (* 0.5 width)) " 4 rlineto "
+             (number->string (* 0.5 width)) " -4 rlineto
+                stroke
+                newpath
+                0.1 setlinewidth 
+                 "
+             (number->string (+ 1.15 width)) " "
+             (number->string
+              (+ -2.55 (* 0.5 steps))) " moveto "
+             (number->string
+              (* radToDeg (atan (/ (* width 0.5) 4))))
+             " rotate
+                -0.125 -0.75 rlineto
+                -0.35 1 rlineto
+                0.7 0 rlineto
+                -0.35 -1 rlineto
+                closepath              
+                fill
+                grestore ")
+         } #})
+
+
+\score {
+  {
+    \jet e'2^\markup {\fontsize #-5 {[jet]}} #8
+    \jet c'4 #3
+    \stemDown  \jet b'8 #1.5
+    \jet d'8 #1.5
+  }
+
+  \layout {
+    \context {
+      \Score proportionalNotationDuration = #(ly:make-moment 1/10)    
+      \override SpacingSpanner.uniform-stretching = ##t
+    }
+  }
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Line as a Notehead}
+\lilypondfile[staffsize=24]{/linenotehead.ly}
+\hfill
+
+\subsection{Description}
+These functions replace an ordinary notehead with a dashed or a continuous line. For the continuous line, it is possible to adjust the beginning and ending thicknesses.
+\subsection{Grammar}
+\begin{verbatim}
+\dashedLineNotehead NOTE1 PITCH #x-dist
+\modularLineNotehead NOTE1 PITCH #beginningThick #endingThick #x-dist
+\end{verbatim}
+
+\textbf{NB} 
+\begin{enumerate} 
+\item \verb|NOTE1| specifies with which note the line starts. If necessary, the duration must be set, as well.
+\item \verb|PITCH| specifies with which pitch the line ends. Enter only the pitch; this information is used to determine the angle of the line, and it has no effect in displaying the rhythm.  
+\item \verb|x-dist| specifies how long the line is.  
+\item \verb|beginningThick| (for \verb|modularLineNotehead| only) specifies how thick the beginning part of the line should be. \verb|#15| gives a thin line, similar to the \verb|\dashedLineNotehead| line. \verb|#100| is as thick as a space between two neighboring lines of a staff.
+\item \verb|endingThick| (for \verb|modularLineNotehead| only) specifies how thick the ending part of the line should be. \verb|#15| gives a thin line, similar to the \verb|\dashedLineNotehead| line. \verb|#100| is as thick as a space between two neighboring lines of a staff.
+\end{enumerate}
+
+\subsection{Code}
+\begin{verbatim}
+
+% See the entry on "Noteheadless" for its code; 
+% it is required for the snippet to run properly.
+
+dashedLineNotehead =
+#(define-music-function
+  (beginning end x-distance) (ly:music? ly:music? number?)
+  (let*
+   (
+     (p1 (ly:music-property beginning 'pitch))
+     (p2 (ly:music-property end 'pitch))
+     (steps
+      (-
+       (+ (* 7 (ly:pitch-octave p2)) (ly:pitch-notename p2))
+       (+ (* 7 (ly:pitch-octave p1)) (ly:pitch-notename p1))
+       )
+      )
+     )
+   #{
+     {
+
+       \once \override Voice.NoteHead.stencil = #ly:text-interface::print
+       \once \override Voice.NoteHead.stem-attachment = #'(0 . 0)
+       \once \override Staff.LedgerLineSpanner.stencil = ##f
+       \once \override Voice.NoteHead.text = \markup 	{
+         % \translate #(cons 0 0)
+         \postscript
+         #(string-append
+           "newpath 1 setlinecap 
+              0.15 setlinewidth 
+              0 0 moveto 
+              [.4 .4 .4 .4] 3 setdash "
+           (number->string x-distance)  " " (number->string (* steps 0.5))
+           " rlineto stroke"
+           )
+       }
+       #beginning
+       \revert Voice.NoteHead.stencil
+       \revert Staff.LedgerLineSpanner.stencil
+     }
+   #})
+  )
+
+
+modularLineNotehead =
+#(define-music-function
+  (beginning end beginningThickness endingThickness x-distance)
+  (ly:music? ly:music? number? number? number?)
+  (let*
+   (
+     (p1 (ly:music-property beginning 'pitch))
+     (p2 (ly:music-property end 'pitch))
+     (steps
+      (-
+       (+ (* 7 (ly:pitch-octave p2)) (ly:pitch-notename p2))
+       (+ (* 7 (ly:pitch-octave p1)) (ly:pitch-notename p1))
+       )
+      )
+     )
+   #{
+     {
+
+       \once \override Voice.NoteHead.stencil = #ly:text-interface::print
+       \once \override Voice.NoteHead.stem-attachment = #'(0 . 0)
+       \once \override Voice.LedgerLineSpanner.transparent = ##t
+       \once \override Voice.NoteHead.text = \markup 	{
+         \postscript
+         #(string-append
+           "newpath 1 setlinecap 0.1 setlinewidth -0.05 0 moveto 0 "
+           (number->string (* beginningThickness 0.005)) " rlineto "
+           (number->string x-distance) " "
+           (number->string (+ (- (* endingThickness 0.005) 
+                                 (* beginningThickness 0.005) ) 
+                              (* steps 0.5)))
+           " rlineto 0 " 
+           (number->string  (* endingThickness -0.01))  " rlineto "
+           (number->string (* -1 x-distance))  " "
+           (number->string (- (* endingThickness 0.005) 
+                              (* beginningThickness 0.005) 
+                              (* steps 0.5)))
+           " rlineto 
+              closepath 
+              fill"
+           )
+       }
+       #beginning
+       \revert Voice.NoteHead.stencil
+       \revert Staff.LedgerLineSpanner.stencil
+     }
+   #})
+  )
+
+
+\score {
+  {
+    \omit Staff.Clef
+    \dashedLineNotehead g'4 a' #6
+    \modularLineNotehead a' d'' #15 #150 #6
+    \override TupletNumber.text = #tuplet-number::calc-fraction-text
+
+    \stemUp  \tuplet 5/4 {
+      \modularLineNotehead d''8 b' #150 #50 #2.5
+      \modularLineNotehead b' f'' #50 #175 #2.5
+      \modularLineNotehead f'' a' #175 #70 #2.5
+      \modularLineNotehead a' c'' #70 #120 #2.5
+      \modularLineNotehead c'' c' #120 #15 #3.5
+    }
+    |
+    \modularLineNotehead c'4 c' #15 #15 #12
+    \noteheadless c'
+    \dashedLineNotehead c' c' #5
+  }
+
+  \layout {
+    \context {
+      \Score proportionalNotationDuration = #(ly:make-moment 1/10)    
+      \override SpacingSpanner.uniform-stretching = ##t
+    }
+  }
+}
+
+
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Noteheadless}
+\lilypondfile[staffsize=24]{/noteheadless.ly}
+\hfill
+
+\subsection{Description}
+This snippet is hardly my own idea, as I largely quoted this technique from one of the snippets available on LSR.\footnote{See: \url{http://lsr.di.unimi.it/LSR/Item?id=796}} However, I list it here because: 
+\begin{enumerate} 
+\item it took a while for me to find the workaround for maintaining the musical spacing as a result of omitting noteheads. It is worth noting that because merely disabling \verb|NoteHead.stencil| will render the spacing to be squished, the approach of specifying \verb|##t| for \verb|NoteHead.transparent| (which itself will \textit{not} eliminate the ledger lines) then \verb|##t| for \verb|NoteHead.no-ledgers| is effective in maintaining the general spacing.
+\item I use this in conjunction with other notehead alterations, e.g. "Line as a notehead." 
+\end{enumerate}
+
+\subsection{Grammar}
+\begin{verbatim}
+\noteheadless NOTE
+\noteheadlessOn NOTE 
+\noteheadlessOff
+\end{verbatim}
+
+\textbf{NB} 
+\begin{enumerate} 
+\item \verb|\noteheadless| affects only one note immediately following. 
+\item For a group of notes, use \verb|\noteheadlessOn| to toggle on the function.  \verb|\noteheadlessOff| will toggle off the function.
+\end{enumerate}
+
+\subsection{Code}
+\begin{verbatim}
+
+%% Inspired by:
+%% http://lsr.di.unimi.it/LSR/Item?id=796
+
+
+noteheadless = {
+  \once \override Voice.NoteHead.transparent = ##t
+  \once \override Voice.NoteHead.no-ledgers = ##t
+}
+
+noteheadlessOn = {
+  \override Voice.NoteHead.transparent = ##t
+  \override Voice.NoteHead.no-ledgers = ##t
+}
+noteheadlessOff = {
+  \revert Voice.NoteHead.transparent
+  \revert Voice.NoteHead.no-ledgers
+}
+
+
+{
+  c'4 \noteheadless c'8 d' d'4
+  \noteheadlessOn e'16 f' c' b |
+  \noteheadlessOff d' c' b a
+}
+
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+
+%%%%%%%%%%%%%%%%%%%
+\section {Slap Tongue, Type A}
+\lilypondfile[staffsize=24]{/slapA.ly}
+\hfill
+
+\subsection{Description}
+	In my music, I use encircled noteheads to denote slap tongues. Type A, encircled filled notehead, is used for a slap tongue with a regular note immediately following. 
+	
+\subsection{Grammar}
+\begin{verbatim}
+\slapA NOTE
+\end{verbatim}
+\textbf{NB} It only affects one note, owing to the \verb|\once \override| functions within the code.
+\subsection{Code}
+\begin{verbatim}
+slapA = #(define-music-function (note)   (ly:music?)
+           #{ \once \override Voice.NoteHead.stencil =
+              #ly:text-interface::print
+              \once \override Voice.NoteHead.text =
+              \markup {
+                \concat {
+                  \musicglyph "noteheads.s2"
+                  \postscript "newpath 
+                  -0.675 0.025 0.75 0 360 arc 
+                  closepath stroke"
+                }
+              }
+              $note #})
+
+{
+  \slapA c'4 \slapA d' \slapA e' \slapA f'
+  \slapA f'' \slapA e'' \slapA d'' \slapA c''
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+\section {Slap Tongue, Type B}
+\lilypondfile[staffsize=24]{/slapB.ly}
+\hfill
+\subsection{Description}
+In my music, I use encircled noteheads to denote slap tongues. Type B, encircled hollow notehead, is used for a slap tongue with an air sound immediately following.  
+
+\subsection{Grammar}
+\begin{verbatim}
+\SlapB NOTE
+\end{verbatim}
+\textbf{NB} It only affects one note, owing to the \verb|\once \override| functions within the code.
+\subsection{Code}
+\begin{verbatim}
+slapB = #(define-music-function (note)   (ly:music?)
+           #{ \once \override Voice.NoteHead.stencil =
+              #ly:text-interface::print
+              \once \override Voice.NoteHead.text =
+              \markup {
+                \concat {
+                  \musicglyph "noteheads.s1"
+                  \postscript "newpath 
+                  -0.675 0.025 0.75 0 360 arc 
+                  closepath stroke"
+                }
+              }
+              $note #})
+{
+  \SlapB c'4 \SlapB d' \SlapB e' \SlapB f'
+  \SlapB f'' \SlapB e'' \SlapB d'' \SlapB c''
+}
+
+\end{verbatim}
+\subsection{Discussion}
+As the musical example shows, when the Type B Slap Tongue notehead is applied to a quarter note, it could invite confusion in terms of rhythm. As a slap tongue itself is a short sound, I only use the slap tongue noteheads on eighth notes or shorter note durations. 
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+\section {Slashed Notehead}
+\lilypondfile[staffsize=24]{/slashnotes.ly}
+\hfill
+\subsection{Description}
+Noteheads with backslashes applied.\footnote{The code provided by Jean Abou Samra in the following discussion thread on lilypond-user was very helpful in creating this code: \url{https://lists.gnu.org/archive/html/lilypond-user/2022-11/msg00333.html}} I use this notehead to indicate, for example, notes on the piano whose strings are prepared, thus producing pitch/sound different from what is expected normally. 
+
+\subsection{Grammar}
+\begin{verbatim}
+\slashNote NOTE
+\slashNoteOn NOTE
+\slashNoteOff 
+\end{verbatim}
+\textbf{NB} \verb|\slashNote| only affects one note, owing to the \verb|\once \override| functions within the code. For a group of notes to have slashes applied, use \verb|\slashNoteOn|. \verb|\slashNoteOff| cancels the application.
+\subsection{Code}
+\begin{verbatim}
+
+% Inspired by the code provided by Jean Abou Samra
+% https://lists.gnu.org/archive/html/lilypond-user/2022-11/msg00333.html
+
+slashNote =
+\once \override Voice.NoteHead.stencil =
+#(grob-transformer
+  'stencil
+  (lambda (grob original)
+    (let* ((added-markup
+            #{
+              \markup \general-align #Y #CENTER
+              #(case (ly:grob-property grob 'duration-log)
+                 ((0) #{ \markup \concat {
+                   \musicglyph "noteheads.s0"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -2.3 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+
+                 ((1) #{ \markup \concat {
+                   \musicglyph "noteheads.s1"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+
+                 ((2) #{ \markup \concat {
+                   \musicglyph "noteheads.s2"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #}))
+            #})
+           (added-stencil (grob-interpret-markup grob added-markup)))
+      (if (ly:stencil? original)
+          (ly:stencil-add original added-stencil)
+          added-stencil))))
+
+
+
+slashNoteOn =
+\override Voice.NoteHead.stencil =
+#(grob-transformer
+  'stencil
+  (lambda (grob original)
+    (let* ((added-markup
+            #{
+              \markup \general-align #Y #CENTER
+              #(case (ly:grob-property grob 'duration-log)
+                 ((0) #{ \markup \concat {
+                   \musicglyph "noteheads.s0"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -2.3 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+                 ((1) #{ \markup \concat {
+                   \musicglyph "noteheads.s1"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #})
+                 ((2) #{ \markup \concat {
+                   \musicglyph "noteheads.s2"
+                   \postscript
+                   "gsave 
+                    0.17 setlinewidth 
+                    -1.5 0.6 moveto 
+                    0.3 -0.6 lineto
+                    stroke 
+                    grestore"
+                      } #}))
+            #})
+           (added-stencil (grob-interpret-markup grob added-markup)))
+      (if (ly:stencil? original)
+          (ly:stencil-add original added-stencil)
+          added-stencil))))
+
+
+slashNoteOff = \revert Voice.NoteHead.stencil
+
+{
+  \time 7/4
+  \slashNote c'4
+  \slashNote d'2
+  \slashNote e'1
+  \slashNoteOn g''4 f''2 d''1
+  \slashNoteOff c''1 \bar "||"
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Tone Cluster}
+\lilypondfile[staffsize=24]{/toneCluster.ly}
+\hfill
+\subsection{Description}
+Inspired by the tone cluster notation of Henry Cowell and others. See Discussion.
+\subsection{Grammar}
+\begin{verbatim}
+\toneClusterBar NOTE1 NOTE2 yOffset yLengthAdjust
+\toneClusterBarHollow NOTE1 NOTE2 yOffset yLengthAdjust
+\toneClusterBarWhole NOTE1 NOTE2 yOffset yLengthAdjust
+\end{verbatim}
+\textbf{NB} \begin{enumerate}
+\item The order of pitch boundaries as shown by \verb|NOTE1| and \verb|NOTE2| does not matter; \verb|NOTE1| can be upper or lower pitch boundary, and vice versa for \verb|NOTE2|. See \textbf{Code}. 
+\item \verb|yOffset| indicates where the upper part of the cluster sign begins. When set to \verb|#0|, it starts right at the top line of the ordinary 5-line staff. Each positive/negative integer will bring the beginning point up/down by a space of two neighboring lines of the staff.
+\item \verb|yLengthAdjust| indicates any value by which the cluster bar may be extended or reduced. When set to \verb|#0|, the cluster bar will be as long as the distance between the lower boundary of the upper notehead and upper boundary of the lower notehead. Each positive/negative integer will add/reduce the length of the bar by a space of two neighboring lines of the staff.
+
+For this reason, when the tone cluster sign is applied to a quarter-note dyad, you may wish to set the upper part of the cluster bar right in the middle of the notehead. In the snippet shown, the first cluster's \verb|yOffset| is set to \verb|#1|.  \verb|yLengthAdjust| is also set to \verb|#1|, meaning that the cluster bar will go down to the center of the lower notehead. The second cluster intentionally shows what happens when the bar only touches the two boundaries of the noteheads.
+
+\item \verb|\toneClusterBarHollow| shows the notation (quite à la Cowell) specifically for hollowed noteheads. Some people may prefer this notation, instead.
+\item \verb|\toneClusterBarWhole| is specifically for the tone cluster notation as applied to a whole-note dyad, owing to width being wider than the quarter or half noteheads. 
+
+\item These functions may be used in tandem with other noteheads, as well as ties. See \textbf{Code}. 
+
+\end{enumerate}
+\subsection{Code}
+\begin{verbatim}
+
+toneClusterBar =
+#(define-music-function (note1 note2 yOffset yLengthAdjust)
+   (ly:music? ly:music? number? number?)
+   (let* (
+           (note1p (ly:music-property note1 'pitch))
+           (note2p (ly:music-property note2 'pitch))
+           (note1pnumber (+ (* 7 (ly:pitch-octave note1p))
+                            (ly:pitch-notename note1p)))
+           (note2pnumber (+ (* 7 (ly:pitch-octave note2p))
+                            (ly:pitch-notename note2p)))
+           (pitchDistance (abs (- note1pnumber note2pnumber)))
+           )
+     #{
+       < #note1
+       #note2 > ^\markup {
+         \postscript
+         #(string-append
+           "gsave
+            newpath
+            0.3 " (number->string (- yOffset 0.5)) " moveto
+            0.7 0 rlineto
+            0 " (number->string (- (* -0.5 pitchDistance)
+                                   (- yLengthAdjust 1))) " rlineto
+            -0.7 0 rlineto
+            closepath
+            fill
+            grestore")
+       }
+     #}
+     )
+   )
+
+
+toneClusterBarHollow =
+#(define-music-function (note1 note2 yOffset yLengthAdjust)
+   (ly:music? ly:music? number? number?)
+   (let* (
+           (note1p (ly:music-property note1 'pitch))
+           (note2p (ly:music-property note2 'pitch))
+           (note1pnumber (+ (* 7 (ly:pitch-octave note1p))
+                            (ly:pitch-notename note1p)))
+           (note2pnumber (+ (* 7 (ly:pitch-octave note2p))
+                            (ly:pitch-notename note2p)))
+           (pitchDistance (abs (- note1pnumber note2pnumber)))
+           )
+     #{
+       < #note1
+       #note2 > ^\markup {
+         \postscript
+         #(string-append
+           "gsave
+            newpath
+            0.1 " (number->string (- yOffset 0.5)) " moveto
+            0 " (number->string (- (* -0.5 pitchDistance)
+                                   (+ 0.5 yLengthAdjust))) " rlineto
+            0.125 setlinewidth
+            1.3 "(number->string (+ 0.75 (- yOffset 0.5))) " moveto
+            0 " (number->string (- (* -0.5 pitchDistance)
+           (+ 0.75 yLengthAdjust))) " rlineto
+            stroke
+            grestore")
+       }
+     #}
+     )
+   )
+
+
+toneClusterBarWhole =
+#(define-music-function (note1 note2 yOffset yLengthAdjust)
+   (ly:music? ly:music? number? number?)
+   (let* (
+           (note1p (ly:music-property note1 'pitch))
+           (note2p (ly:music-property note2 'pitch))
+           (note1pnumber (+ (* 7 (ly:pitch-octave note1p))
+                            (ly:pitch-notename note1p)))
+           (note2pnumber (+ (* 7 (ly:pitch-octave note2p))
+                            (ly:pitch-notename note2p)))
+           (pitchDistance (abs (- note1pnumber note2pnumber)))
+           )
+     #{
+       < #note1
+       #note2 > ^\markup {
+         \postscript
+         #(string-append
+           "gsave
+            newpath
+            0.125 setlinewidth
+            0.55 " (number->string (- yOffset 0.5)) " moveto
+            0 " (number->string (- (* -0.5 pitchDistance)
+                                   (- yLengthAdjust 1))) " rlineto
+            0.75 0 rlineto
+            0 " (number->string (abs (- (* -0.5 pitchDistance)
+                (- yLengthAdjust 1)))) " rlineto
+            closepath fill
+            grestore")
+       }
+     #}
+     )
+   )
+
+
+{
+  \time 4/4
+  \partial 2
+  \clef "F"
+  \stemUp \toneClusterBar c'4~ e,~ #1 #1
+  \stemDown \toneClusterBar e,~ c'4~ #0.5 #0
+  \stemUp \toneClusterBarHollow c'2~ e,~ #0.5 #-0.5
+  \stemDown \toneClusterBarHollow c'2~ e,~ #0.5 #-0.5
+  \toneClusterBarWhole c'1~ e,~ #0.5 #0
+  \toneClusterBar c'1~\harmonic e,~\harmonic #0.5 #0
+}
+\end{verbatim}
+\subsection{Discussion}
+There have been some discussions on \verb|lilypond-user| mailing list in the past that readers may consult for further ideas on implementing different types of tone cluster notation: 
+\begin{itemize}
+\item \url{https://lists.gnu.org/archive/html/lilypond-user/2008-10/msg00484.html} (This one in particular lists other notational conventions established by other composers)
+\item \url{https://lists.gnu.org/archive/html/lilypond-user/2020-12/msg00130.html}
+
+\end{itemize}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\clearpage
+
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Tongue Ram (for flute)}
+\lilypondfile[staffsize=24]{/tgr.ly}
+\hfill
+\subsection{Description}
+Implementation of the tongue ram notation, as described in \textit{The Techniques of Flute Playing} by Carin Levine and Christina Mitropoulos-Bott.\autocite[28]{RN1695} 
+\subsection{Grammar}
+\begin{verbatim}
+\tgrWithIndication NOTE
+\tgr NOTE
+\end{verbatim}
+\textbf{NB} \begin{enumerate}
+\item \verb|\language "english"| needs to be specified. 
+\item \verb|\tgr| and \verb|\tgrWithIndication| are followed by a pitch to be fingered on the instrument. The code will copy and reproduce a resultant pitch a major seventh down. Use \verb|\tgrWithIndication| for showing the markup with the indication "T.R." (tongue ram). For more details, see: \href{https://www.flutexpansions.com/tongue-ram}{FluteXpansions}.
+\end{enumerate}
+\subsection{Code}
+\begin{verbatim}
+tgrWithIndication = #(define-music-function (note1) (ly:music?)
+       (let* 	(
+                (p1 #{ #(ly:music-deep-copy note1) \harmonic #})
+                (p2 #{ \transpose c df, #(ly:music-property note1 'pitch)#})
+                (d1  (ly:music-property note1 'duration))
+                )
+         #{ < $p1
+            \single \override NoteHead.stencil = #ly:text-interface::print
+            \single \override NoteHead.text =
+            \markup \musicglyph "noteheads.s2triangle"
+            %\single \override Stem.stencil
+            $p2 > $d1 ^\markup {\override #'(font-size . -2) {[T.R.]} }  #}
+         ))
+tgr = #(define-music-function (note1) (ly:music?)
+         (let* 	(
+                  (p1 #{ #(ly:music-deep-copy note1) \harmonic #})
+                  (p2 #{ \transpose c df, #(ly:music-property note1 'pitch)#})
+                  (d1  (ly:music-property note1 'duration))
+                  )
+           #{ < $p1
+              \single \override NoteHead.stencil = #ly:text-interface::print
+              \single \override NoteHead.text =
+              \markup \musicglyph "noteheads.s2triangle"
+              %\single \override Stem.stencil
+              $p2 > $d1  #}
+           ))
+
+{\language "english" \tgrWithIndication d'4-.-> \tgr cs'4-.-> \tgr ef'4-.->}
+\end{verbatim}
+\subsection{Discussion}
+I want to improve this code so that I can add markups to the note. It is slightly awkward at the moment.
+
+
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+\clearpage
+
+
+%%%%%%%%%%%%%%%%%%%
+
+\section {X In A Hollow Notehead}
+\lilypondfile[staffsize=24]{/cirX.ly}
+\hfill
+
+\subsection{Description}
+While LilyPond Notation Reference provides an example of an X-in-a-circle notehead, its shape differs from the regular notehead.\footnote{\url{https://lilypond.org/doc/v2.24/Documentation/notation/modifying-stencils}} This implementation simulates a hollow notehead with which the X notehead is combined.
+
+\subsection{Grammar}
+\begin{verbatim}
+\cirX NOTE
+\end{verbatim}
+\subsection{Code}
+\begin{verbatim}
+% Stem attachment function inspired by:
+% https://lsr.di.unimi.it/LSR/Snippet?id=518
+cirX = #(define-music-function (note) (ly:music?)
+          #{
+            \temporary \override NoteHead.stencil =
+            #ly:text-interface::print
+            \temporary \override NoteHead.text =
+            \markup
+            \translate #'(0.6 . 0)
+            \pad-x #-0.22
+            \rotate #35
+            \scale #'(1 . 0.65)
+            \combine \combine \combine \combine
+            \override #'(thickness . 2)
+            \draw-line #'(0.05 . 0.6)
+            \override #'(thickness . 2)
+            \draw-line #'(-0.05 . -0.6)
+            \override #'(thickness . 2)
+            \draw-line #'(0.6 . 0.1 )
+            \override #'(thickness . 2)
+            \draw-line #'(-0.6 . -0.1 )
+            \draw-circle #0.65 #0.175 ##f
+
+            \temporary \override NoteHead.stem-attachment =
+            #(lambda (grob)
+               (let* ((stem (ly:grob-object grob 'stem))
+                      (dir (ly:grob-property stem 'direction UP))
+                      (is-up (eqv? dir UP)))
+                 (cons dir (if is-up 0.2 -0.2))))
+            #note
+            \revert NoteHead.stencil
+            \revert NoteHead.text
+            \revert NoteHead.stem-attachment
+          #})
+{
+  \cirX c'4 \cirX d' \cirX e' \cirX f'
+  \cirX a''4 \cirX g'' \cirX f'' \cirX  e''
+}
+\end{verbatim}
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
