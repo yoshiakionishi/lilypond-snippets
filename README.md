@@ -9,7 +9,7 @@ by Yoshiaki Onishi (https://www.yoshionishi.com)
 
 **Quickstart**
 
-You may download the most recent version of PDF file housing all the snippets as codes [[**HERE**](DOCUMENT/YO_SNIPPETS_COOKBOOK_MASTER.pdf)]
+You may download the most recent version of the [[**PDF file housing all the snippets as codes HERE**](DOCUMENT/YO_SNIPPETS_COOKBOOK_MASTER.pdf)]
 
 
 **or...**
