@@ -20,7 +20,7 @@ String position clef to indicate bowing position. See Discussion for the associa
 \subsection{Code}
 \begin{verbatim}
 strPosClefDesign = #(ly:make-stencil (list 'embedded-ps
-                                           "gsave
+"gsave
 currentpoint translate
 /fingboardpath
 {
@@ -94,8 +94,8 @@ newpath
 1.5 -3.5 0.85 0 360 arc
 stroke
 grestore")
-                                     (cons 0 3)
-                                     (cons 0 1))
+	(cons 0 3)
+	(cons 0 1))
 
 strPosClefSize =
 #(lambda (grob)
