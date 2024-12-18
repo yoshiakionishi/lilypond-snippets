@@ -74,4 +74,114 @@ An example of a prescriptive notation for a string instrument. Vertical placemen
 
 \vfill \break
 
+%%%%%%%%%%%%%%%%%%%
 
+\section {Multiple Instances Of Spanners At Once}
+\label{sec:comb_spanners}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/comb_spanners.ly}
+\hfill
+
+\subsection{Description}
+Invoking two or more Text Spanners (that require \verb|\stopTextSpan| for them to finish their processes) all on one single layer could cause the spanners to behave unexpectedly. This entry is an attempt to avoid such unexpected behaviors by invoking a spanner per layer (A), or per staff line (B).
+
+\subsection{Variables Used}
+\begin{verbatim}
+\startSlashedGraceMusic
+\stopSlashedGraceMusic
+\graceNoteBeforeBeatOn
+\graceNoteBeforeBeatOff
+\graceNoteAfterBeatOn
+\graceNoteAfterBeatOff
+\rallArrow
+
+\end{verbatim}
+\subsection{Code}
+\begin{verbatim}
+
+%%%%%%%%%%%%%%%%%%% A %%%%%%%%%%%%%%%%%%
+\score {
+  \new Staff = "allElementsCombined"
+  \with {instrumentName = \markup {\fontsize #4 \box "A"}}  {
+    \numericTimeSignature
+    \override Score.MetronomeMark.Y-offset = #5.75
+    \tempo 4 = 100
+    \time 5/4
+    <<
+      {
+        \tieNeutral \stemNeutral d'4~
+        \tuplet 3/2 {d'8 d'4}
+        \stemUp \grace  {
+          \startSlashedGraceMusic \graceNoteBeforeBeatOn e'8 f''
+          \stopSlashedGraceMusic
+        } \graceNoteBeforeBeatOff g'4~
+        \stemNeutral g'8.[ \grace { 
+        \startSlashedGraceMusic \graceNoteAfterBeatOn
+          e''16 c'' e' c' \stopSlashedGraceMusic
+        }
+        \graceNoteAfterBeatOff d''16]~
+        \tuplet 3/2 {d''8 d'8 d'8~} |
+        \time 4/4
+        d'1 \bar"||"
+      }
+      \\
+      {
+        s4  \tuplet 3/2 {
+          s8 \override Voice.TextSpanner.Y-offset = #6.5
+          s4^\markup {\translate #'(0 . 6.5) \bold "rall."}
+          \rallArrow #4
+        } s2. \tempo 4 = 50 s4*4 \stopTextSpan
+      }
+    >>
+  }
+}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%% B %%%%%%%%%%%%%%%%%%
+\score {
+  <<
+    \new Staff = "tempoLine" \with {
+      \remove Clef_engraver
+      \remove Staff_symbol_engraver
+      \remove Time_signature_engraver
+    }
+    {
+      \numericTimeSignature
+      \override Score.MetronomeMark.Y-offset = #6
+      \tempo 4 = 100
+      \time 5/4
+      s4  \tuplet 3/2 {
+        s8 \override Voice.TextSpanner.Y-offset = #-2.25
+        s4^\markup {\translate #'(0 . 0) \bold "rall."}
+        \rallArrow #4} s2 \after 64*15 \stopTextSpan s8*2 |
+      \tempo 4 = 50  s4*4
+    }
+    \new Staff = "music"
+    \with { instrumentName = \markup {\fontsize #4 \box "B"}}
+    {
+      \tieNeutral \stemNeutral d'4~
+      \tuplet 3/2 {d'8 d'4}
+      \grace {
+        \startSlashedGraceMusic \graceNoteBeforeBeatOn e'8 f''
+        \stopSlashedGraceMusic
+      } \graceNoteBeforeBeatOff g'4~
+      g'8.[ \grace { \startSlashedGraceMusic \graceNoteAfterBeatOn
+        e''16 c'' e' c' \stopSlashedGraceMusic
+      }
+      \graceNoteAfterBeatOff d''16]~
+      \tuplet 3/2 {d''8 d'8 d'8~} |
+      \time 4/4
+      d'1 \bar"||"
+    }
+  >>
+}
+\end{verbatim}
+
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%

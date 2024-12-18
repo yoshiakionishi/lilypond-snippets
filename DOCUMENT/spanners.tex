@@ -1,0 +1,371 @@
+%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+
+
+\chapter {Spanners}
+
+This chapter covers snippets that take advantages of spanners (text, line, etc.) in one way or another. Because functions such as \verb|\startTextSpan| and \verb|\stopTextSpan| activate and deactivate these snippets, caution must be paid when using more than one of them at the same time. See \hyperref[sec:comb_spanners]{Example in \textbf{Combinations}} to avoid conflicts between or among the spanner snippets.
+
+\section {Grace Note Brackets}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/gracenote_brackets.ly}
+\hfill
+
+\subsection{Description}
+
+Replication of grace note brackets seen in scores by Pierre Boulez (e.g. \textit{Sur Incises}\autocite{RN1738}, \textit{...explosante-fixe...}\autocite{RN1737}). Bracket A in the example shows that the grace notes are to be played \textit{before} the beat to which they are applied. Whereas Bracket B shows that the grace notes are to be played \textit{on} the beat to which they are applied.
+
+\subsection{Grammar}
+\begin{verbatim}
+
+\graceNoteBeforeBeatOn NOTE
+\graceNoteBeforeBeatOff NOTE
+\graceNoteAfterBeatOn NOTE
+\graceNoteAfterBeatOff NOTE
+
+\end{verbatim}
+
+\subsection{Code}
+\begin{verbatim}
+\version "2.24.4"
+
+\language "english"
+
+% This code includes snippet for grace note 
+% slashes, which has been taken from:
+% https://lsr.di.unimi.it/LSR/Item?id=1048
+
+
+graceNoteBeforeBeatOn =
+#(define-music-function (starting_note) (ly:music?)
+   #{
+     \once \override TextSpanner.style = #'line
+     \once \override TextSpanner.bound-details.left.text =
+     \markup { \draw-line #'(0 . -1) }
+     \once \override TextSpanner.bound-details.right.text =
+     \markup {
+       \postscript
+       "newpath 0 0 moveto 
+0 -2.5 rlineto 
+stroke 
+newpath 
+-0.275 -2 moveto 
+0.275 -0.75 rlineto 
+0.275 0.75 rlineto 
+-0.275 -0.2 rlineto 
+closepath 
+fill"
+     }
+     \once \override TextSpanner.Y-offset = #5
+     \once \override TextSpanner.bound-details.left.padding = #0.5
+     \once \override TextSpanner.bound-details.right.padding = #-0.25
+     #starting_note
+     \startTextSpan
+   #})
+
+
+graceNoteBeforeBeatOff =
+#(define-music-function (ending_note) (ly:music?)
+   #{
+     #ending_note
+     \stopTextSpan
+   #})
+
+
+graceNoteAfterBeatOn =
+#(define-music-function (starting_note) (ly:music?)
+   #{
+     \once \override TextSpanner.style = #'line
+     \once \override TextSpanner.bound-details.right.text =
+     \markup {
+       \combine \draw-line #'(0 . -1)
+       \postscript "newpath 
+0 -1 moveto 
+0 -1 rlineto 
+stroke"
+     }
+     \once \override TextSpanner.bound-details.left.text =
+     \markup {
+       \postscript
+       "newpath 0 0 moveto 
+0 -1 rlineto 
+stroke 
+newpath 
+-0.275 -0.75 moveto 
+0.275 -0.75 rlineto 
+0.275 0.75 rlineto 
+-0.275 -0.2 rlineto 
+closepath 
+fill"
+     }
+     \once \override TextSpanner.Y-offset = #2
+     \once \override TextSpanner.bound-details.left.padding = #0.5
+     \once \override TextSpanner.bound-details.right.padding = #-0.25
+     #starting_note
+     \startTextSpan
+   #})
+
+
+graceNoteAfterBeatOff =
+#(define-music-function (ending_note) (ly:music?)
+   #{
+     #ending_note
+     \stopTextSpan
+   #})
+
+%%%%%%%%%%%%%%%%%%%LSR SNIPPET START%%%%%%%%%%%%%%%%%%
+
+#(define (degrees->radians deg)
+   (* PI (/ deg 180.0)))
+
+slash =
+#(define-music-function (ang stem-fraction protrusion)
+   (number? number? number?)
+   (remove-grace-property 'Voice 'Stem 'direction)
+   #{
+     \once \override Stem.stencil =
+     #(lambda (grob)
+        (let* ((x-parent (ly:grob-parent grob X))
+               (is-rest? (ly:grob?
+                          (ly:grob-object x-parent 'rest)))
+               (beam (ly:grob-object grob 'beam))
+               (stil (ly:stem::print grob)))
+          (cond
+           (is-rest? empty-stencil)
+           ((ly:grob? beam)
+            (let* ((refp (ly:grob-system grob))
+                 (stem-y-ext (ly:grob-extent grob grob Y))
+                 (stem-length
+                  (- (cdr stem-y-ext) (car stem-y-ext)))
+                 (beam-X-pos (ly:grob-property beam 'X-positions))
+                 (beam-Y-pos (ly:grob-property beam 'positions))
+                 (beam-slope (/ (- (cdr beam-Y-pos) (car beam-Y-pos))
+                              (- (cdr beam-X-pos) (car beam-X-pos))))
+                 (beam-angle (atan beam-slope))
+                 (dir (ly:grob-property grob 'direction))
+                 (line-dy (* stem-length stem-fraction))
+                 (line-dy-with-protrusions (if (= dir 1)
+                              (+ (* 4 protrusion) beam-angle)
+                              (- (* 4 protrusion) beam-angle)))
+                 (ang (if (> beam-slope 0)
+                          (if (= dir 1)
+                              (+ (degrees->radians ang) (* beam-angle 0.7))
+                              (degrees->radians ang))
+                          (if (= dir 1)
+                              (degrees->radians ang)
+                              (- (degrees->radians ang) (* beam-angle 0.7)))))
+                 (line-dx (/ line-dy-with-protrusions (tan ang)))
+                 (protrusion-dx (/ protrusion (tan ang)))
+                 (corr (if (= dir 1) (car stem-y-ext) (cdr stem-y-ext))))
+            (ly:stencil-add
+             stil
+             (grob-interpret-markup grob
+                               (markup
+                                 #:translate
+                                 (cons (- protrusion-dx)
+                                 (+ corr
+                                    (* dir
+                                       (- stem-length
+                                          (+ stem-fraction protrusion)))))
+                                 #:override '(thickness . 1.7)
+                                 #:draw-line
+                                 (cons line-dx
+                                  (* dir line-dy-with-protrusions)))))))
+           (else stil))))
+   #})
+
+startSlashedGraceMusic = {
+  \slash 40 1 0.5
+  \override Flag.stroke-style = #"grace"
+}
+stopSlashedGraceMusic = {
+  \revert Flag.stroke-style
+}
+
+startAcciaccaturaMusic = {
+  \slash 40 1 0.5
+  s1*0(
+  \override Flag.stroke-style = #"grace"
+}
+stopAcciaccaturaMusic = {
+  \revert Flag.stroke-style
+  s1*0)
+}
+%%%%%%%%%%%%%%%%%%% LSR SNIPPET END %%%%%%%%%%%%%%%%%%
+
+
+{
+  \grace {
+    \startSlashedGraceMusic
+    \graceNoteBeforeBeatOn d''8^\markup{\box A} e' f'' g' e'' c'
+  }
+  \graceNoteBeforeBeatOff d'2
+  \grace {
+    \startSlashedGraceMusic
+    \graceNoteAfterBeatOn d''8^\markup{\box B} e' f'' g' e'' c'
+  }
+  \graceNoteAfterBeatOff d'2
+}
+\end{verbatim}
+
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Tempo Arrows}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/tempoArrows.ly}
+\hfill
+
+\subsection{Description}
+
+Replication of accelerando and rallentando arrows chiefly seen in scores by Tōru Takemitsu.\footnote{Examples abound, but see: \cite{RN1736} and \cite{RN1735} Other composers from the same publishing company, e.g. Toshio Hosokawa, have also adopted variants of the arrows in their music.} The snippets also handle line break.
+
+\subsection{Grammar}
+\begin{verbatim}
+\accelArrow #Line_angle ... \stopTextSpan
+\rallArrow #Line_angle ... \stopTextSpan
+\end{verbatim}
+
+
+\textbf{NB} 
+\begin{enumerate}
+\item \verb|#Line_angle| sets how angled the horizontal line should be. \verb|#5| should be more than sufficient for a short line.  When it goes over a line break or it extends for a long time, a smaller number may be recommended, such as \verb|#2|. 
+\item These commands only set the tempo arrows; as such, indications such as \verb|accel.| and \verb|rall.| need to be added separately. 
+\end{enumerate}
+
+\subsection{Code}
+\begin{verbatim}
+\version "2.24.4"
+
+% freely modified from: https://lsr.di.unimi.it/LSR/Item?id=1168
+% as well as http://lsr.di.unimi.it/LSR/Item?id=1023
+
+
+accelArrow =
+#(define-music-function (line_angle) (number?)
+
+   (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
+   (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
+   #{
+     \tweak direction #up
+     \tweak style  #'line
+     \tweak thickness  #1
+     \tweak to-barline ##t
+     \tweak rotation #(list line_angle -1 0 )
+     \tweak bound-details.left.stencil #ly:text-interface::print
+     \tweak bound-details.left.text \markup \postscript
+     #(string-append
+       "gsave newpath 
+0 0 moveto "
+       (number->string x_value) " "
+       (number->string y_value)
+       " rlineto 
+stroke 
+grestore")
+     \tweak bound-details.left-broken.stencil #ly:text-interface::print
+     \tweak bound-details.left-broken.text ##f
+
+     \tweak bound-details.right.stencil #ly:text-interface::print
+     \tweak bound-details.right.text \markup \postscript
+     "newpath 
+0 0 moveto 
+-1 -0.3 rlineto 
+stroke"
+     \tweak bound-details.right-broken.stencil #ly:text-interface::print
+     \tweak bound-details.right-broken.text ##f
+     \tweak font-shape  #'upright
+     \tweak bound-details.left.padding  #0
+     \tweak bound-details.right.padding  #0
+     \tweak breakable ##t
+     \tweak after-line-breaking ##t
+
+     \startTextSpan
+   #})
+
+rallArrow =
+#(define-music-function (line_angle) (number?)
+
+   (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
+   (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
+   #{
+     \tweak direction #up
+     \tweak style  #'line
+     \tweak thickness  #1
+     \tweak to-barline ##t
+     \tweak rotation #(list (* -1 line_angle) 1 0 )
+     \tweak bound-details.left.stencil #ly:text-interface::print
+     \tweak bound-details.left.text \markup \postscript
+     #(string-append
+       "gsave 
+newpath 
+0 0 moveto "
+       (number->string x_value) " "
+       (number->string (* -1 y_value))
+       " rlineto 
+stroke 
+grestore")
+     \tweak bound-details.left-broken.stencil #ly:text-interface::print
+     \tweak bound-details.left-broken.text ##f
+
+     \tweak bound-details.right.stencil #ly:text-interface::print
+     \tweak bound-details.right.text \markup \postscript
+     "newpath 
+0 0 moveto 
+-1 -0.3 rlineto 
+stroke"
+     \tweak bound-details.right-broken.stencil #ly:text-interface::print
+     \tweak bound-details.right-broken.text ##f
+     \tweak font-shape  #'upright
+     \tweak bound-details.left.padding  #0
+     \tweak bound-details.right.padding  #0
+     \tweak breakable ##t
+     \tweak after-line-breaking ##t
+
+     \startTextSpan
+   #})
+
+\score {
+  \layout {
+    indent = 0
+  }
+  {
+    c'2^\markup{\translate #'(-4 . 2) \box "A"}
+    ^\markup {\translate #'(0 . 1.5) \tiny \bold "accel."} 
+    	\accelArrow #5   c'2
+    c'2 \after 2 \stopTextSpan c'2
+    c'2 ^\markup {\translate #'(0 . 1.5) \tiny \bold "rit."}  
+    	\rallArrow #3   c'2
+    c'2 \after 2 \stopTextSpan c'2 \bar "||"
+  }
+}
+
+\score {
+  \layout {
+    indent = 0
+    line-width = 40
+  }
+  {
+    c'2^\markup{\translate #'(-4 . 2) \box "B"}
+    ^\markup {\translate #'(0 . 1.5) \tiny \bold "accel."} 
+    	\accelArrow #5 c'2
+    c'2 c'2
+    c'2^\markup {\translate #'(0 . 1.5) \teeny \bold "(accel.)"} 
+    	\after 2 \stopTextSpan c'2
+    c'2 ^\markup {\translate #'(0 . 1.5) \tiny \bold "rit."}  
+    	\rallArrow #2 c'2 \break
+    c'2^\markup {\translate #'(0 . 1.5) \teeny \bold "(rit.)"} c'2
+    c'2 \after 2 \stopTextSpan c'2 \bar "||"
+  }
+}
+\end{verbatim}
+
+\hyperref[sec:toc]{\\ \textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+

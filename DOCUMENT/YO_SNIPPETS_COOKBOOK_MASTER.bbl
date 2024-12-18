@@ -19,6 +19,58 @@
 
 \refsection{0}
   \datalist[entry]{cms/global//global/global}
+    \entry{RN1737}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=e6b88fae929d232f7e877b0cfb1f643e}{%
+           family={Boulez},
+           familyi={B\bibinitperiod},
+           given={Pierre},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Universal Edition}%
+      }
+      \strng{namehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{fullhash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{bibnamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorbibnamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authornamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorfullhash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \field{extraname}{1}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{... explosante-fixe ... transitoire VII : (version 1991/93)}
+      \field{year}{1991}
+    \endentry
+    \entry{RN1738}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=e6b88fae929d232f7e877b0cfb1f643e}{%
+           family={Boulez},
+           familyi={B\bibinitperiod},
+           given={Pierre},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Universal Edition}%
+      }
+      \strng{namehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{fullhash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{bibnamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorbibnamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authornamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorfullhash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \field{extraname}{2}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Sur incises : pour trois pianos, trois harpes et trois percussions-claviers (1996/1998)}
+      \field{year}{1998}
+    \endentry
     \entry{RN1695}{book}{}
       \name{author}{2}{}{%
         {{un=0,uniquepart=base,hash=d6b95c83010b7761b5f5349cff0aad57}{%
@@ -107,6 +159,58 @@
       \field{labeltitlesource}{title}
       \field{title}{The Bass Clarinet: A Personal History}
       \field{year}{2012}
+    \endentry
+    \entry{RN1736}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6390df36645b5c6aed5558d06607cd2b}{%
+           family={Takemitsu},
+           familyi={T\bibinitperiod},
+           given={Tōru},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Schott ; Schott Japan}%
+      }
+      \strng{namehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{fullhash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{bibnamehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{authorbibnamehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{authornamehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{authorfullhash}{6390df36645b5c6aed5558d06607cd2b}
+      \field{extraname}{1}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Fantasma/cantos : for clarinet and orchestra}
+      \field{year}{1993}
+    \endentry
+    \entry{RN1735}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6390df36645b5c6aed5558d06607cd2b}{%
+           family={Takemitsu},
+           familyi={T\bibinitperiod},
+           given={Tōru},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Schott ; Schott Japan}%
+      }
+      \strng{namehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{fullhash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{bibnamehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{authorbibnamehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{authornamehash}{6390df36645b5c6aed5558d06607cd2b}
+      \strng{authorfullhash}{6390df36645b5c6aed5558d06607cd2b}
+      \field{extraname}{2}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Les yeux clos II : for piano}
+      \field{year}{1990}
     \endentry
   \enddatalist
 \endrefsection
