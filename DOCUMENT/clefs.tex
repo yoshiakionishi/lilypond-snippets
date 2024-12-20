@@ -18,7 +18,7 @@ String position clef to indicate bowing position. See Discussion for the associa
 \strPosClef 
 \end{verbatim}
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 strPosClefDesign = #(ly:make-stencil (list 'embedded-ps
 "gsave
 currentpoint translate
@@ -82,6 +82,7 @@ stroke
 closepath
 stroke
 
+%mutesign
 newpath
 0.2 setlinewidth
 1 setlinecap
@@ -120,7 +121,7 @@ normalClef = {
   \override Staff.BarLine.stencil = ##f
   \strPosClef c'4 e' g' b' d'' f'' a''
 }
-\end{verbatim}
+\end{Verbatim}
 
 \subsection{Discussion}
 \begin{enumerate}
@@ -128,7 +129,7 @@ normalClef = {
 
 \item The current design comes with the mute sign. If the mute sign is not needed, remove the following portion of the code above:
 
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm,firstnumber=64]
 %mutesign
 newpath
 0.2 setlinewidth
@@ -140,7 +141,8 @@ newpath
 stroke
 newpath
 1.5 -3.5 0.85 0 360 arc
-\end{verbatim}
+stroke
+\end{Verbatim}
 
 \item Once \verb|\strPosClef| is used, in order to revert back to the normal clef, \verb|\normalClef| must be used.
 \item See \hyperref[sec:comb_strings]{Prescriptive Notation for String Instruments} for a possible use of this clef.

@@ -17,7 +17,7 @@ Implementation of the jet whistle, as described in \textit{The Techniques of Flu
 \jet NOTE #X-length
 \end{verbatim}
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 jet = #(define-music-function (pitchthing width) (ly:music? number?)
          (define p1 (ly:music-property pitchthing 'pitch))
          (define steps (+ -6 (ly:pitch-steps p1)))
@@ -65,7 +65,7 @@ jet = #(define-music-function (pitchthing width) (ly:music? number?)
     }
   }
 }
-\end{verbatim}
+\end{Verbatim}
 \break
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
@@ -98,7 +98,7 @@ These functions replace an ordinary notehead with a dashed or a continuous line.
 \end{enumerate}
 
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 
 % See the entry on "Noteheadless" for its code; 
 % it is required for the snippet to run properly.
@@ -221,7 +221,7 @@ modularLineNotehead =
 }
 
 
-\end{verbatim}
+\end{Verbatim}
 \subsection{Discussion}
 
 See \hyperref[sec:comb_strings]{Prescriptive Notation for String Instruments} for a possible use of this notehead. \\ 
@@ -259,7 +259,7 @@ This snippet is hardly my own idea, as I largely quoted this technique from one 
 \end{enumerate}
 
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 
 %% Inspired by:
 %% http://lsr.di.unimi.it/LSR/Item?id=796
@@ -286,7 +286,7 @@ noteheadlessOff = {
   \noteheadlessOff d' c' b a
 }
 
-\end{verbatim}
+\end{Verbatim}
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break
@@ -306,7 +306,7 @@ noteheadlessOff = {
 \end{verbatim}
 \textbf{NB} It only affects one note, owing to the \verb|\once \override| functions within the code.
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 slapA = #(define-music-function (note)   (ly:music?)
            #{ \once \override Voice.NoteHead.stencil =
               #ly:text-interface::print
@@ -326,7 +326,7 @@ slapA = #(define-music-function (note)   (ly:music?)
   \slapA f'' \slapA e'' \slapA d'' \slapA c''
 }
 
-\end{verbatim} 
+\end{Verbatim} 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break
@@ -345,7 +345,7 @@ In my music, I use encircled noteheads to denote slap tongues. Type B, encircled
 \end{verbatim}
 \textbf{NB} It only affects one note, owing to the \verb|\once \override| functions within the code.
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 slapB = #(define-music-function (note)   (ly:music?)
            #{ \once \override Voice.NoteHead.stencil =
               #ly:text-interface::print
@@ -364,7 +364,7 @@ slapB = #(define-music-function (note)   (ly:music?)
   \SlapB f'' \SlapB e'' \SlapB d'' \SlapB c''
 }
 
-\end{verbatim}
+\end{Verbatim}
 \subsection{Discussion}
 As the musical example shows, when the Type B Slap Tongue notehead is applied to a quarter note, it could invite confusion in terms of rhythm. As a slap tongue itself is a short sound, I only use the slap tongue noteheads on eighth notes or shorter note durations. \\
 \break
@@ -388,7 +388,7 @@ Noteheads with backslashes applied.\footnote{The code provided by Jean Abou Samr
 \end{verbatim}
 \textbf{NB} \verb|\slashNote| only affects one note, owing to the \verb|\once \override| functions within the code. For a group of notes to have slashes applied, use \verb|\slashNoteOn|. \verb|\slashNoteOff| cancels the application.
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 
 % Inspired by the code provided by Jean Abou Samra
 % https://lists.gnu.org/archive/html/lilypond-user/2022-11/msg00333.html
@@ -498,7 +498,7 @@ slashNoteOff = \revert Voice.NoteHead.stencil
   \slashNoteOn g''4 f''2 d''1
   \slashNoteOff c''1 \bar "||"
 }
-\end{verbatim}
+\end{Verbatim}
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break
@@ -532,7 +532,7 @@ For this reason, when the tone cluster sign is applied to a quarter-note dyad, y
 \end{enumerate}
 \label{sec:tone_cluster_code}
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 
 toneClusterBar =
 #(define-music-function (note1 note2 yOffset yLengthAdjust)
@@ -646,7 +646,7 @@ toneClusterBarWhole =
   \toneClusterBarWhole c'1~ e,~ #0.5 #0
   \toneClusterBar c'1~\harmonic e,~\harmonic #0.5 #0
 }
-\end{verbatim}
+\end{Verbatim}
 \label{sec:tone_cluster_discussion}
 \subsection{Discussion}
 There have been some discussions on \verb|lilypond-user| mailing list in the past that readers may consult for further ideas on implementing different types of tone cluster notation: 
@@ -679,7 +679,7 @@ Implementation of the tongue ram notation, as described in \textit{The Technique
 \item \verb|\tgr| and \verb|\tgrWithIndication| are followed by a pitch to be fingered on the instrument. The code will copy and reproduce a resultant pitch a major seventh down. Use \verb|\tgrWithIndication| for showing the markup with the indication "T.R." (tongue ram). For more details, see: \href{https://www.flutexpansions.com/tongue-ram}{FluteXpansions}.
 \end{enumerate}
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 tgrWithIndication = #(define-music-function (note1) (ly:music?)
        (let* 	(
                 (p1 #{ #(ly:music-deep-copy note1) \harmonic #})
@@ -708,7 +708,7 @@ tgr = #(define-music-function (note1) (ly:music?)
            ))
 
 {\language "english" \tgrWithIndication d'4-.-> \tgr cs'4-.-> \tgr ef'4-.->}
-\end{verbatim}
+\end{Verbatim}
 \subsection{Discussion}
 I want to improve this code so that I can add markups to the note. It is slightly awkward at the moment.
 
@@ -731,7 +731,7 @@ While LilyPond Notation Reference provides an example of an X-in-a-circle notehe
 \cirX NOTE
 \end{verbatim}
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 % Stem attachment function inspired by:
 % https://lsr.di.unimi.it/LSR/Snippet?id=518
 cirX = #(define-music-function (note) (ly:music?)
@@ -770,7 +770,7 @@ cirX = #(define-music-function (note) (ly:music?)
   \cirX c'4 \cirX d' \cirX e' \cirX f'
   \cirX a''4 \cirX g'' \cirX f'' \cirX  e''
 }
-\end{verbatim}
+\end{Verbatim}
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break

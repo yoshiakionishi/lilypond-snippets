@@ -60,7 +60,7 @@ NOTE \wiggleBeam_markup #hOffset #vOffset #howMany #width #rotation
 \end{itemize}
 
 \subsection{Code}
-\begin{verbatim}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
 wiggleBeamOne =
 #(define-music-function (vOffset howMany howWide howTilted)
    (number? number? number? number?) #{
@@ -219,7 +219,7 @@ wiggleBeamStemAdjust =
   \wiggleBeamStemAdjust #2.5  #-5 g'' e''
   \bar ".."
 }
-\end{verbatim}
+\end{Verbatim}
 \vfill \break
 
 \subsection{Discussion}
@@ -227,6 +227,4 @@ wiggleBeamStemAdjust =
 \item Admittedly, while the current setup allows great flexibility in making the wiggle beams appear, it is entirely possible that some of the parameters be automated. 
 \item When using many wiggle beams, it may be easier to make the score proportionally notated, in order to avoid the micromanagement of the parameters. 
 \end{enumerate}
-\break
-\break
 \hyperref[sec:toc]{\textbf{Table of Contents}}
