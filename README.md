@@ -1,10 +1,7 @@
-# lilypond-snippets
+# LilyPond Contemporary Notation Cookbook: Snippets and Their Grammars 
+## lilypond-snippets
 =======================================================================
-
-LilyPond Contemporary Notation Cookbook: Snippets and Their Grammars
-
 by Yoshiaki Onishi (https://www.yoshionishi.com)
-
 =======================================================================
 ## Quickstart
 
