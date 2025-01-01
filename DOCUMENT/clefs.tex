@@ -7,7 +7,7 @@
 
 \section {String Position Clef}
 \hfill
-\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/strPosClef.ly}
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/stringPositionClef.ly}
 \hfill
 
 \subsection{Description}
@@ -15,11 +15,11 @@ String position clef to indicate bowing position. See Discussion for the associa
 
 \subsection{Grammar}
 \begin{verbatim}
-\strPosClef 
+\stringPositionClef 
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-strPosClefDesign = #(ly:make-stencil (list 'embedded-ps
+stringPositionClefDesign = #(ly:make-stencil (list 'embedded-ps
 "gsave
 currentpoint translate
 /fingboardpath
@@ -98,16 +98,16 @@ grestore")
 	(cons 0 3)
 	(cons 0 1))
 
-strPosClefSize =
+stringPositionClefSize =
 #(lambda (grob)
    (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
           (mult (magstep sPCS)))
      (ly:stencil-scale
-      strPosClef
+      stringPositionClef
       mult mult)))
 
-strPosClef = {
-  \override Staff.Clef.stencil = \strPosClefDesign
+stringPositionClef = {
+  \override Staff.Clef.stencil = \stringPositionClefDesign
 }
 
 normalClef = {
@@ -119,7 +119,7 @@ normalClef = {
   \override Staff.LedgerLineSpanner.stencil = ##f
   \override Staff.TimeSignature.stencil = ##f
   \override Staff.BarLine.stencil = ##f
-  \strPosClef c'4 e' g' b' d'' f'' a''
+  \stringPositionClef c'4 e' g' b' d'' f'' a''
 }
 \end{Verbatim}
 
@@ -144,7 +144,7 @@ newpath
 stroke
 \end{Verbatim}
 
-\item Once \verb|\strPosClef| is used, in order to revert back to the normal clef, \verb|\normalClef| must be used.
+\item Once \verb|\stringPositionClef| is used, in order to revert back to the normal clef, \verb|\normalClef| must be used.
 \item See \hyperref[sec:comb_strings]{Prescriptive Notation for String Instruments} for a possible use of this clef.
 \end{enumerate}
 

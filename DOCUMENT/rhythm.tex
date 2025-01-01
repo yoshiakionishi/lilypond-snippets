@@ -1,0 +1,123 @@
+%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+
+
+\chapter {Rhythm}
+\label{sec:incompleteTuplet}
+
+\section {Incomplete Tuplet Bracket for Irrational Time Signatures}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/incompleteTupletBracket.ly}
+\hfill
+
+\subsection{Description}
+
+This entry supplements the irrational time signatures\footnote{See \hyperref[sec:time_signatures]{Chapter \textbf{Time Signatures}} for discussion on the variants of the irrational/fractional time signatures.} as seen on LSR.\footnote{\url{https://lsr.di.unimi.it/LSR/Snippet?id=552}}. Concerning the irrational time signatures, in her \textit{Behind Bars: the Definitive Guide to Music Notation}, Elaine Gould suggests the use of denominator as any division of the semibreve/whole note.\autocite[180-181]{RN1741}. However, in these pages there has not been a mention of the use of tuplet brackets while the non-conventional time signature is in place. There are examples, such as \textit{Asyla} for large orchestra by Thomas Adès,\autocite{RN1742}, where tuplet brackets are placed atop "incomplete" tuplets. 
+
+While it is still prudent to spend a paragraph explaining the nature of the irrational time signatures in the preface, my preference has also been to utilize incomplete tuplet brackets, in order to allow the reading of the rhythm consistent and smooth from bars with ordinary time signatures. It is also helpful to have the brackets shown in cases of compound time signatures that use irrational time signatures in part (see the first measure of the example).
+
+\subsection{Grammar}
+\begin{verbatim}
+\incompleteTupletBracket \tuplet ...
+\incompleteSmallTupletBracket \tuplet ... 
+\end{verbatim}
+
+\textbf{NB} 
+\begin{enumerate}
+\item For incomplete tuplets with two or more notes, use \verb|\incompleteTupletBracket|. 
+\item For incomplete tuplets with one note, use \verb|\incompleteSmallTupletBracket|. This was created specifically to ensure that the brackets appear properly in tight space that one-note tuplet customarily gives.
+\end{enumerate}
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+%% "suppressWarning" function comes from:
+%% http://lsr.di.unimi.it/LSR/Item?id=552
+
+% Warnings may be suppressed using 'ly:expect-warning'
+% Or use the here defined 'suppressWarning'-function, working since 2.20.
+
+suppressWarning =
+#(define-void-function (amount message)(number? string?)
+   (for-each
+    (lambda (warning)
+      (ly:expect-warning message))
+    (iota amount 1 1)))
+
+\suppressWarning 3 "strange time signature found"
+
+incompleteTupletBracket =  {
+  \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+  \once \override Voice.TupletBracket.bracket-visibility = ##t
+
+}
+incompleteSmallTupletBracket =  {
+  \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+  \once \override Voice.TupletBracket.bracket-visibility = ##t
+  \once \override Voice.TupletNumber.X-offset =
+  #(lambda (grob)
+     (if (= UP (ly:grob-property grob 'direction))
+         2.2
+         1.2))
+
+  \once \override Voice.TupletBracket.shorten-pair =
+  #(lambda (grob)
+     (if (= UP (ly:grob-property grob 'direction))
+         '(-0.7 . 0.15)
+         '(-0.3 . 0.8)))
+  \once \override Voice.TupletBracket.X-positions =
+  #(lambda (grob)
+     (if (= UP (ly:grob-property grob 'direction))
+         '(1.8 . 3)
+         '(0.3 . 2.7)))
+}
+
+
+{
+  \compoundMeter #'((2 4) (4 12))
+  f'4 f'
+  \tuplet 3/2 {g'8[ g' g']}
+  \incompleteSmallTupletBracket
+  \tuplet 3/2 {a'8 }|
+
+  \time 4/20
+  \incompleteTupletBracket
+  \tuplet 5/4 {b'16[ b' b' b']} |
+  \time 4/12
+  \tuplet 3/2 {c''8[ g' e']}
+  \incompleteSmallTupletBracket
+  \tuplet 3/2 {c'8} |
+  \tuplet 3/2 {c'8[ e' g']}
+  \incompleteSmallTupletBracket
+  \tuplet 3/2 {c''8} |
+}
+\end{Verbatim}
+\subsection{Discussion}
+
+In the preceding code, I have opted to notate the tuplets within the bars with irrational time signatures in an ordinary manner, using \Verb|\tuplet|. This is to ensure that the incomplete tuplet bracket appears. Compare this with the quoted LSR No. 552, which has a different way of reducing the note duration in order to fit them into the bar with irrational time signature. Observe the way duration is multiplied by fractions, e.g. Line 6.
+
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+ {
+  \time 4/4
+  \tempo 4 = 60
+  fis4 fis fis fis
+  \time 2/6
+  g4*2/3 g |
+  g4*2/3 g |
+  \time 4/5
+  as4*4/5 as as as8*4/5 g |
+  \tuplet 3/2 { as4*4/5 as as } as4*4/5 as8*4/5 g |
+  \time 3/7
+  fis4*4/7 fis fis |
+  fis4*4/7 fis fis |
+}
+\end{Verbatim}
+
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
