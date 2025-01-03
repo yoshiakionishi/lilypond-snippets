@@ -30,8 +30,11 @@ If you are new to this, I recommend starting with \cite{LS0001}. While you might
 \subsection{Step 2: Study Lots of Snippets}
 Once familiar with Scheme, study how it integrates with LilyPond by reviewing snippets from LSR. Start with shorter examples and analyze their structure. Here is an example snippet for adding the \textit{Schleifer} ornament:\footnote{\url{https://lsr.di.unimi.it/LSR/Item?id=1185}}
 
+	\begin{figure}[!htb]
+	\centering
 \lilypondfile[staffsize=16]{/LSR1185.ly}
-\hfill \break
+	\caption{\label{fig:figure1} LSR No. 1185: \textit{Schleifer} Ornament.}
+	\end{figure}
 
 The corresponding code:\footnote{The mailing list thread referenced in the preamble is available at \url{https://lists.gnu.org/archive/html/lilypond-user/2021-09/msg00352.html}}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
@@ -104,10 +107,11 @@ Following the reference, add the following line underneath \verb+\once\override 
 \end{verbatim}
 
 Running LilyPond now should produce the following result:
-
+	\begin{figure}[!htb]
+	\centering
 \lilypondfile[staffsize=16]{/LSR1185e1.ly}
-\hfill \break 
-
+	\caption{\label{fig:figure2} LSR No. 1185: \textit{Schleifer} Ornament in red.}
+	\end{figure}
 Hard-coding a change like this may be good for testing the waters, but we may want the \textit{Schleifer} ornament in more than just one color. The beauty of extending LilyPond is that we can customize the Scheme code to allow for this flexibility.
 
 Let us move on. We should now let the \verb+define-music-function+ know that we are adding an additional argument to specify the color. The first part of the code will look like this:
@@ -163,21 +167,250 @@ schleiferGrace =
 
 This produces the following output:
 
+	\begin{figure}[!htb]
+	\centering
 \lilypondfile[staffsize=16]{/LSR1185e2.ly}
-\hfill \break 
-
+	\caption{\label{fig:figure3} LSR No. 1185: \textit{Schleifer} Ornament in green.}
+	\end{figure}
+	
 Notice that on Line 27, \verb+#green+ has been added. You can change this to any of the colors listed under "Normal Colors" in the \textit{Notation Reference},\footnote{\url{https://lilypond.org/doc/v2.24/Documentation/notation/list-of-colors}} such as \verb+#'"lightsalmon"+, \verb+#(x11-color "medium turquoise")+, or even \verb+#'"#5e45ad"+.
 
 As an exercise, try replicating the following excerpt:\footnote{See \href{https://github.com/yoshiakionishi/lilypond-snippets/blob/main/DOCUMENT/LSR1185e3.ly}{LSR1185e3.ly} for the answer.}
 
+	\begin{figure}[!htb]
+	\centering
 \lilypondfile[staffsize=16]{/LSR1185e3.ly}
-\hfill \break
-
-\textbf{NB} -- In subsequent version updates of this document, I will add examples of Scheme code-heavy snippets. 
-
+	\caption{\label{fig:figure4} Can you replicate this?}
+	\end{figure}
+\vfill \break
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break
 
 %%%%%%%%%%%%%%%%%%%
 
+\section {Example 1: Creating a Time Signature with Its Compound Meter Form}
+
+On January 1, 2025, I came across a post by an anonymous user on Facebook.\footnote{\url{https://www.facebook.com/groups/gnulilypond/posts/10162467719483529/}} The post asked if it would be possible to create a time signature that had its beat structure expressed in the form of a compound meter. Something like this:
+
+\begin{figure}[!htb]
+\centering
+\lilypondfile[staffsize=16]{/CompoundMeterExample1.ly}
+\caption{\label{fig:figure5} What the anonymous user wanted to achieve.}
+\end{figure}
+
+I responded to the post with relevant email threads on \verb|lilypond-user| mailing list. I commented that it would be possible to override \verb|TimeSignature.stencil| with custom-made time signatures. Incidentally, I was making a series of \hyperref[sec:time_signatures]{Fractional Time Signatures}, which used this method. 
+
+The code for the aforementioned example is as follows:
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+{
+  \clef "G"
+  \time 9/8
+  \set beatStructure = #'(2 2 2 3)
+  \once \override Timing.TimeSignature.stencil = #ly:text-interface::print
+  \once \override Timing.TimeSignature.text = \markup
+  {
+    \override #'(baseline-skip . 0)
+    \center-column \number {9 8}
+    \center-column {\fontsize #6 \musicglyph "accidentals.leftparen"}
+    \hspace #-0.75
+    \override #'(baseline-skip . 0)
+    \center-column \number {{2+2+2+3} 8}
+    \hspace #-0.75
+    \center-column {\fontsize #6 \musicglyph "accidentals.rightparen"}
+    \hspace #-1
+  }
+  \repeat unfold 9 {<e' g'>8 }
+}
+\end{Verbatim}
+
+I realized that, while this might be an acceptable method if such time signatures appeared only once or twice in a piece, it may become problematic if I had to copy and paste this code every time I have such a time signature. Normally this could easily be resolved by making a variable out of \verb|\override| clauses; however, a piece of music may use time signatures of this form in different configurations, just as the following example:
+
+	\begin{figure}[!htb]
+	\centering
+\lilypondfile[staffsize=16]{/CompoundMeterExample2.ly}
+\label{sec:schemeExample1}
+	\caption{\label{fig:figure6} More compound meters.}
+	\end{figure}
+	
+The code:
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+{
+  \clef "G"
+  \time 9/8
+  \set beatStructure = #'(2 2 2 3)
+  \once \override Timing.TimeSignature.stencil = #ly:text-interface::print
+  \once \override Timing.TimeSignature.text = \markup
+  {
+    \override #'(baseline-skip . 0)
+    \center-column \number {9 8}
+    \center-column {\fontsize #6 \musicglyph "accidentals.leftparen"}
+    \hspace #-0.75
+    \override #'(baseline-skip . 0)
+    \center-column \number {{2+2+2+3} 8}
+    \hspace #-0.75
+    \center-column {\fontsize #6 \musicglyph "accidentals.rightparen"}
+    \hspace #-1
+  }
+  \repeat unfold 9 {<e' g'>8}
+
+  \time 11/8
+  \set beatStructure = #'(2 2 2 3 2)
+  \once \override Timing.TimeSignature.stencil = #ly:text-interface::print
+  \once \override Timing.TimeSignature.text = \markup
+  {
+    \override #'(baseline-skip . 0)
+    \center-column \number {11 8}
+    \center-column {\fontsize #6 \musicglyph "accidentals.leftparen"}
+    \hspace #-0.75
+    \override #'(baseline-skip . 0)
+    \center-column \number {{2+2+2+3+2} 8}
+    \hspace #-0.75
+    \center-column {\fontsize #6 \musicglyph "accidentals.rightparen"}
+    \hspace #-1
+  }
+  \repeat unfold 11 {<e' g'>8 }
+
+  \time 7/8
+  \set beatStructure = #'(2 3 2)
+  \once \override Timing.TimeSignature.stencil = #ly:text-interface::print
+  \once \override Timing.TimeSignature.text = \markup
+  {
+    \override #'(baseline-skip . 0)
+    \center-column \number {7 8}
+    \center-column {\fontsize #6 \musicglyph "accidentals.leftparen"}
+    \hspace #-0.75
+    \override #'(baseline-skip . 0)
+    \center-column \number {{2+3+2} 8}
+    \hspace #-0.75
+    \center-column {\fontsize #6 \musicglyph "accidentals.rightparen"}
+    \hspace #-1
+  }
+  \repeat unfold 7 {<e' g'>8 }
+
+}
+\end{Verbatim}
+
+Writing as long of a code as this (for just three measures!) would be cumbersome, indeed. What could help is to come up with a music function, using the Scheme. 
+
+\subsection{Step 1: Analyze What Could Be Automatized}
+
+I quote the code for the first example of this section again. This time, however, I turn the variables that could change each time I create an instance of this kind of time signature, into \textcolor{red}{red}:
+
+\begin{Verbatim}[numbers=left,xleftmargin=5mm,commandchars={~[]}]
+\version "2.24.4"
+
+{
+  \clef "G"
+  \time ~color[red][9/8]
+  \set beatStructure = ~color[red][#'(2 2 2 3)]
+  \once \override Timing.TimeSignature.stencil = #ly:text-interface::print
+  \once \override Timing.TimeSignature.text = \markup
+  {
+    \override #'(baseline-skip . 0)
+    \center-column \number {~color[red][9 8]~color[black][}]
+    \center-column {\fontsize #6 \musicglyph "accidentals.leftparen"}
+    \hspace #-0.75
+    \override #'(baseline-skip . 0)
+    \center-column \number {{~color[red][2+2+2+3]~color[black][}{]~color[red][8]~color[black][}}]
+    \hspace #-0.75
+    \center-column {\fontsize #6 \musicglyph "accidentals.rightparen"}
+    \hspace #-1
+  }
+  \repeat unfold 9 {<e' g'>8 }
+}
+\end{Verbatim}
+
+
+
+\subsection{Step 2: Write the Code}
+
+It would be good if this function could accept the following as arguments:
+
+\begin{itemize}
+\item Time signature of the measure as defined normally in the LilyPond function \verb|\time|. For this, I will set \verb|timesig| as the name of the argument, that tests its value with \verb|fraction?|.
+\item The customized stencil of the time signature. I need to declare how it looks, namely:
+\begin{itemize}
+\item Overall time signature;
+\item Numerator portion of the compound meter, and;
+\item Denominator portion of the compound meter.
+\end{itemize} 
+It should look similar to how the LilyPond function \verb|\compoundMeter| that accepts a list of lists.For this, I will set \verb|beatstruct| as the name of the argument, that tests its value with \verb|list?|.
+\end{itemize}
+
+I will now build the rest of the function. Notice the way the Scheme code references various locations of a list, using \verb|car|, \verb|cadr|, and so on:
+
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+compoundTimeWithBeatStructure =
+#(define-music-function (timesig beatstruct) (fraction? list?)
+   #{
+     \time #timesig
+     \set beatStructure = #(cadr beatstruct)
+     \once \override Timing.TimeSignature.stencil = #ly:text-interface::print
+     \once \override Timing.TimeSignature.text = \markup
+     {
+       \override #'(baseline-skip . 0)
+       \center-column \number
+       {
+         #(number->string (car (car beatstruct)))
+         #(number->string (cadr (car beatstruct)))
+       }
+       \center-column {\fontsize #6 \musicglyph "accidentals.leftparen"}
+       \hspace #-0.75
+       \override #'(baseline-skip . 0)
+       \center-column \number
+       {
+         {#(string-join (map number->string (cadr beatstruct)) "+")}
+         #(number->string (car (caddr beatstruct)))
+       }
+       \hspace #-0.75
+       \center-column {\fontsize #6 \musicglyph "accidentals.rightparen"}
+       \hspace #-1
+     }
+   #}
+
+   )
+
+{
+  \compoundTimeWithBeatStructure 9/8 #'((9 8)(2 2 2 3)(8))
+  \repeat unfold 9 {<e' g'>8}
+  \compoundTimeWithBeatStructure 11/8 #'((11 8)(2 2 2 3 2)(8))
+  \repeat unfold 11 {<e' g'>8}
+  \compoundTimeWithBeatStructure 7/8 #'((7 8)(2 3 2)(8))
+  \repeat unfold 7 {<e' g'>8}
+}
+\end{Verbatim}
+
+Thus, there is now a function called \verb|\compoundTimeWithBeatStructure|, whose grammar is:
+
+\begin{Verbatim}
+\compoundTimeWithBeatStructure 
+	TIME_SIGNATURE #'((TIME_SIGNATURE)(BEAT_STRUCTURE)(DENOMINATOR))
+\end{Verbatim}
+
+Running the code will result in the identical snippet as \hyperref[fig:figure6]{the previous figure}:
+
+
+	\begin{figure}[!htb]
+	\centering
+\lilypondfile[staffsize=16]{/CompoundMeterExample3.ly}
+\label{sec:schemeExample1}
+	\caption{\label{fig:figure7} The same result as before with a shorter code.}
+	\end{figure}
+	
+
+
+\hfill \break
+ 
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%

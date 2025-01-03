@@ -6,6 +6,7 @@
 \usepackage[program=/opt/homebrew/bin/lilypond]{lyluatex}
 %\usepackage{bigfoot}
 \usepackage{fancyvrb}
+\usepackage{xcolor}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
@@ -15,6 +16,12 @@
     pdftitle={YO_SNIPPETS_CATALOG_MASTER},
     pdfpagemode=FullScreen,
     }
+
+\usepackage{caption}
+\usepackage{subcaption}
+\captionsetup{font=small, labelfont=bf}
+\captionsetup[sub]{labelsep=period, subrefformat=brace}
+
     
 \usepackage{geometry}           % See geometry.pdf to learn the layout options. There are lots.
 \usepackage{fancyvrb}
