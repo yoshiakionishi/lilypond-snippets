@@ -2829,14 +2829,14 @@ See \hyperref[sec:compoundfractionalmeter_discussion_two]{\textbf{Discussion}} o
 
 
 
-\section {Time Signature with Decimal Points}
+\section {Time Signature with Decimals}
 
 \hfill
 \lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/decimalPointTimeSignature.ly}
 \hfill
 
 \subsection{Description}
-This is an implementation of a time signature with decimal points. 
+This is an implementation of a time signature with decimals. This function allows the user to use decimals for both numerator and denominator values of the time signature. While there are many examples where the numerator value contains decimals, notable examples for denominators that contain decimals include works by Mark Andre, such as \textit{Un-fini I} (1995) for harp,\autocite{RN1755} \textit{Un-fini II} (1994-95) for harpsichord,\autocite{RN1754} and \textit{Contrapunctus} (1998/99) for piano.\autocite{RN1753}. This function also has the option of showing ellipsis, as discussed in \textbf{Grammar}. 
 \subsection{Grammar}
 \begin{verbatim}
 \decimalPointTimeSignature
@@ -2844,11 +2844,11 @@ This is an implementation of a time signature with decimal points.
 \end{verbatim}
 \textbf{NB}
 \begin{enumerate}
-\item The first argument takes a list of two lists. For both \verb|NUMERATOR| and \verb|DENOMINATOR|, one or two numbers can be placed:
+\item The first argument takes a list of two lists. For both \verb|NUMERATOR| and \verb|DENOMINATOR|, one or two numbers can be placed.
 \begin{enumerate}
-\item If only one number is placed, it is treated as an integer.
-\item If two numbers are placed, the first number is the integer portion of the number, and the second number is the decimal numerals.
-\item Placing a dot \verb|.| at the end of the second number will print the approximative dots \verb|...| at the end. This is useful for notating irrational numbers. 
+\item If only one number is placed, it is treated as an integer. For example, \verb|#'((3)(4))| would print: \(\frac{3}{4}\).
+\item If two numbers are placed, the first number is the integer portion of the number, and the second number is the decimals. For example, \verb|#'((3 5)(4 232))| would print: \(\frac{3.5}{4.232}\). 
+\item Placing a dot \verb|.| at the end of the second number will print the ellipsis \verb|...| at the end. This is useful for notating infinite decimal representations. For example, \verb|#'((3 14159.)(4))| would print: \(\frac{3.14159...}{4}\).
 \end{enumerate}
 \item \verb|MEASURE_SPAN| denotes how the measure may be written without the use of "decimal point" time signature. 
 \item \verb |BEAT_STRUCT| indicates beat structure, by which the beaming of the measure abides.
@@ -2979,9 +2979,10 @@ decimalPointTimeSignature =
   \decimalPointTimeSignature #'((9)(3 1415.)) 9/4 3,3,3
   \tuplet 9/9 {c'4 4 4 4 4 4 4 4 4}
 }
-
-
 \end{Verbatim}
+
+\subsection{Discussion}
+The structure of the code where the user specifies integer and decimal portions of either numerator, denominator, or both, resulted from the fact that the period "." by default appeared too close to the staff line and the denominator, possibly rendering the time signature difficult to read. In the code I made these periods appear via \verb|\translate| feature, where I offset the period upward by the value of 0.15, allowing the period sign to be separated  from the staff line and the denominator. 
 
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
