@@ -29,13 +29,11 @@ If you are new to this, I recommend starting with \cite{LS0001}. While you might
 
 \subsection{Step 2: Study Lots of Snippets}
 Once familiar with Scheme, study how it integrates with LilyPond by reviewing snippets from LSR. Start with shorter examples and analyze their structure. Here is an example snippet for adding the \textit{Schleifer} ornament:\footnote{\url{https://lsr.di.unimi.it/LSR/Item?id=1185}}
-
 	\begin{figure}[!htb]
 	\centering
-\lilypondfile[staffsize=16]{/LSR1185.ly}
+	\lilypondfile[staffsize=16]{/LSR1185.ly}
 	\caption{\label{fig:figure1} LSR No. 1185: \textit{Schleifer} Ornament.}
 	\end{figure}
-
 The corresponding code:\footnote{The mailing list thread referenced in the preamble is available at \url{https://lists.gnu.org/archive/html/lilypond-user/2021-09/msg00352.html}}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 % Implementation by Martin Straeten of the Schleifer ornament 
@@ -79,9 +77,9 @@ schleiferGrace =
 }
 \end{Verbatim}
 
-The \verb|\schleiferGrace| variable creates a customized ornament using Scheme's \verb|define-music-function| macro. For a deeper understanding of the macro syntax, refer to the \textit{LilyPond – Internals Reference}.\footnote{\url{https://lilypond.org/doc/v2.24/Documentation/internals/scheme-functions}} 
-
-Taking the variable \verb|\schleiferGrace|, we see that invoking it creates an instance of activating a Scheme function that starts at Line 16. \verb|define-music-function| is a macro that allows you to create a function that operates on LilyPond. According to Chapter 4: Scheme Functions in \textit{LilyPond – Internals Reference},\footnote{\url{https://lilypond.org/doc/v2.24/Documentation/internals/scheme-functions#index-define_002dmusic_002dfunction}}, the syntax for \verb|define-music-function| is:
+The \verb|\schleiferGrace| variable creates a customized ornament using Scheme's \verb|define-music-function| macro. For a deeper understanding of the macro syntax, refer to the \textit{LilyPond – Internals Reference}.\footnote{\url{https://lilypond.org/doc/v2.24/Documentation/internals/scheme-functions}} \par
+Taking the variable \verb|\schleiferGrace|, we see that invoking it creates an instance of activating a Scheme function that starts at Line 16. \verb|define-music-function| is a macro that allows you to create a function that operates on LilyPond. \par
+According to \textit{LilyPond – Internals Reference}, the syntax for \verb|define-music-function| is: \par
 \begin{verbatim}
 (define-music-function (arg1 arg2 …)
                        (type1? type2? …)
@@ -172,6 +170,8 @@ This produces the following output:
 \lilypondfile[staffsize=16]{/LSR1185e2.ly}
 	\caption{\label{fig:figure3} LSR No. 1185: \textit{Schleifer} Ornament in green.}
 	\end{figure}
+\vfill \break
+\clearpage
 	
 Notice that on Line 27, \verb+#green+ has been added. You can change this to any of the colors listed under "Normal Colors" in the \textit{Notation Reference},\footnote{\url{https://lilypond.org/doc/v2.24/Documentation/notation/list-of-colors}} such as \verb+#'"lightsalmon"+, \verb+#(x11-color "medium turquoise")+, or even \verb+#'"#5e45ad"+.
 
@@ -182,11 +182,10 @@ As an exercise, try replicating the following excerpt:\footnote{See \href{https:
 \lilypondfile[staffsize=16]{/LSR1185e3.ly}
 	\caption{\label{fig:figure4} Can you replicate this?}
 	\end{figure}
-\vfill \break
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break
-
+\clearpage
 %%%%%%%%%%%%%%%%%%%
 
 \section {Example 1: Creating a Time Signature with Its Compound Meter Form}
@@ -400,13 +399,10 @@ Running the code will result in the identical snippet as \hyperref[fig:figure6]{
 	\begin{figure}[!htb]
 	\centering
 \lilypondfile[staffsize=16]{/CompoundMeterExample3.ly}
-\label{sec:schemeExample1}
 	\caption{\label{fig:figure7} The same result as before with a shorter code.}
 	\end{figure}
 	
-
-
-\hfill \break
+\par
  
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}

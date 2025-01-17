@@ -19,7 +19,11 @@ Ordinary beams are replaced with zig-zag beams. A set of forward then backward b
 
 \verb|\wiggleBeamThree| replaces a 32\textsuperscript{nd}-note beam.
 
-\verb|\wiggleBeam_markup| adds a zig-zag beam at will. This allows beaming of mixed note durations, such as:\lilypond{ c'8 d'16 e'} \\
+\verb|\wiggleBeam_markup| adds a zig-zag beam at will. This allows beaming of mixed note durations, such as:\lilypond{ \layout { 
+  \context {
+    \Staff
+    \remove "Time_signature_engraver"
+  }} {c'8 d'16 e'}} \par
 \verb|\wiggleBeamStemAdjust| allows the adjustment of a stem length, in the event the wiggle beam and the stem do not touch each other. 
 
 \subsection{Grammar}
@@ -84,7 +88,6 @@ wiggleBeamOne =
      }
    #})
 
-
 wiggleBeamTwo =
 #(define-music-function (vOffset howMany howWide howTilted )
    (number? number? number? number?) #{
@@ -115,7 +118,6 @@ wiggleBeamTwo =
                      )
      }
    #})
-
 
 wiggleBeamThree =
 #(define-music-function (vOffset howMany howWide howTilted )
@@ -159,7 +161,6 @@ wiggleBeamThree =
                      )
      }
    #})
-
 
 wiggleBeam_markup =
 #(define-music-function (hOffset vOffset howMany howWide howTilted )
@@ -220,7 +221,6 @@ wiggleBeamStemAdjust =
   \bar ".."
 }
 \end{Verbatim}
-\vfill \break
 
 \subsection{Discussion}
 \begin{enumerate}

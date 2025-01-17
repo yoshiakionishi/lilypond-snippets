@@ -37,11 +37,11 @@ Because the size the fractions is a half of the ordinary time signatures, it may
 \begin{enumerate}
 \item \verb|\fractionalTimeSignatureA| lists time signatures \textit{without} the use of the \verb|+| (plus) sign. 
 \item \verb|\fractionalTimeSignatureAPlus| lists time signatures with the \verb|+| (plus) sign, when the list with four \verb|NUM|s are given.
-\item \verb|NUM1|, \verb|NUM2|, \verb|NUM3|, and \verb|NUM4| can be understood as follows: \\
-\[ \frac{1+\frac{2}{3}}{4} \] \\
+\item \verb|NUM1|, \verb|NUM2|, \verb|NUM3|, and \verb|NUM4| can be understood as follows: \par
+\[ \frac{1+\frac{2}{3}}{4} \] \par
 where \verb|NUM1| is optional. The code has \verb|cond| clause, which adjusts the appearance of the time signature according to the length of the list, either having 3 or 4 numbers.
-\item \verb|MEASURE_SPAN| denotes how the measure may be written using an \hyperref[sec:incompleteTuplet]{\textit{irrational time signature}}. In the example snippet, this would be: \\
-\[ \frac{3}{4} + \frac{2}{12} = \mathbf{\frac{11}{12}}\] \\
+\item \verb|MEASURE_SPAN| denotes how the measure may be written using an \hyperref[sec:incompleteTuplet]{\textit{irrational time signature}}. In the example snippet, this would be: \par
+\[ \frac{3}{4} + \frac{2}{12} = \mathbf{\frac{11}{12}}\] \par
 \item \verb |BEAT_STRUCT| indicates beat structure, by which the beaming of the measure abides.
 \end{enumerate}
 \subsection{Code}
@@ -732,7 +732,7 @@ This is an implementation of a compound meter with two fractional time signature
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
-\item Following the convention of \verb|\compoundMeter| to enter the two time signatures, you will create a list of lists. Each \verb|TIME_SIG| accepts:\\
+\item Following the convention of \verb|\compoundMeter| to enter the two time signatures, you will create a list of lists. Each \verb|TIME_SIG| accepts:\par
 \begin{itemize} 
 \item an ordinary time signature (list with two numbers); 
 \item a time signature with a fraction (list with three numbers), or;
@@ -1296,7 +1296,7 @@ compoundFractionalTimeSignatureBTwo =
 }
 \end{Verbatim}
 \subsection{Discussion}
-See \hyperref[sec:compoundfractionalmeter_discussion]{\textbf{Discussion}} of the entry \textit{Compound Meter with Two Fractional Time Signatures, Style A.} \\
+See \hyperref[sec:compoundfractionalmeter_discussion]{\textbf{Discussion}} of the entry \textit{Compound Meter with Two Fractional Time Signatures, Style A.} \par
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
 \vfill \break
@@ -1592,7 +1592,7 @@ compoundFractionalTimeSignatureCTwo =
 }
 \end{Verbatim}
 \subsection{Discussion}
-See \hyperref[sec:compoundfractionalmeter_discussion]{\textbf{Discussion}} of the entry \textit{Compound Meter with Two Fractional Time Signatures, Style A.} \\
+See \hyperref[sec:compoundfractionalmeter_discussion]{\textbf{Discussion}} of the entry \textit{Compound Meter with Two Fractional Time Signatures, Style A.} \par
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
@@ -1628,8 +1628,8 @@ This is an implementation of a compound meter with three fractional time signatu
 \item a time signature with an ordinary numerator and a fraction.
 \end{itemize} 
 See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractional Time Signatures, Style A} for the explanation on the arguments for the order of arguments to specify time signatures.
-\item In the code of the given snippet, the value for \verb|MEASURE_SPAN| may appear absurd. However, this results from following the same convention as before, i.e. adding the constituent time signatures to give a general irrational time signature for the entire bar. Thus: \\
-\[ \frac{3}{4} +\frac{4}{20} + \frac{2}{12} = \mathbf{\frac{67}{60}}\] \\
+\item In the code of the given snippet, the value for \verb|MEASURE_SPAN| may appear absurd. However, this results from following the same convention as before, i.e. adding the constituent time signatures to give a general irrational time signature for the entire bar. Thus: \par
+\[ \frac{3}{4} +\frac{4}{20} + \frac{2}{12} = \mathbf{\frac{67}{60}}\] \par
 \item \verb|BEAT_STRUCT| follows the same convention as before; however, as the given code shows, it may be necessary to still use \verb|[| and \verb|]| to explicitly specify the beaming. 
 \end{enumerate}
 \subsection{Code}
