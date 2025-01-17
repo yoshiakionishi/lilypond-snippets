@@ -1,5 +1,4 @@
 \version "2.24.4"
-
 \language "english"
 
 % This code includes snippet for grace note
