@@ -5,6 +5,7 @@
 % slashes, which has been taken from:
 % https://lsr.di.unimi.it/LSR/Item?id=1048
 
+% Slightly revised, Jan. 19 2025 - YO
 
 graceNoteBeforeBeatOn =
 #(define-music-function (setting-list starting_note) (list? ly:music? )
@@ -33,7 +34,7 @@ newpath
 closepath 
 fill")
    }
-   \once \override TextSpanner.Y-offset = #(car setting-list)
+   \once \override TextSpanner.extra-offset = #(cons 0 (car setting-list))
    \once \override TextSpanner.bound-details.left.padding = #0.5
    \once \override TextSpanner.bound-details.right.padding = #-0.25
    #starting_note
@@ -76,7 +77,7 @@ newpath
 closepath 
 fill")
    }
-   \once \override TextSpanner.Y-offset = #(car setting-list)
+   \once \override TextSpanner.extra-offset = #(cons 0 (car setting-list))
    \once \override TextSpanner.bound-details.left.padding = #0.5
    \once \override TextSpanner.bound-details.right.padding = #-0.25
    #starting_note
@@ -90,7 +91,7 @@ graceNoteAfterBeatOff =
    #ending_note
    \stopTextSpan
   #})
-
+  
 %%%%%%%%%%%%%%%%%%%LSR SNIPPET START%%%%%%%%%%%%%%%%%%
 
 #(define (degrees->radians deg)
