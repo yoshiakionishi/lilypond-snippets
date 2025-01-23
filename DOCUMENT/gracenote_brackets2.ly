@@ -91,7 +91,7 @@ graceNoteAfterBeatOff =
    #ending_note
    \stopTextSpan
   #})
-  
+
 %%%%%%%%%%%%%%%%%%%LSR SNIPPET START%%%%%%%%%%%%%%%%%%
 
 #(define (degrees->radians deg)
@@ -175,12 +175,12 @@ stopAcciaccaturaMusic = {
 {
  \grace {
   \startSlashedGraceMusic
-  \graceNoteBeforeBeatOn #'(4 -2 -1) d'8^\markup{\box A} e f g e' c'
+  \graceNoteBeforeBeatOn #'(1 -2 -1) d'8^\markup{\translate #'(0 . 3) \box A} e f g e' c'
  }
  \graceNoteBeforeBeatOff d''2
  \grace {
   \startSlashedGraceMusic
-  \graceNoteAfterBeatOn #'(6 -1 -2) d''8^\markup{\box B} e' f'' g' e'' c'
+  \graceNoteAfterBeatOn #'(0 -1 -2) d''8^\markup{\box B} e' f'' g' e'' c'
  }
  \graceNoteAfterBeatOff d'2
 }

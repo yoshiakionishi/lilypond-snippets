@@ -1,6 +1,6 @@
 \version "2.24.4"
 
-arrowLineOn =
+dashedArrowLineOn =
 #(define-music-function (note)(ly:music?)
   (define paddingvalue (if (music-is-of-type? note 'event-chord)
                            (ly:duration-log
@@ -16,6 +16,7 @@ arrowLineOn =
    \override Glissando.breakable = ##t
    \override Glissando.after-line-breaking = ##t
    \override Glissando.thickness = #2.35
+   \override Glissando.style = #'dashed-line
    \override Glissando.bound-details.right.arrow = ##t
    \override Glissando.bound-details.right-broken.arrow = ##f
    \override Glissando.bound-details.right-broken.padding = #-1
@@ -30,11 +31,12 @@ arrowLineOn =
   #})
 
 
-arrowLineOff =
+dashedArrowLineOff =
 {
  \revert Glissando.breakable
  \revert Glissando.after-line-breaking
  \revert Glissando.thickness
+ \revert Glissando.style
  \revert Glissando.bound-details.right.arrow
  \revert Glissando.bound-details.right-broken.arrow
  \revert Glissando.bound-details.right-broken.padding
@@ -50,76 +52,75 @@ arrowLineOff =
  {
   \override Score.TimeSignature.stencil = ##f
 
-  \arrowLineOn
+  \dashedArrowLineOn
   c'1
-  \arrowLineOff
+  \dashedArrowLineOff
 
-  \arrowLineOn
+  \dashedArrowLineOn
   g'2
-  \arrowLineOff
+  \dashedArrowLineOff
 
-  \arrowLineOn
+  \dashedArrowLineOn
   c'4
-  \arrowLineOff
+  \dashedArrowLineOff
 
-  \arrowLineOn
+  \dashedArrowLineOn
   g'8 \noBeam
-  \arrowLineOff
-  \arrowLineOn
+  \dashedArrowLineOff
+  \dashedArrowLineOn
   c'16 s16 |
 
   \break
-  \arrowLineOff
-  \arrowLineOn
+  \dashedArrowLineOff
+  \dashedArrowLineOn
   c''8
   \override Voice.NoteHead.transparent = ##t
   8 8 8 8
   \revert Voice.NoteHead.transparent
-  \arrowLineOff
+  \dashedArrowLineOff
 
-  \arrowLineOn
+  \dashedArrowLineOn
   8 \harmonic
   \override Voice.NoteHead.transparent = ##t
   \once \override Voice.Dots.extra-offset = #'(-1 . -0.75)
 
   8.
   \revert Voice.NoteHead.transparent
-  \arrowLineOff
+  \dashedArrowLineOff
 
-  \arrowLineOn
+  \dashedArrowLineOn
   16
 
   \override Voice.NoteHead.transparent = ##t
   8 8 8 8
   \revert Voice.NoteHead.transparent
-  \arrowLineOff
+  \dashedArrowLineOff
   \easyHeadsOn
-  \arrowLineOn
+  \dashedArrowLineOn
   8
-  \arrowLineOff
+  \dashedArrowLineOff
   \easyHeadsOff
   4.
   \break
-  \arrowLineOn
+  \dashedArrowLineOn
   <c' a''>1
 
-  \arrowLineOff
+  \dashedArrowLineOff
   <aes'' c'>1
 
   <<
-   { \arrowLineOn a''1 \arrowLineOff c'1} \\
-   {\arrowLineOn c'1 \arrowLineOff aes''1}
+   { \dashedArrowLineOn a''1 \dashedArrowLineOff c'1} \\
+   {\dashedArrowLineOn c'1 \dashedArrowLineOff aes''1}
   >>
-
   \break
   \override Voice.Stem.stencil = ##f
   \override Voice.NoteHead.stencil = #ly:text-interface::print
   \override Voice.NoteHead.text =\markup{\musicglyph "noteheads.s1"}
   \set glissandoMap = #'((1 . 1) (1 . 1))
-  \arrowLineOn
+  \dashedArrowLineOn
   <c' e' g' bes' d'' fis'' a''>2
   s4
-  \arrowLineOff
+  \dashedArrowLineOff
   <c'
   \single \override NoteHead.text =
   \markup{\musicglyph "noteheads.s2"}  es'
@@ -127,11 +128,11 @@ arrowLineOff =
 
  }
 
-
  \layout {
 
   indent = #0
   line-width = #125
+
   ragged-last = ##f
 
   \context {
