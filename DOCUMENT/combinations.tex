@@ -16,9 +16,8 @@ An example of a prescriptive notation for a string instrument. Vertical placemen
 \subsection{Variables Used}
 \begin{verbatim}
 
-\strPosClef
-		\strPosClefDesign
-		\strPosClefSize
+\stringPositionClef
+		\stringPositionClefDesign
 \dashedLineNotehead
 \modularLineNotehead
 \noteheadless
@@ -29,7 +28,7 @@ An example of a prescriptive notation for a string instrument. Vertical placemen
 \score {
   {
     \override Staff.StaffSymbol.line-positions = #'(6  -6)
-    \strPosClef 
+    \stringPositionClef 
     \dashedLineNotehead g'4
     	^\markup {\fontsize #-4 \italic flaut.}
     	^\markup \translate #'(-2.5 . -0) \center-column 

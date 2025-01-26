@@ -230,6 +230,184 @@ See \hyperref[sec:comb_strings]{Prescriptive Notation for String Instruments} fo
 %%%%%%%%%%%%%%%%%%%
 
 
+\section {Line as a Notehead 2}
+\lilypondfile[staffsize=24]{/linenotehead_two.ly}
+\hfill
+
+\subsection{Description}
+These functions replace ordinary noteheads with a dashed or a continuous line. However, unlike the \hyperref[sec:line_notehead]{\textbf{First Version}}, these functions use \verb|\glissando| as the basis for drawing the line.
+
+\subsection{Grammar}
+\begin{verbatim}
+\lineNotehead #THICKNESS NOTE
+\lineNoteheadOn #THICKNESS STARTING_NOTE NOTES... 
+\lineNoteheadOff ARRIVING_NOTE
+\lineNoteheadWithRhythm #THICKNESS NOTE
+\lineNoteheadWithRhythmOn #THICKNESS STARTING_NOTE NOTES... 
+\lineNoteheadWithRhythmOff ARRIVING_NOTE
+\end{verbatim}
+
+\textbf{NB} 
+\begin{enumerate} 
+\item \verb|\lineNotehead| only shows the line on the staff.
+\item \verb|\lineNoteheadWithRhythm| retains the rhythmic information. 
+\item \verb|\lineNotehead| and \verb|\lineNoteheadWithRhythm| applies the line from one note to another, without the line spanning multiple notes.
+\item If the line must span over more than a note, use \verb|\lineNoteheadOn| or \\ \verb|\lineNoteheadWithRhythmOn|. 
+\item In order to exit the line-as-a-notehead mode, use \verb|\lineNoteheadOff| for both \\ \verb|\lineNotehead| and \verb|\lineNoteheadWithRhythm|. In case the notehead must be disguised at the arrival, you may reduce the font size of the Notehead very drastically. See the Code for an example of this. 
+\item When using \verb|\lineNoteheadWithRhythm| and \verb|\lineNoteheadWithRhythmOn|, cautions must be paid to the placements of the augmentation dots and the intermediate stems. In the Code, I use: \\ 
+\verb|\once \override Voice.Dots.extra-offset = #'(0 . -1)| \\
+And place this \textit{before} the \verb|\lineNoteheadWithRhythmOn|.
+\end{enumerate}
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+lineNotehead =
+#(define-music-function (thickness note) (number? ly:music? )
+  #{
+   \once \override NoteHead.stencil = #ly:text-interface::print
+   \once \override NoteHead.text = \markup{  \char ##x200A }
+   \once \override Dots.stencil = ##f
+   \once \override Glissando.breakable = ##t
+   \once \override Glissando.after-line-breaking = ##t
+   \once \override Glissando.thickness = #thickness
+   \once \override Glissando.bound-details = #'(
+                                                (left (padding . 0))
+                                                (right (padding . 0))
+                                                )
+   #note
+   \glissando
+
+  #})
+
+lineNoteheadOn =
+#(define-music-function (thickness note) (number? ly:music?)
+  #{
+   \override Stem.stencil = ##f
+   \override Flag.stencil = ##f
+   \override Beam.stencil = ##f
+   \override NoteHead.stencil = #ly:text-interface::print
+   \override NoteHead.text = \markup{  \char ##x200A }
+   \override Dots.stencil = ##f
+   \override Glissando.breakable = ##t
+   \override Glissando.after-line-breaking = ##t
+   \override Glissando.thickness = #thickness
+   \override Glissando.bound-details = #'(
+                                          (left (padding . 0))
+                                          (right (padding . 0))
+                                          )
+   #note
+   \glissando
+   \override NoteColumn.glissando-skip = ##t
+  #})
+
+
+lineNoteheadWithRhythm =
+#(define-music-function (thickness note) (number? ly:music?)
+  #{
+   \once \override NoteHead.stencil = #ly:text-interface::print
+   \once \override NoteHead.text = \markup{  \char ##x200A }
+   \once \override Glissando.breakable = ##t
+   \once \override Glissando.after-line-breaking = ##t
+   \once \override Glissando.thickness = #thickness
+   \once \override Glissando.bound-details = #'(
+                                                (left (padding . 0))
+                                                (right (padding . 0))
+                                                )
+   #note
+   \glissando
+
+  #})
+
+lineNoteheadWithRhythmOn =
+#(define-music-function (thickness note) (number? ly:music?)
+  #{
+   \override NoteHead.stencil = #ly:text-interface::print
+   \override NoteHead.text = \markup{  \char ##x200A }
+   \override Glissando.breakable = ##t
+   \override Glissando.after-line-breaking = ##t
+   \override Glissando.thickness = #thickness
+   \override Glissando.bound-details = #'(
+                                          (left (padding . 0))
+                                          (right (padding . 0))
+                                          )
+   #note
+   \glissando
+   \override NoteColumn.glissando-skip = ##t
+  #})
+
+
+lineNoteheadOff =
+{
+ \revert Stem.stencil
+ \revert Flag.stencil
+ \revert Beam.stencil
+ \revert NoteHead.stencil
+ \revert Dots.stencil
+ \revert Glissando.breakable
+ \revert Glissando.after-line-breaking
+ \revert Glissando.thickness
+ \revert Glissando.bound-details
+ \revert NoteColumn.glissando-skip
+}
+
+
+{
+
+ \lineNotehead #1  e'1
+ \lineNoteheadOn #3
+ e''1
+ b'1
+ \lineNoteheadOff
+ \lineNotehead #5
+ e'1
+ \lineNotehead #7
+ e''1
+ \lineNoteheadOn #9 e'4
+ e''4.   e'8
+ \lineNoteheadOff
+ \omit Stem
+ e''4
+
+}
+
+\score {
+ {
+  \time 3/4
+  \once \override Voice.Dots.extra-offset = #'(0 . -1)
+  \lineNoteheadWithRhythm #5  e'4.
+  \stemDown
+  \lineNoteheadWithRhythmOn #5
+
+  g'8
+  b'4
+  \lineNoteheadOff
+  \lineNoteheadWithRhythmOn #5
+  g''4
+  f''4
+  e''4
+  d''4
+  c''4
+  \lineNoteheadOff
+  \once \override NoteHead.font-size = #-30
+  b'4
+ }
+ \layout {
+  \context{
+   \Score   proportionalNotationDuration = #(ly:make-moment 1/8)
+  }
+ }
+}
+
+\end{Verbatim}
+\hfill \par 
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
 \section {Noteheadless}
 \lilypondfile[staffsize=24]{/noteheadless.ly}
 \hfill

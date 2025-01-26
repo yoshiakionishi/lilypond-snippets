@@ -1,11 +1,9 @@
 \version "2.24.4"
-
-strPosClefDesign = #(ly:make-stencil (list 'embedded-ps
-                                           "gsave
+stringPositionClefDesign = #(ly:make-stencil (list 'embedded-ps
+"gsave
 currentpoint translate
 /fingboardpath
 {
-
 newpath 
 
 -0.55 7.5 moveto
@@ -64,6 +62,7 @@ stroke
 closepath
 stroke
 
+%mutesign
 newpath
 0.2 setlinewidth
 1 setlinecap
@@ -76,19 +75,19 @@ newpath
 1.5 -3.5 0.85 0 360 arc
 stroke
 grestore")
-                                     (cons 0 3)
-                                     (cons 0 1))
+	(cons 0 3)
+	(cons 0 1))
 
-strPosClefSize =
+stringPositionClefSize =
 #(lambda (grob)
    (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
           (mult (magstep sPCS)))
      (ly:stencil-scale
-      strPosClef
+      stringPositionClef
       mult mult)))
 
-strPosClef = {
-  \override Staff.Clef.stencil = \strPosClefDesign
+stringPositionClef = {
+  \override Staff.Clef.stencil = \stringPositionClefDesign
 }
 
 normalClef = {
@@ -100,7 +99,7 @@ normalClef = {
   \override Staff.LedgerLineSpanner.stencil = ##f
   \override Staff.TimeSignature.stencil = ##f
   \override Staff.BarLine.stencil = ##f
-  \strPosClef c'4^\markup {
+  \stringPositionClef c'4^\markup {
     \translate #'(-3 . 2)
     \musicglyph "space"
   }
@@ -108,5 +107,5 @@ normalClef = {
     \translate #'(-3 . -3)
     \musicglyph "space"
   }
-  e' g' b' d'' f'' a''
+ e' g' b' d'' f'' a''
 }
