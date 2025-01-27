@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 mutesign = \markup {
   \translate #'(0.5 . 0)
   \postscript

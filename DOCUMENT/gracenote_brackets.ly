@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 \language "english"
 
 % This code includes snippet for grace note

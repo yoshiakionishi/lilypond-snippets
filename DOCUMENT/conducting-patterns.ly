@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 condOnePattern =
 #'((moveto 0.25 1.75)

@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 jet = #(define-music-function (pitchthing width) (ly:music? number?)
          (define p1 (ly:music-property pitchthing 'pitch))
          (define steps (+ -6 (ly:pitch-steps p1)))

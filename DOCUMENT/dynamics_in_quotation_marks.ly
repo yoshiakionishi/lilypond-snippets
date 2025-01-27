@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 qmp = #(make-dynamic-script
         (markup #:combine
                 #:combine

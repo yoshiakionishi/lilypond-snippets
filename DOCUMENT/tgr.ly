@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 tgrWithIndication = #(define-music-function (note1) (ly:music?)
                        (let* 	(
                                 (p1 #{ #(ly:music-deep-copy note1) \harmonic #})

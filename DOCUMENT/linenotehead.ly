@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 noteheadless = \once \override Voice.NoteHead.stencil = ##f
 dashedLineNotehead =
 #(define-music-function

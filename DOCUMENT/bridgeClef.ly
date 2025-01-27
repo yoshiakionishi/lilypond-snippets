@@ -1,6 +1,6 @@
 \version "2.24.4"
 
-
+\pointAndClickOff
 
 strPosClefDesign = #(ly:make-stencil (list 'embedded-ps
                                            "gsave

@@ -1,5 +1,5 @@
 % !TEX TS-program = LilyPond
-
+\pointAndClickOff
 % Inspired by:
 % https://lists.gnu.org/archive/html/lilypond-user/2014-06/msg00209.html
 

@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 {
   \clef "G"
   \time 9/8

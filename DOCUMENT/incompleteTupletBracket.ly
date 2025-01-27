@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 %% "suppressWarning" function comes from:
 %% http://lsr.di.unimi.it/LSR/Item?id=552
 

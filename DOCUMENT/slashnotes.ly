@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 % Inspired by the code provided by Jean Abou Samra
 % https://lists.gnu.org/archive/html/lilypond-user/2022-11/msg00333.html
 

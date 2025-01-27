@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 compoundTimeWithBeatStructure =
 #(define-music-function (timesig beatstruct) (fraction? list?)
    #{

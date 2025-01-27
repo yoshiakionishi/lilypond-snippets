@@ -1,4 +1,5 @@
 \version "2.24.4"
+\pointAndClickOff
 \language "english"
 
 % Revised Jan 2 2025 for improving the appearance of fractions

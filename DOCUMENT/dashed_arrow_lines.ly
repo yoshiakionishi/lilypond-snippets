@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 dashedArrowLineOn =
 #(define-music-function (note)(ly:music?)
   (define paddingvalue (if (music-is-of-type? note 'event-chord)

@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 % See also: https://lsr.di.unimi.it/LSR/Item?id=516
 
 squareHollowNoteheadDesign =

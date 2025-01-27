@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 toneClusterBar =
 #(define-music-function (note1 note2 yOffset yLengthAdjust)

@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 slapA = #(define-music-function (note)   (ly:music?)
            #{ \once \override Voice.NoteHead.stencil =

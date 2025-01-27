@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 stringPositionClefDesign_two = #(ly:make-stencil (list 'embedded-ps
                                                        "gsave
 currentpoint translate

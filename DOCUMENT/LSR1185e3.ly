@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 schleiferMarkup = \markup {
   \large \halign #.2 \raise #0.0

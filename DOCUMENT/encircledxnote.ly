@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 % Stem attachment function inspired by:
 % https://lsr.di.unimi.it/LSR/Snippet?id=518
 

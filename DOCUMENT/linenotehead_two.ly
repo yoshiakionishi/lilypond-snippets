@@ -1,5 +1,6 @@
 \version "2.24.4"
-
+\pointAndClickOff
+% revised on January 25 2025
 
 lineNotehead =
 #(define-music-function (thickness note) (number? ly:music? )
@@ -10,10 +11,11 @@ lineNotehead =
    \once \override Glissando.breakable = ##t
    \once \override Glissando.after-line-breaking = ##t
    \once \override Glissando.thickness = #thickness
-   \once \override Glissando.bound-details = #'(
-                                                (left (padding . 0))
-                                                (right (padding . 0))
-                                                )
+   \once \override Glissando.bound-details =
+   #'(
+      (left (padding . 0))
+      (right (padding . 0))
+      )
    #note
    \glissando
 
@@ -24,6 +26,8 @@ lineNoteheadOn =
   #{
    \override Stem.stencil = ##f
    \override Flag.stencil = ##f
+   \override TupletBracket.stencil = ##f
+   \override TupletNumber.stencil = ##f
    \override Beam.stencil = ##f
    \override NoteHead.stencil = #ly:text-interface::print
    \override NoteHead.text = \markup{  \char ##x200A }
@@ -31,10 +35,11 @@ lineNoteheadOn =
    \override Glissando.breakable = ##t
    \override Glissando.after-line-breaking = ##t
    \override Glissando.thickness = #thickness
-   \override Glissando.bound-details = #'(
-                                          (left (padding . 0))
-                                          (right (padding . 0))
-                                          )
+   \override Glissando.bound-details =
+   #'(
+      (left (padding . 0))
+      (right (padding . 0))
+      )
    #note
    \glissando
    \override NoteColumn.glissando-skip = ##t
@@ -49,10 +54,11 @@ lineNoteheadWithRhythm =
    \once \override Glissando.breakable = ##t
    \once \override Glissando.after-line-breaking = ##t
    \once \override Glissando.thickness = #thickness
-   \once \override Glissando.bound-details = #'(
-                                                (left (padding . 0))
-                                                (right (padding . 0))
-                                                )
+   \once \override Glissando.bound-details =
+   #'(
+      (left (padding . 0))
+      (right (padding . 0))
+      )
    #note
    \glissando
 
@@ -66,10 +72,11 @@ lineNoteheadWithRhythmOn =
    \override Glissando.breakable = ##t
    \override Glissando.after-line-breaking = ##t
    \override Glissando.thickness = #thickness
-   \override Glissando.bound-details = #'(
-                                          (left (padding . 0))
-                                          (right (padding . 0))
-                                          )
+   \override Glissando.bound-details =
+   #'(
+      (left (padding . 0))
+      (right (padding . 0))
+      )
    #note
    \glissando
    \override NoteColumn.glissando-skip = ##t
@@ -88,6 +95,9 @@ lineNoteheadOff =
  \revert Glissando.thickness
  \revert Glissando.bound-details
  \revert NoteColumn.glissando-skip
+ \revert TupletBracket.stencil
+ \revert TupletNumber.stencil
+ \revert Beam.stencil
 }
 
 

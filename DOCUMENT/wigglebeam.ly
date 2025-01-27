@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 wiggleBeamOne =
 #(define-music-function (vOffset howMany howWide howTilted)

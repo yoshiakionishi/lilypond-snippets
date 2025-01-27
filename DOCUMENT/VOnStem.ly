@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 VOnStemOn = {
   \override Stem.no-stem-extend = ##f

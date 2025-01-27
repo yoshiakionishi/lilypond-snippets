@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 
 MOnStemOn = {
   \override Stem.length = #12

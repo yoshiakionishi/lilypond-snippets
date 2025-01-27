@@ -1,5 +1,5 @@
 \version "2.24.4"
-
+\pointAndClickOff
 %% Inspired by:
 %% http://lsr.di.unimi.it/LSR/Item?id=796
 
