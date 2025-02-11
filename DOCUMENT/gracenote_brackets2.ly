@@ -1,3 +1,7 @@
+%% TO BE REVISED
+%% MUST ADD 0.1125 setlinewidth to the extension line to make the bracket seemless!!!!
+
+
 \version "2.24.4"
 \pointAndClickOff
 \language "english"
@@ -7,6 +11,7 @@
 % https://lsr.di.unimi.it/LSR/Item?id=1048
 
 % Slightly revised, Jan. 19 2025 - YO
+
 
 graceNoteBeforeBeatOn =
 #(define-music-function (setting-list starting_note) (list? ly:music? )
