@@ -1,8 +1,173 @@
 %%%%%%%%%%%%%%%%%%%
+%  ARTICULATIONS  %  
 %%%%%%%%%%%%%%%%%%%
 
 
 \chapter {Articulations}
+
+\label{sec:articulations_accent-staccato}
+
+\section {Accent-Staccato}
+\hfill
+\lilypondfile{/accentStaccato.ly}
+\hfill
+
+\subsection{Description}
+While \textit{accent-staccato} is not specific to contemporary music, in LilyPond, specifying accent and staccato via \verb|->-.| could cause the two articulation marks to be separated from each other. This happens because of the default setting for accents is to have them placed \textit{outside} the staff line. For example, if you wrote \verb|\stemUp g''->-.|, the following results:
+
+\lilypond[staffsize=30,line-width=1000]{
+\version "2.24.4"
+\language "english"
+{
+\stemUp g''->-. 
+}
+}
+
+This code implements a combination of the music glyphs \verb|scripts.sforzato| and \verb|scripts.staccato| as one entity.
+
+\subsection{Grammar}
+\begin{verbatim}
+NOTE \accentStaccato
+NOTE \accentStaccatoUp
+NOTE \accentStaccatoDown
+\end{verbatim}
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+#(append! default-script-alist
+          (list
+           `(accentStaccatoUp
+             . (
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup
+
+
+                            \center-align
+                            \combine \musicglyph "scripts.sforzato"
+                            \translate #'(0 . -0.75) 
+                            \musicglyph "scripts.staccato" #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (direction . ,UP))))
+
+          (list
+           `(accentStaccatoDown
+             . (
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup \center-align
+                            \combine \musicglyph "scripts.staccato"
+                            \translate #'(0 . -0.75) 
+                            \musicglyph "scripts.sforzato" #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (direction . ,DOWN)))))
+
+accentStaccato =  #(make-articulation 'accentStaccatoUp)
+accentStaccatoUp = #(make-articulation 'accentStaccatoUp)
+accentStaccatoDown = #(make-articulation 'accentStaccatoDown)
+
+
+{
+ \override Staff.TimeSignature.stencil = ##f
+ \time 5/4
+
+ c'4\accentStaccato c'4 \accentStaccatoDown c''\accentStaccatoUp
+ \stopStaff
+ \override Staff.StaffSymbol.line-positions = #'(4 -4)
+ \startStaff
+
+ \stemUp g'' \tweak Y-offset #1.5 \accentStaccatoDown
+ \stemDown d' \tweak Y-offset #-0.5 \accentStaccatoUp
+}
+\end{Verbatim}
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Accent-Tenuto}
+\hfill
+\lilypondfile{/accentTenuto.ly}
+\hfill
+
+\subsection{Description}
+For the same rationale as explained in the \hyperref[sec:articulations_accent-staccato]{Accent-Staccato} entry, this code implements a combination of the music glyphs \verb|scripts.sforzato| and \verb|scripts.tenuto| as one entity.
+
+\subsection{Grammar}
+\begin{verbatim}
+NOTE \accentTenuto
+NOTE \accentTenutoUp
+NOTE \accentTenutoDown
+\end{verbatim}
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+#(append! default-script-alist
+          (list
+           `(accentTenutoUp
+             . (
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup
+
+
+                            \center-align
+                            \combine \musicglyph "scripts.sforzato"
+                            \translate #'(0 . -0.75) 
+                            \musicglyph "scripts.tenuto" #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (direction . ,UP))))
+
+          (list
+           `(accentTenutoDown
+             . (
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup \center-align
+                            \combine \musicglyph "scripts.tenuto"
+                            \translate #'(0 . -0.75) 
+                            \musicglyph "scripts.sforzato" #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (direction . ,DOWN)))))
+
+accentTenuto =  #(make-articulation 'accentTenutoUp)
+accentTenutoUp = #(make-articulation 'accentTenutoUp)
+accentTenutoDown = #(make-articulation 'accentTenutoDown)
+
+
+{
+ \override Staff.TimeSignature.stencil = ##f
+ \time 5/4
+
+ c'4\accentTenuto c'4 \accentTenutoDown c''\accentTenutoUp
+ \stopStaff
+ \override Staff.StaffSymbol.line-positions = #'(4 -4)
+ \startStaff
+
+ \stemUp g'' \tweak Y-offset #1.5 \accentTenutoDown
+ \stemDown d' \tweak Y-offset #-0.5 \accentTenutoUp
+}
+\end{Verbatim}
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
 
 \section {Jeté (Ricochet)}
 \hfill
