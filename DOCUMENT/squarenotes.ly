@@ -1,15 +1,16 @@
 \version "2.24.4"
 \pointAndClickOff
 % See also: https://lsr.di.unimi.it/LSR/Item?id=516
+% UPDATED June 13 2025
 
 squareHollowNoteheadDesign =
-#(ly:make-stencil '(path 0.15 (moveto  0.05 0.425
-                                       rlineto 1. 0
+#(ly:make-stencil '(path 0.15 (moveto  0.0 0.425
+                                       rlineto 1.2 0
                                        rlineto 0 -0.875
-                                       rlineto -1. 0
+                                       rlineto -1.2 0
                                        closepath)
                          )
-                  (cons -0.025 1.125)
+                  (cons -0.15 1.275)
                   (cons -1 1))
 
 squareHollowNotehead =
@@ -25,17 +26,17 @@ squareHollowNoteheadOn =
 squareHollowNoteheadOff = \revert Voice.NoteHead.stencil
 
 squareFilledNoteheadDesign =
-#(ly:make-stencil '(path 0.15 (moveto  0.05 0.425
-                                       rlineto 1. 0
-                                       rlineto 0 -0.875
-                                       rlineto -1. 0
-                                       closepath)
+#(ly:make-stencil '(path 0.15  (moveto  0.0 0.425
+                                        rlineto 1.2 0
+                                        rlineto 0 -0.875
+                                        rlineto -1.2 0
+                                        closepath)
+
                          round
                          round
                          #t)
-                  (cons -0.025 1.125)
-                  (cons -1 1))
-
+                  (cons -0.15 1.275)
+                  (cons -1 0))
 
 squareFilledNotehead =
 #(define-music-function (note) (ly:music?)
