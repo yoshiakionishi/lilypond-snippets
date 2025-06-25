@@ -1,10 +1,11 @@
 %%%%%%%%%%%%%%%%%%%
+%CLEF
 %%%%%%%%%%%%%%%%%%%
 
 
 \chapter {Clefs}
 
-
+\label{sec:stringPositionClef}
 \section {String Position Clef}
 \hfill
 \lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/stringPositionClef.ly}
@@ -154,6 +155,153 @@ stroke
 
 %%%%%%%%%%%%%%%%%%%
 
+\section {String Position Clef (revised)}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/stringPositionClefRev.ly}
+\hfill
+
+\subsection{Description}
+This is a revised version of the \hyperref[sec:stringPositionClef]{String Position Clef}, where the fine-tuner pins are graphically represented, as well as the four strings are arranged tighter than the previous version.
+\subsection{Grammar}
+\begin{verbatim}
+\stringPositionClef 
+\end{verbatim}
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+
+% revision june 24 2025
+
+stringPositionClefDesignRev = #(ly:make-stencil (list 'embedded-ps
+                                                      "gsave
+currentpoint translate
+/fingboardpath
+{
+
+newpath 
+%0 1 .7 0 setcmykcolor 
+-0.5 7.5 moveto
+0 -3 rlineto
+1 -6.5 rlineto
+-1 -1 rlineto
+0 -3 rlineto
+4.05 0 rlineto
+0 3 rlineto
+-1 1 rlineto
+1 6.5 rlineto
+0 3 rlineto
+closepath
+
+} def
+
+% fingboardpath
+ fingboardpath clip
+
+newpath 
+0.15 setlinewidth
+0.75 5.25 moveto
+0 -7.3 rlineto
+-0.2 0 rmoveto
+-0.75 5 rlineto
+3.45 0 rlineto
+-0.75 -5 rlineto
+-0.2 0 rmoveto
+0. 7.3 rlineto
+stroke
+0.35 setlinewidth
+-0.4 2.75 moveto
+3.75 0 rlineto
+stroke
+
+%inner two lines
+newpath
+0.15 setlinewidth
+1.25 5.5 moveto
+0. -7.5 rlineto
+1.8 5.5 moveto
+0. -7.5 rlineto
+stroke
+
+
+%finetuner pins
+0.75 5.4 0.14 0 360 arc
+fill
+1.25 5.65 0.14 0 360 arc
+fill
+1.8 5.65 0.14 0 360 arc
+fill
+2.3 5.4 0.14 0 360 arc
+fill
+
+
+
+%bridge
+newpath
+-0.4 3.6 moveto
+0.3 0.4 rlineto
+3.2 0 rlineto
+0.3 -0.4 rlineto
+stroke
+
+%tailpiece
+0.15 4.75 moveto 
+1 setlinecap
+1 setlinejoin
+2.75 0 rlineto
+-0.65 1.75 rlineto
+-0 -0  -0.6 0.55 -1.45 0  rcurveto
+closepath
+stroke
+
+%mute sign, delete if not needed
+newpath
+0.2 setlinewidth
+1 setlinecap
+1.5 -2.25 moveto
+0 -2.5 rlineto
+0.25 -3.5 moveto
+2.5 0 rlineto
+stroke
+newpath
+1.5 -3.5 0.85 0 360 arc
+stroke
+
+grestore")
+                                                (cons 0 3)
+                                                (cons 0 1))
+
+strPosClefSize =
+#(lambda (grob)
+  (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
+         (mult (magstep sPCS)))
+   (ly:stencil-scale
+    strPosClef
+    mult mult)))
+
+stringPositionClefDesignRev = {
+ \override Staff.Clef.stencil = \stringPositionClefDesignRev
+}
+
+normalClef = {
+ \revert Staff.Clef.stencil
+}
+
+{
+ \override Staff.StaffSymbol.line-positions = #'(6  -6)
+ \override Staff.LedgerLineSpanner.stencil = ##f
+ \override Staff.TimeSignature.stencil = ##f
+ \override Staff.BarLine.stencil = ##f
+ \stringPositionClefDesignRev c'4 e' g' b' d'' f'' a''
+}
+\end{Verbatim}
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
 \section {String Position Clef 2}
 \hfill
 \lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/stringPositionClef_two.ly}
@@ -258,4 +406,339 @@ normalClef = {
 
 \vfill \break
 
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\label{sec:StringPositionClef3a}
+\section {String Position Clef 3a}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/stringPositionClef_three.ly}
+\hfill
+
+\subsection{Description}
+In contrast to the two types of String Position Clefs introduced earlier, this clef helps facilitate the showing of the positions between the edge of the fingerboard and bridge, as well as between the bridge and the edge of the tailpiece. 
+
+\subsection{Grammar}
+\begin{verbatim}
+\stringPositionClef_three 
+\end{verbatim}
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+
+stringPositionClef_three_Design = #(ly:make-stencil (list 'embedded-ps
+                                                          "gsave
+currentpoint translate
+/fingboardpath
+{
+newpath 
+0 1 .7 0 setcmykcolor 
+0.3 4.75 moveto
+0 -4.5 rlineto
+-0.2 -0.5 rlineto
+0.5 -2.15 rlineto
+-1 0 rlineto 
+0 -3 rlineto
+3.75 0 rlineto
+0 3 rlineto
+-1 0 rlineto
+0.45 2.15 rlineto
+-0.15 0.5 rlineto
+0 4.5 rlineto
+closepath
+%stroke
+.1 .4 .5 .9 setcmykcolor
+} def
+
+%fingboardpath 
+
+fingboardpath clip
+newpath 
+0.15 setlinewidth
+0.8 3.5 moveto
+0 -5.85 rlineto
+-0.2 0 rmoveto
+-0.25 1.3 rlineto
+2.2 0 rlineto
+-0.2 -1.3 rlineto
+-0.2 0 rmoveto
+0. 5.85 rlineto
+stroke
+0.35 setlinewidth
+0.15 -1 moveto
+3.2 0 rlineto
+stroke
+
+%inner two line
+newpath
+0.15 setlinewidth
+1.25 3.6 moveto
+0. -5.95 rlineto
+1.7 3.6 moveto
+0. -5.95 rlineto
+stroke
+
+0.8 3.5 0.14 0 360 arc
+fill
+2.1525 3.5 0.14 0 360 arc
+fill
+1.25 3.7 0.14 0 360 arc
+fill
+1.7 3.7 0.14 0 360 arc
+fill
+
+
+
+%bridge
+newpath
+0.25 0.6 moveto
+0.3 0.4 rlineto
+1.85 0 rlineto
+0.3 -0.4 rlineto
+stroke
+
+%tailpiece
+0.425 3 moveto 
+1 setlinecap
+1 setlinejoin
+2.15 0 rlineto
+-0.35 1.25 rlineto
+-0 -0  -0.65 0.75 -1.55 0  rcurveto
+closepath
+stroke
+
+%%% mute sign; commentify if not needed %%%
+newpath
+0.2 setlinewidth
+1 setlinecap
+1.5 -2.25 moveto
+0 -2.5 rlineto
+0.25 -3.5 moveto
+2.5 0 rlineto
+stroke
+newpath
+1.5 -3.5 0.85 0 360 arc
+stroke
+%%% end of mute sign for commenting/uncommenting %%%
+
+grestore
+
+")
+                                                    (cons 0 3)
+                                                    (cons 0 1))
+
+stringPositionClefSize =
+#(lambda (grob)
+  (let* ((bCS (ly:grob-property grob 'font-size 0.0))
+         (mult (magstep bCS)))
+   (ly:stencil-scale
+    stringPositionClef
+    mult mult)))
+
+stringPositionClef_three = {
+ \override Staff.Clef.stencil = \stringPositionClef_three_Design
+}
+
+{
+ \override Staff.StaffSymbol.line-positions = #'(4 0  -4)
+ \stringPositionClef_three
+ c'4 e' g' b' d'' f'' a''
+}
+\end{Verbatim}
+
+\subsection{Discussion}
+\begin{enumerate}
+\item With the current design, \verb|e'| places a note at the lower end of the fingerboard. \verb|b'| places a note at the bridge line, and \verb|f''| places a note on the line indicating the edge of the tailpiece. 
+
+\item The current design comes with the mute sign. If the mute sign is not needed, remove the following portion of the code above:
+
+\begin{Verbatim}[numbers=left,xleftmargin=5mm,firstnumber=64]
+%%% mute sign; commentify if not needed %%%
+newpath
+0.2 setlinewidth
+1 setlinecap
+1.5 -2.25 moveto
+0 -2.5 rlineto
+0.25 -3.5 moveto
+2.5 0 rlineto
+stroke
+newpath
+1.5 -3.5 0.85 0 360 arc
+stroke
+%%% end of mute sign for commenting/uncommenting %%%
+\end{Verbatim}
+
+\item If you do not wish the ledger lines to appear within the staff line, consider using \verb|\override Staff.NoteHead.no-ledgers = ##t|.
+\end{enumerate}
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+\section {String Position Clef 3b (Longer Span)}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/stringPositionClef_three.ly}
+\hfill
+
+\subsection{Description}
+The design of this clef is similar to \hyperref[sec:StringPositionClef3a]{String Position Clef 3a}; however, here the distance among the edge of the fingerboard, bridge, and the edge of the tailpiece is set wider. 
+\subsection{Grammar}
+\begin{verbatim}
+\stringPositionClef_three 
+\end{verbatim}
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+
+stringPositionClef_three_longer_Design = #(ly:make-stencil (list 'embedded-ps
+                                                          "gsave
+currentpoint translate
+/fingboardpath
+{
+newpath 
+0 1 .7 0 setcmykcolor 
+0.3 5.75 moveto
+0 -6.5 rlineto
+-0.2 -0.5 rlineto
+0.5 -2.15 rlineto
+-0.5 0 rlineto 
+0 -2.5 rlineto
+2.75 0 rlineto
+0 2.5 rlineto
+-0.5 0 rlineto
+0.45 2.15 rlineto
+-0.15 0.5 rlineto
+0 6.5 rlineto
+closepath
+%stroke
+.1 .4 .5 .9 setcmykcolor
+} def
+
+%fingboardpath 
+
+fingboardpath clip
+newpath 
+0.15 setlinewidth
+0.8 4.5 moveto
+0 -7.85 rlineto
+-0.2 0 rmoveto
+-0.25 1.3 rlineto
+2.2 0 rlineto
+-0.2 -1.3 rlineto
+-0.2 0 rmoveto
+0. 7.85 rlineto
+stroke
+0.35 setlinewidth
+0.15 -2 moveto
+3.2 0 rlineto
+stroke
+
+%inner two line
+newpath
+0.15 setlinewidth
+1.25 4.6 moveto
+0. -7.95 rlineto
+1.7 4.6 moveto
+0. -7.95 rlineto
+stroke
+
+0.8 4.5 0.14 0 360 arc
+fill
+2.1525 4.5 0.14 0 360 arc
+fill
+1.25 4.7 0.14 0 360 arc
+fill
+1.7 4.7 0.14 0 360 arc
+fill
+
+
+
+%bridge
+newpath
+0.25 0.6 moveto
+0.3 0.4 rlineto
+1.85 0 rlineto
+0.3 -0.4 rlineto
+stroke
+
+%tailpiece
+0.425 4 moveto 
+1 setlinecap
+1 setlinejoin
+2.15 0 rlineto
+-0.35 1.25 rlineto
+-0 -0  -0.65 0.75 -1.55 0  rcurveto
+closepath
+stroke
+
+%%% mute sign; commentify if not needed %%%
+newpath
+0.2 setlinewidth
+1 setlinecap
+1.5 -3.25 moveto
+0 -2.5 rlineto
+0.25 -4.5 moveto
+2.5 0 rlineto
+stroke
+newpath
+1.5 -4.5 0.85 0 360 arc
+stroke
+%%% end of mute sign for commenting/uncommenting %%%
+
+grestore
+
+")
+                                                    (cons 0 3)
+                                                    (cons 0 1))
+
+stringPositionClefSize =
+#(lambda (grob)
+  (let* ((bCS (ly:grob-property grob 'font-size 0.0))
+         (mult (magstep bCS)))
+   (ly:stencil-scale
+    stringPositionClef
+    mult mult)))
+
+stringPositionClef_three_longer = {
+ \override Staff.Clef.stencil = \stringPositionClef_three_longer_Design
+}
+
+{
+ \override Staff.StaffSymbol.line-positions = #'(6 0  -6)
+ \stringPositionClef_three_longer
+ c'4 e' g' b' d'' f'' a''
+}
+\end{Verbatim}
+
+\subsection{Discussion}
+\begin{enumerate}
+\item With the current design, \verb|c'| places a note at the lower end of the fingerboard. \verb|b'| places a note at the bridge line, and \verb|a''| places a note on the line indicating the edge of the tailpiece. 
+
+\item The current design comes with the mute sign. If the mute sign is not needed, remove the following portion of the code above:
+
+\begin{Verbatim}[numbers=left,xleftmargin=5mm,firstnumber=64]
+%%% mute sign; commentify if not needed %%%
+newpath
+0.2 setlinewidth
+1 setlinecap
+1.5 -3.25 moveto
+0 -2.5 rlineto
+0.25 -4.5 moveto
+2.5 0 rlineto
+stroke
+newpath
+1.5 -4.5 0.85 0 360 arc
+stroke
+%%% end of mute sign for commenting/uncommenting %%%
+\end{Verbatim}
+
+\item If you do not wish the ledger lines to appear within the staff line, consider using \verb|\override Staff.NoteHead.no-ledgers = ##t|.
+\end{enumerate}
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
 
