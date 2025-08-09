@@ -23,7 +23,6 @@ MModEquation =
          (ratiotwo ratio2)
          )
    #{
-    %  \tweak self-alignment-X #LEFT
     \tweak X-offset #(- horizontaloffset 0.35)
     \tweak Y-offset #verticaloffset
     \textEndMark  \markup \right-align {
@@ -142,7 +141,6 @@ MModEquation =
                      (number->string (car (car ratioone)))
                      )
                  (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
-
            #:line
            (#:hspace
             -4.8
@@ -257,7 +255,9 @@ MModEquation =
                              (number->string (cadr (car ratiotwo))))  )
                      (number->string (car (car ratiotwo)))
                      )
-                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))))
+                 (#:italic
+                  (#:fontsize -5
+                              (#:musicglyph "space")))))))))))
          ((= (length ratiotwo) 2)
           (markup
            #:line
@@ -342,7 +342,7 @@ MModEquation =
                      (begin (string-append
                              (number->string (car (cadr ratiotwo)))
                              ":"
-                             (number->string (cadr (cadr ratiotwo))))  )
+                             (number->string (cadr (cadr ratiotwo)))))
                      (number->string (car (cadr ratiotwo)))
                      )
 
@@ -350,12 +350,8 @@ MModEquation =
            ))
          )
       }
-      %
-
-
       {
        \hspace #-4.25
-
        \note { $notetwo } #(if (= (ly:duration-log notetwo) 4) 1 1 )
       }
       {
@@ -364,15 +360,8 @@ MModEquation =
        \draw-line #'(-2 . 0)
        \musicglyph "arrowheads.open.01"
       }
-
-
-
-
-
      }
-
     }
-
    #})
   )
 
@@ -399,7 +388,6 @@ MModEquationBegin =
      {
       {
        \hspace #-4
-       %#(+ (* (ly:duration-dot-count noteone) -0.75) -4)
        \concat {
         \combine
         \musicglyph "arrowheads.open.0M1"
@@ -682,7 +670,6 @@ MModEquationBegin =
                    (#:fontsize -5
                                (#:musicglyph "space")))))))))
 
-
             #:line
             (#:hspace
              -4.8
@@ -731,9 +718,6 @@ MModEquationBegin =
             ))
           )
        }
-       %
-
-
        {
         \hspace #-4
         \note { $notetwo }
@@ -763,7 +747,7 @@ MModEquationSTR =
          (ratiotwo ratio2)
          )
    #{
-    %  \tweak self-alignment-X #LEFT
+  
     \tweak X-offset #(- horizontaloffset 0.35)
     \tweak Y-offset #verticaloffset
     \textEndMark  \markup \right-align {
@@ -1491,12 +1475,9 @@ MModEquationBeginSTR =
  c'2 \MModEquation 4 #'() 16. #'( ) 0 #0
  c'2
  c'2 \break
- c'2
- c'2 % \MModEquationSTR 2 #'((6 . 4) (3 . 4)) 2 #'((3 . 4)) 7 #0
  \tempo 4 = 120 c'2
  c'2
- c'2
- c'2 % \MModEquationSTR 16. #'((44 . 4) (3 . 4)) 16. #'((2 . 3)) 3 #-5 \break
+ c'2 \break
  \MModEquationBeginSTR 16. #'((44  4) (3 4)) 16. #'((2 3)) 7
  \tempo 8 = 300
  c'2
