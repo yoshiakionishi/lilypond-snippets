@@ -1,10 +1,14 @@
-%%%Draft version of the metric modulation formula, version aug 9 2025%%%
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Yoshiaki Onishi
+%
+% Metric Modulation Equation
+% DRAFT VERSION
+% Aug 9 2025
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \version "2.25.4"
 
 MModEquation =
-#(define-music-function (notevalue1 ratio1 notevalue2 ratio2 verticaloffset horizontaloffset) 
-(ly:duration? list? ly:duration? list? number? number?)
+#(define-music-function (notevalue1 ratio1 notevalue2 ratio2 verticaloffset horizontaloffset) (ly:duration? list? ly:duration? list? number? number?)
   (let* (
          (noteone notevalue1)
          (notetwo notevalue2)
@@ -12,11 +16,12 @@ MModEquation =
          (ratiotwo ratio2)
          )
    #{
-    \tweak self-alignment-X #RIGHT
-    \tweak X-offset #horizontaloffset
+    \tweak self-alignment-X #LEFT
+    \tweak X-offset #(- horizontaloffset 0.35)
     \tweak Y-offset #verticaloffset
     \textEndMark \markup {
-     \hspace #-4.8
+     \hspace #-4.25
+     \raise #0
      \fontsize #-4.5
      \concat {
       {
@@ -26,8 +31,10 @@ MModEquation =
       }
       {
        \note { $noteone   } #(if (=  (ly:duration-log noteone) 4) 1.35 1.2 )
+      }
 
-       \hspace #(if (> (ly:duration-log notetwo) 2) -4.5 -5)
+      {
+       \hspace #(if (> (ly:duration-log noteone) 2) -4.5 -4.5)
        \raise #(if (< (ly:duration-log noteone) 8) 2 (ly:duration-log noteone))
        \fontsize #1
        \rhythm {
@@ -38,25 +45,33 @@ MModEquation =
         \override TupletBracket.X-offset = #0
         \override NoteHead.stencil = ##f
         \override Stem.stencil = ##f
-        #(if (= (length ratioone) 2) #{
+        #(cond ((= (length ratioone) 2) #{
          \tuplet #(cadr ratioone) { \tuplet #(car ratioone) { 4 } }
-             #} )
-        #(if (= (length ratioone) 1) #{
-         \tuplet #(car ratioone) { 4 }
-             #} )
+                                        #} )
+               ((= (length ratioone) 1) #{
+                \tuplet #(car ratioone) { 4 }
+                                        #} )
+               ((= (length ratioone) 0) #{
+                \override TupletBracket.transparent = ##t
+                \override TupletNumber.transparent = ##t
+                \tuplet 4/4 { 4 }
+                                        #} ))
        }
+
       }
+
      }
     }
 
+
     \tweak self-alignment-X #CENTER
     \tweak Y-offset #(- verticaloffset 0.4)
-    \tweak X-offset #horizontaloffset
+    \tweak X-offset #(- horizontaloffset 0.35)
     \textEndMark \markup {          \fontsize #-3 "="}
 
     \tweak Y-offset #verticaloffset
-    \tweak self-alignment-X #LEFT
-    \tweak X-offset #horizontaloffset
+    \tweak self-alignment-X #RIGHT
+    \tweak X-offset #(- horizontaloffset 0.35)
     \tweak self-alignment-Y -1
     \textEndMark \markup {
 
@@ -96,7 +111,6 @@ MModEquation =
     }
    #})
   )
-
 
 MModEquationBegin =
 #(define-music-function (notevalue1 ratio1 notevalue2 ratio2 verticaloffset) (ly:duration? list? ly:duration? list? number? )
@@ -107,10 +121,11 @@ MModEquationBegin =
          (ratiotwo ratio2)
          )
    #{
-    \tweak self-alignment-X #RIGHT
+    \tweak self-alignment-X #LEFT
     \tweak Y-offset #verticaloffset
     \textMark \markup {
-     \hspace #-4.8
+     \hspace #-4.25
+     \raise #0
      \fontsize #-4.5
      \concat {
       {
@@ -119,8 +134,10 @@ MModEquationBegin =
        \draw-line #'(2 . 0)  \musicglyph "space"
       }
       {
-       \note { $noteone   } #(if (=  (ly:duration-log noteone) 4) 1.35 1.2 )
-       \hspace #(if (> (ly:duration-log notetwo) 2) -4.5 -5)
+       \note { $noteone } #(if (=  (ly:duration-log noteone) 4) 1.35 1.2 )
+      }
+      {
+       \hspace #(if (> (ly:duration-log noteone) 2) -4.5 -4.5)
        \raise #(if (< (ly:duration-log noteone) 8) 2 (ly:duration-log noteone))
        \fontsize #1
        \rhythm {
@@ -131,25 +148,34 @@ MModEquationBegin =
         \override TupletBracket.X-offset = #0
         \override NoteHead.stencil = ##f
         \override Stem.stencil = ##f
-        #(if (= (length ratioone) 2) #{
+        #(cond ((= (length ratioone) 2) #{
          \tuplet #(cadr ratioone) { \tuplet #(car ratioone) { 4 } }
-             #} )
-        #(if (= (length ratioone) 1) #{
-         \tuplet #(car ratioone) { 4 }
-             #} )
+                                        #} )
+               ((= (length ratioone) 1) #{
+                \tuplet #(car ratioone) { 4 }
+                                        #} )
+               ((= (length ratioone) 0) #{
+                \override TupletBracket.transparent = ##t
+                \override TupletNumber.transparent = ##t
+                \tuplet 4/4 { 4 }
+                                        #} ))
        }
+
       }
      }
     }
 
     \tweak self-alignment-X #CENTER
     \tweak Y-offset #(- verticaloffset 0.4)
-    \textMark \markup {    \hspace  #0.5    \fontsize #-3 "="}
+
+    \textMark \markup {  \hspace  #1.5 \fontsize #-3 "="}
 
     \tweak Y-offset #verticaloffset
-    \tweak self-alignment-X #LEFT
+    \tweak self-alignment-X #RIGHT
+    \tweak X-offset #3.5 
     \tweak self-alignment-Y -1
     \textMark \markup {
+
      \hspace  #1.5
      \fontsize #-4.5
      \concat {
@@ -186,10 +212,9 @@ MModEquationBegin =
     }
    #})
   )
-
 {
  c'2
- c'2  \MModEquation 2. #'((6 . 4) (3 . 4)) 2 #'((3 . 4)) 7 #0
+ c'2  \MModEquation 2 #'((6 . 4) (3 . 4)) 2 #'((3 . 4)) 7 #0
  \tempo 4 = 120 c'2
  c'2
  c'2
@@ -199,7 +224,7 @@ MModEquationBegin =
  c'2
  c'2
  c'2
- c'2
+ c'2  \MModEquation 4 #'() 16. #'( ) 0 #0
  c'2
  c'2
 }
