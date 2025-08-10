@@ -2,6 +2,9 @@
 \pointAndClickOff
 \language "english"
 
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
+
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
   (for-each
@@ -219,9 +222,22 @@ compoundFractionalTimeSignatureATwo =
   #})
 
 
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
+
+
 {
  \compoundFractionalTimeSignatureATwo #'((3 4)(2 3 4)) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }

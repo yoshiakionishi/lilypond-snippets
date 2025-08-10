@@ -2,6 +2,10 @@
 
 \documentclass[11pt, oneside]{book}   	% use "amsart" instead of "article" for AMSLaTeX format
 
+\usepackage[toc,page]{appendix}
+\usepackage[notes,backend=biber]{biblatex-chicago}
+\addbibresource{YO_snippets_biblio.bib}
+
 \usepackage[program=/opt/homebrew/bin/lilypond]{lyluatex}
 %\usepackage{bigfoot}
 \usepackage{fancyvrb}
@@ -35,9 +39,7 @@
 								% TeX will automatically convert eps --> pdf in pdflatex		
 \usepackage{amssymb}
 \usepackage{amsmath}
-\usepackage[toc,page]{appendix}
-\usepackage[notes,backend=biber]{biblatex-chicago}
-\addbibresource{YO_snippets_biblio.bib}
+
 
 %SetFonts
 

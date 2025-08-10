@@ -3,6 +3,9 @@
 % Inspired by:
 % https://lists.gnu.org/archive/html/lilypond-user/2014-06/msg00209.html
 
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
+
 \version "2.24.4"
 \language "english"
 
@@ -158,21 +161,42 @@ fractionalTimeSignatureAPlus =
 
         )
   #})
+
+
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
+
+
 \new Staff \with { instrumentName = \markup {\fontsize #4 \box "A"}} {
  \fractionalTimeSignatureA #'(3 2 3 4) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \new Staff \with { instrumentName = \markup {\fontsize #4 \box "B"}} {
  \fractionalTimeSignatureAPlus #'(3 2 3 4) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \new Staff \with { instrumentName = \markup {\fontsize #4 \box "C"}} {
  \fractionalTimeSignatureA #'(11 3 4) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }

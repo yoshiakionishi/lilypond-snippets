@@ -9,7 +9,7 @@
 \lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/incompleteTupletBracket.ly}
 \subsection{Description}
 
-This entry supplements the irrational time signatures\footnote{See \hyperref[sec:time_signatures]{Chapter \textbf{Time Signatures}} for discussion on the variants of the irrational/fractional time signatures.} as seen on LSR.\footnote{\url{https://lsr.di.unimi.it/LSR/Snippet?id=552}}. Concerning the irrational time signatures, in her \textit{Behind Bars: the Definitive Guide to Music Notation}, Elaine Gould suggests the use of denominator as any division of the semibreve/whole note.\autocite[180-181]{RN1741}. However, in these pages there has not been a mention of the use of tuplet brackets while the non-conventional time signature is in place. There are examples, such as \textit{Asyla} for large orchestra by Thomas Adès,\autocite{RN1742}, where tuplet brackets are placed atop "incomplete" tuplets. 
+This entry implements the irrational time signatures\footnote{See \hyperref[sec:time_signatures]{Chapter \textbf{Time Signatures}} for discussion on the variants of the irrational/fractional time signatures.} as seen on LSR.\footnote{\url{https://lsr.di.unimi.it/LSR/Snippet?id=552}}. Concerning the irrational time signatures, in her \textit{Behind Bars: the Definitive Guide to Music Notation}, Elaine Gould suggests the use of denominator as any division of the semibreve/whole note.\autocite[180-181]{RN1741}. However, in these pages there has not been a mention of the use of tuplet brackets while the non-conventional time signature is in place. There are examples, such as \textit{Asyla} for large orchestra by Thomas Adès,\autocite{RN1742}, where tuplet brackets are placed atop "incomplete" tuplets. 
 
 While it is still prudent to spend a paragraph explaining the nature of the irrational time signatures in the preface, my preference has also been to utilize incomplete tuplet brackets, in order to allow the reading of the rhythm consistent and smooth from bars with ordinary time signatures. It is also helpful to have the brackets shown in cases of compound time signatures that use irrational time signatures in part (see the first measure of the example).
 
@@ -116,5 +116,1673 @@ In the preceding code, I have opted to notate the tuplets within the bars with i
 
 \vfill \break
 
+
+%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%
 
+
+
+
+\section {Metric Modulation Equation (Regular Flag)}
+\label{sec:metricModulationRegularFlag}
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/metricModulationRegularFlag.ly}
+\subsection{Description}
+
+This entry implements a metric modulation formula that indicates a note value of one measure being equal to another note value of the subsequent measure. While this notation has existed for a very long time, it was in the twentieth century where composers such as Elliott Carter used them extensively in their works. This code follows the convention commonly seen in Carter's scores, where the formula is accompanied by the right and left arrows to state explicitly that the note value on the left refers to that of the preceding measure, while the one on the right refers to that of the subsequent measure.\footnote{While it may be beyond the scope of this Cookbook, stating the orientation of the note value clarifies any ambiguities, as the convention in the classical period had the two note values flipped, where the note on the left indicated the note value of the forthcoming measure, and the one on the right, that of the preceding measure. See \cite{RN1757}, 52. } \par\hfill\par
+
+Another version with notes with straight flags can be found \hyperref[sec:metricModulationStraightFlag]{\textbf{here}}.
+
+\subsection{Grammar}
+\begin{verbatim}
+\MModEquation 
+		LEFT_NOTE_DURATION #'((LEFT_TUPLET_1)(LEFT_TUPLET_2)) 
+		RIGHT_NOTE_DURATION #'((RIGHT_TUPLET_1)(RIGHT_TUPLET_2)) 
+		#V_OFFSET #H_OFFSET
+\MModEquationBegin 
+		LEFT_NOTE_DURATION #'((LEFT_TUPLET_1)(LEFT_TUPLET_2)) 
+		RIGHT_NOTE_DURATION #'((RIGHT_TUPLET_1)(RIGHT_TUPLET_2)) 
+		#V_OFFSET
+\end{verbatim}
+
+\textbf{NB} 
+\begin{enumerate}
+\item \verb|\MModEquation| utilizes LilyPond's \verb|\textEndMark| functions. It is therefore meant to be used at the end of a measure where the metric modulation is about to take place. Then you may use \verb|\tempo| function on LilyPond to indicate the new tempo in the subsequent measure. 
+\item \verb|\MModEquationBegin|, on the other hand, uses LilyPond's \verb|\textMark| functions, which places texts at the beginning of a measure. It is meant to be used as part of the editing process. Because \verb|\MModEquation| places the formula at the end of a measure, when that measure is at the end of a system, requiring another formula at the beginning of the subsequent measure (i.e. at the beginning of a new system) may be plausible. Using \verb|\MModEquationBegin| may be the solution. 
+\item For \verb|LEFT_NOTE_DURATION| and \verb|RIGHT_NOTE_DURATION|, use a numerical value \textit{without} \verb|#|. You may add dot(s) to indicate augmentation dot(s).  
+\item For the variables 2 and 4, you may put up to two instances of tuplet values, in the form of list(s) within a list. At the minimum, you will need to supply an empty list, i.e. \verb|#'()|. 
+\par 
+For example, if it is a simple triplet you wish to implement, you would write: \par
+\indent \verb|#'( ( 3 ) ) |
+\par
+If you wish to indicate tuplet in ratio, e.g. quintuplet in the span of 4 of the note values, you would create a list with two items, i.e.: 
+\par
+\indent \verb|#'( ( 5 4 ) )|
+\par
+You may set another tuplet instance \textit{above} the initial tuplet, so the following list: \par\hfill\par
+\indent \verb|#'( ( 4 3 ) ( 5 4 ) )|
+\par
+...would produce the tuplet indication at the end of measure 3 in the example shown above.
+\item For \verb|#V_OFFSET| and \verb|#H_OFFSET| (only for \verb|\MModEquation|), enter numbers preceded by \verb|#|. These numbers adjust the placement of the formula. When in doubt, start with \verb|#0|.
+
+\end{enumerate}
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+MModEquation =
+#(define-music-function
+  (notevalue1 ratio1 notevalue2 ratio2 verticaloffset horizontaloffset)
+  (ly:duration? list? ly:duration? list? number? number?)
+  (let* (
+         (noteone notevalue1)
+         (notetwo notevalue2)
+         (ratioone ratio1)
+         (ratiotwo ratio2)
+         )
+   #{
+    \tweak X-offset #(- horizontaloffset 0.35)
+    \tweak Y-offset #verticaloffset
+    \textEndMark  \markup \right-align {
+     \hspace #-0.5
+     \raise #0
+     \fontsize #-4.5
+     \override #'(self-alignment . LEFT)
+     {
+      {
+       \note { $noteone } #(if (= (ly:duration-log noteone) 4) 1 1 )
+      }
+      {
+       \hspace #(if (< (ly:duration-log noteone) 3) -4.15
+                    (+ (* (ly:duration-dot-count noteone) -0.5) -4.5))
+       \concat {
+        \combine
+        \musicglyph "arrowheads.open.0M1"
+        \draw-line #'(2 . 0) \fontsize #-5 \musicglyph "space"
+       }
+      }
+      {
+       \hspace #(cond ((<= (ly:duration-log noteone) 2) 0.75)
+                      ((> (ly:duration-log noteone) 2) 0.25) )
+       \raise #(cond
+                ((= (ly:duration-log noteone) 0) -2)
+                ((and (> (ly:duration-log noteone) 0)
+                      (<= (ly:duration-log noteone) 4) ) -.5)
+                ((> (ly:duration-log noteone) 4)
+                 (+ (* (- (ly:duration-log noteone) 5) 0.6) 0))
+                )
+       #(cond
+         ((= (length ratioone) 1)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone))))  )
+                     (number->string (car (car ratioone)))
+                     )
+
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))))
+
+         ((= (length ratioone) 2)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone))))  )
+                     (number->string (car (car ratioone)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           #:line
+           (#:hspace
+            -4.8
+            #:raise
+            4
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (cadr ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (cadr ratioone)))
+                             ":"
+                             (number->string (cadr (cadr ratioone))))  )
+                     (number->string (car (cadr ratioone)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           ))
+         )
+      }
+     }
+    }
+    \tweak self-alignment-X #CENTER
+    \tweak Y-offset #(- verticaloffset 0.4)
+    \tweak X-offset #(- horizontaloffset 0.35)
+    \textEndMark \markup {  \fontsize #-3 "="}
+
+    \tweak Y-offset #verticaloffset
+    \tweak self-alignment-X #RIGHT
+    \tweak X-offset #(- horizontaloffset 0.35)
+    \tweak self-alignment-Y -1
+    \textEndMark \markup \left-align {
+     \hspace #1.9
+     \raise #0
+     \fontsize #-4.5
+     \concat {
+      {
+       \hspace #(cond ((<= (ly:duration-log notetwo) 2) 4)
+                      ((> (ly:duration-log notetwo) 2) 3.75) )
+       \raise #(cond
+                ((= (ly:duration-log notetwo) 0) -2)
+                ((and (> (ly:duration-log notetwo) 0)
+                      (<= (ly:duration-log notetwo) 4) ) -.5)
+                ((> (ly:duration-log notetwo) 4)
+                 (+ (* (- (ly:duration-log notetwo) 5) 0.6) 0))
+                )
+       #(cond
+         ((= (length ratiotwo) 1)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            3.25
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons 0 -0.5 )
+                 (#:draw-line (cons 0 -0.5)))
+                )
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons -3.5 0)
+                (#:draw-line (cons -4.25 0))))
+              #:vspace
+              -0.35
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratiotwo)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratiotwo)))
+                             ":"
+                             (number->string (cadr (car ratiotwo))))  )
+                     (number->string (car (car ratiotwo)))
+                     )
+                 (#:italic
+                  (#:fontsize -5
+                              (#:musicglyph "space")))))))))))
+         ((= (length ratiotwo) 2)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            3.25
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+
+                (#:translate
+                 (cons 0 -0.5 )
+                 (#:draw-line (cons 0 -0.5)))
+                )
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons -3.5 0)
+                (#:draw-line (cons -4.25 0))))
+              #:vspace
+              -0.35
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratiotwo)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratiotwo)))
+                             ":"
+                             (number->string (cadr (car ratiotwo))))  )
+                     (number->string (car (car ratiotwo)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           #:line
+           (#:hspace
+            -4.8
+            #:raise
+            4.5
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons 0 -0.5 )
+                 (#:draw-line (cons 0 -0.5)))
+                )
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons -3.5 0)
+                (#:draw-line (cons -4.25 0)))
+               )
+              #:vspace
+              -0.35
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (cadr ratiotwo)) 2)
+                     (begin (string-append
+                             (number->string (car (cadr ratiotwo)))
+                             ":"
+                             (number->string (cadr (cadr ratiotwo)))))
+                     (number->string (car (cadr ratiotwo)))
+                     )
+
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           ))
+         )
+      }
+      {
+       \hspace #-4.25
+       \note { $notetwo } #(if (= (ly:duration-log notetwo) 4) 1 1 )
+      }
+      {
+       \hspace #0.5
+       \combine
+       \draw-line #'(-2 . 0)
+       \musicglyph "arrowheads.open.01"
+      }
+     }
+    }
+   #})
+  )
+
+
+
+MModEquationBegin =
+#(define-music-function
+  (notevalue1 ratio1 notevalue2 ratio2 verticaloffset )
+  (ly:duration? list? ly:duration? list? number? )
+  (let* (
+         (noteone notevalue1)
+         (notetwo notevalue2)
+         (ratioone ratio1)
+         (ratiotwo ratio2)
+         )
+   #{
+
+    \tweak Y-offset #verticaloffset
+    \textMark  \markup \left-align {
+
+     \raise #0
+     \fontsize #-4.5
+     \override #'(self-alignment . LEFT)
+     {
+      {
+       \hspace #(if (< (ly:duration-log noteone) 3) -4.15
+                    (+ (* (ly:duration-dot-count noteone) -0.5) -4.5))
+       \concat {
+        \combine
+        \musicglyph "arrowheads.open.0M1"
+        \draw-line #'(2 . 0) \fontsize #-5 \musicglyph "space"
+       }
+      }
+
+      {
+       \hspace #-0.5
+       \note { $noteone } #(if (= (ly:duration-log noteone) 4) 1 1 )
+      }
+
+
+      {
+       \hspace #(cond
+                 ((<= (ly:duration-dot-count noteone) 1) -0.5)
+                 ((> (ly:duration-dot-count noteone) 1)
+                  (+ (* (ly:duration-dot-count noteone) -0.5) -0.25)))
+       \right-align
+       \raise #(cond
+                ((= (ly:duration-log noteone) 0) -2)
+                ((and (> (ly:duration-log noteone) 0)
+                      (<= (ly:duration-log noteone) 4) ) -.5)
+                ((> (ly:duration-log noteone) 4)
+                 (+ (* (- (ly:duration-log noteone) 5) 0.6) 0))
+                )
+
+       #(cond
+         ((= (length ratioone) 1)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone))))  )
+                     (number->string (car (car ratioone)))
+                     )
+
+                 (#:italic
+                  (#:fontsize -5
+                              (#:musicglyph "space")))))))))))
+
+         ((= (length ratioone) 2)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone)))))
+                     (number->string (car (car ratioone)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+
+           #:line
+           (#:hspace
+            -4.8
+            #:raise
+            4
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (cadr ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (cadr ratioone)))
+                             ":"
+                             (number->string (cadr (cadr ratioone))))  )
+                     (number->string (car (cadr ratioone)))
+                     )
+
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           ))
+         )
+
+      }
+      {
+       \hspace #(+ (* (ly:duration-dot-count noteone) 0.35) -0.2)
+       \fontsize #2 \lower #0.5  "="
+      }
+      \concat {
+
+       {
+        \hspace #(cond ((<= (ly:duration-log notetwo) 2) 4.15 )
+                       ((> (ly:duration-log notetwo) 2) 4.15) )
+        \raise #(cond
+                 ((= (ly:duration-log notetwo) 0) -2)
+                 ((and (> (ly:duration-log notetwo) 0)
+                       (<= (ly:duration-log notetwo) 4) ) -.5)
+                 ((> (ly:duration-log notetwo) 4)
+                  (+ (* (- (ly:duration-log notetwo) 5) 0.6) 0))
+                 )
+
+        #(cond
+          ((= (length ratiotwo) 1)
+           (markup
+            #:line
+            (#:hspace
+             -4.5
+             #:raise
+             3.25
+             (#:center-column
+              (#:concat
+               (#:translate
+                (cons 3.5 0.5)
+                (#:override
+                 (cons 'thickness 1.5)
+
+                 (#:translate
+                  (cons 0 -0.5 )
+                  (#:draw-line (cons 0 -0.5)))
+                 )
+
+                #:hspace
+                -0.1
+
+                #:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+
+
+               #:vspace
+               -0.35
+               #:whiteout
+               (#:halign
+                1.75
+                (#:concat
+                 (#:fontsize
+                  -1
+                  (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                  #:fontsize
+                  -1
+                  #:italic
+                  (if (= (length (car ratiotwo)) 2)
+                      (begin (string-append
+                              (number->string (car (car ratiotwo)))
+                              ":"
+                              (number->string (cadr (car ratiotwo)))))
+                      (number->string (car (car ratiotwo)))
+                      )
+                  (#:italic
+                   (#:fontsize -5
+                               (#:musicglyph "space")))))))))))
+
+          ((= (length ratiotwo) 2)
+           (markup
+            #:line
+            (#:hspace
+             -4.5
+             #:raise
+             3.25
+             (#:center-column
+              (#:concat
+               (#:translate
+                (cons 3.5 0.5)
+                (#:override
+                 (cons 'thickness 1.5)
+                 (#:translate
+                  (cons 0 -0.5 )
+                  (#:draw-line (cons 0 -0.5)))
+                 )
+                #:hspace
+                -0.1
+                #:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:vspace
+               -0.35
+               #:whiteout
+               (#:halign
+                1.75
+                (#:concat
+                 (#:fontsize
+                  -1
+                  (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                  #:fontsize
+                  -1
+                  #:italic
+                  (if (= (length (car ratiotwo)) 2)
+                      (begin (string-append
+                              (number->string (car (car ratiotwo)))
+                              ":"
+                              (number->string (cadr (car ratiotwo)))))
+                      (number->string (car (car ratiotwo)))
+                      )
+                  (#:italic
+                   (#:fontsize -5
+                               (#:musicglyph "space")))))))))
+
+            #:line
+            (#:hspace
+             -4.8
+             #:raise
+             4.5
+             (#:center-column
+              (#:concat
+               (#:translate
+                (cons 3.5 0.5)
+                (#:override
+                 (cons 'thickness 1.5)
+                 (#:translate
+                  (cons 0 -0.5 )
+                  (#:draw-line (cons 0 -0.5)))
+                 )
+                #:hspace
+                -0.1
+                #:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0)))
+                )
+               #:vspace
+               -0.35
+               #:whiteout
+               (#:halign
+                1.75
+                (#:concat
+                 (#:fontsize
+                  -1
+                  (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                  #:fontsize
+                  -1
+                  #:italic
+                  (if (= (length (cadr ratiotwo)) 2)
+                      (begin (string-append
+                              (number->string (car (cadr ratiotwo)))
+                              ":"
+                              (number->string (cadr (cadr ratiotwo)))))
+                      (number->string (car (cadr ratiotwo)))
+                      )
+                  (#:italic
+                   (#:fontsize -5
+                               (#:musicglyph "space")))))))))
+            ))
+          )
+       }
+       {
+        \hspace #-4
+        \note { $notetwo }
+        #(if (= (ly:duration-log notetwo) 4) 1 1 )
+       }
+       {
+        \hspace #0.5
+        \combine
+        \draw-line #'(-2 . 0)
+        \musicglyph "arrowheads.open.01"
+       }
+      }
+     }
+    }
+   #})
+  )
+
+{
+ \time 2/4
+ \tempo 4 = 60
+ c'16
+ ^\markup {\translate #'(0 . 10) " "}
+ [ c'16 c'16 c'16 ]
+ \tuplet 5/4 {c'16 [ c'16 c'16 c'16 c'16 ] }
+ \MModEquation 16 #'((5)) 16 #'() #8 #0
+ \tempo 4 = 75
+ c'16 [ c'16 c'16 c'16 ]
+ \tuplet 3/2 {c'8 [ c'8 c'8 ] }
+ \override TupletNumber.text = #tuplet-number::calc-fraction-text
+ \tuplet 5/4 {c'8 [ c'8 ] \tuplet 4/3 { c'8 [ c'8 c'8 c'8  ] }}
+ \MModEquation 8 #'((4 3)(5 4)) 8 #'((3)) 8 #-3
+ \revert TupletNumber.text
+ \break
+ \MModEquationBegin 8 #'((4 3)(5 4)) 8 #'((3)) #6.5
+ \tuplet 3/2 {
+  c'8
+  ^\markup {\translate #'(0 . 10) " "}
+  ^\markup
+  {\fontsize #-1 \raise #0.25 \note {4} #1 "= 83.33"}
+  [ c'8 c'8 ]
+ }
+ \tuplet 3/2 {
+  c'8 c'8 c'8
+  \MModEquation 4 #'() 4. #'() #6 #0
+ }
+ \time 6/8
+ c'8 c'8 c'8 c'4.
+ \bar "|."
+}
+\end{Verbatim}
+\subsection{Discussion}
+
+In the preceding code, I have opted to notate the tuplets within the bars with irrational time signatures in an ordinary manner, using \Verb|\tuplet|. This is to ensure that the incomplete tuplet bracket appears. Compare this with the quoted LSR No. 552, which has a different way of reducing the note duration in order to fit them into the bar with irrational time signature. Observe the way duration is multiplied by fractions, e.g. Line 6.
+
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+ {
+  \time 4/4
+  \tempo 4 = 60
+  fis4 fis fis fis
+  \time 2/6
+  g4*2/3 g |
+  g4*2/3 g |
+  \time 4/5
+  as4*4/5 as as as8*4/5 g |
+  \tuplet 3/2 { as4*4/5 as as } as4*4/5 as8*4/5 g |
+  \time 3/7
+  fis4*4/7 fis fis |
+  fis4*4/7 fis fis |
+}
+\end{Verbatim}
+
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%
+
+
+
+\section {Metric Modulation Equation (Straight Flag)}
+
+\label{sec:metricModulationStraightFlag}
+
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/metricModulationStraightFlag.ly}
+\subsection{Description}
+
+This is an alternative implementation of the metric modulation formula, introduced in the \hyperref[sec:metricModulationRegularFlag]{\textbf{previous entry}}, except this time it uses notes with the modern straight flag.
+
+\subsection{Grammar}
+\begin{verbatim}
+\MModEquationSTR 
+		LEFT_NOTE_DURATION #'((LEFT_TUPLET_1)(LEFT_TUPLET_2)) 
+		RIGHT_NOTE_DURATION #'((RIGHT_TUPLET_1)(RIGHT_TUPLET_2)) 
+		#V_OFFSET #H_OFFSET
+\MModEquationBeginSTR 
+		LEFT_NOTE_DURATION #'((LEFT_TUPLET_1)(LEFT_TUPLET_2)) 
+		RIGHT_NOTE_DURATION #'((RIGHT_TUPLET_1)(RIGHT_TUPLET_2)) 
+		#V_OFFSET
+\end{verbatim}
+
+\textbf{NB} 
+\begin{enumerate}
+\item \verb|\MModEquationSTR| utilizes LilyPond's \verb|\textEndMark| functions. It is therefore meant to be used at the end of a measure where the metric modulation is about to take place. Then you may use \verb|\tempo| function on LilyPond to indicate the new tempo in the subsequent measure. 
+\item \verb|\MModEquationBeginSTR|, on the other hand, uses LilyPond's \verb|\textMark| functions, which places texts at the beginning of a measure. It is meant to be used as part of the editing process. Because \verb|\MModEquationSTR| places the formula at the end of a measure, when that measure is at the end of a system, requiring another formula at the beginning of the subsequent measure (i.e. at the beginning of a new system) may be plausible. Using \verb|\MModEquationBeginSTR| may be the solution. 
+\item For \verb|LEFT_NOTE_DURATION| and \verb|RIGHT_NOTE_DURATION|, use a numerical value \textit{without} \verb|#|. You may add dot(s) to indicate augmentation dot(s).  
+\item For the variables 2 and 4, you may put up to two instances of tuplet values, in the form of list(s) within a list. At the minimum, you will need to supply an empty list, i.e. \verb|#'()|. 
+\par 
+For example, if it is a simple triplet you wish to implement, you would write: \par
+\indent \verb|#'( ( 3 ) ) |
+\par
+If you wish to indicate tuplet in ratio, e.g. quintuplet in the span of 4 of the note values, you would create a list with two items, i.e.: 
+\par
+\indent \verb|#'( ( 5 4 ) )|
+\par
+You may set another tuplet instance \textit{above} the initial tuplet, so the following list: \par\hfill\par
+\indent \verb|#'( ( 4 3 ) ( 5 4 ) )|
+\par
+...would produce the tuplet indication at the end of measure 3 in the example shown above.
+\item For \verb|#V_OFFSET| and \verb|#H_OFFSET| (only for \verb|\MModEquationSTR|), enter numbers preceded by \verb|#|. These numbers adjust the placement of the formula. When in doubt, start with \verb|#0|.
+
+\end{enumerate}
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+
+MModEquationSTR =
+#(define-music-function
+  (notevalue1 ratio1 notevalue2 ratio2 verticaloffset horizontaloffset)
+  (ly:duration? list? ly:duration? list? number? number?)
+  (let* (
+         (noteone notevalue1)
+         (notetwo notevalue2)
+         (ratioone ratio1)
+         (ratiotwo ratio2)
+         )
+   #{
+    \tweak X-offset #(- horizontaloffset 0.35)
+    \tweak Y-offset #verticaloffset
+    \textEndMark  \markup \right-align {
+     \hspace #-0.5
+     \raise #0
+     \fontsize #-4.5
+     \override #'(self-alignment . LEFT)
+     {
+      {
+       \override #'(flag-style . modern-straight-flag)
+       \note { $noteone } #(if (= (ly:duration-log noteone) 4) 1 1 )
+      }
+      {
+       \hspace #(if (< (ly:duration-log noteone) 3) -4.15
+                    (+ (* (ly:duration-dot-count noteone) -0.5) -4.5))
+       \concat {
+        \combine
+        \musicglyph "arrowheads.open.0M1"
+        \draw-line #'(2 . 0) \fontsize #-5 \musicglyph "space"
+       }
+      }
+      {
+       \hspace #(cond ((<= (ly:duration-log noteone) 2) 0.75)
+                      ((> (ly:duration-log noteone) 2) 0.25) )
+       \raise #(cond
+                ((= (ly:duration-log noteone) 0) -2)
+                ((and (> (ly:duration-log noteone) 0)
+                      (<= (ly:duration-log noteone) 4) ) -.5)
+                ((> (ly:duration-log noteone) 4)
+                 (+ (* (- (ly:duration-log noteone) 5) 0.6) 0))
+                )
+       #(cond
+         ((= (length ratioone) 1)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone))))  )
+                     (number->string (car (car ratioone)))
+                     )
+
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))))
+
+         ((= (length ratioone) 2)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone))))  )
+                     (number->string (car (car ratioone)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           #:line
+           (#:hspace
+            -4.8
+            #:raise
+            4
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (cadr ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (cadr ratioone)))
+                             ":"
+                             (number->string (cadr (cadr ratioone))))  )
+                     (number->string (car (cadr ratioone)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           ))
+         )
+      }
+     }
+    }
+    \tweak self-alignment-X #CENTER
+    \tweak Y-offset #(- verticaloffset 0.4)
+    \tweak X-offset #(- horizontaloffset 0.35)
+    \textEndMark \markup {  \fontsize #-3 "="}
+
+    \tweak Y-offset #verticaloffset
+    \tweak self-alignment-X #RIGHT
+    \tweak X-offset #(- horizontaloffset 0.35)
+    \tweak self-alignment-Y -1
+    \textEndMark \markup \left-align {
+     \hspace #1.9
+     \raise #0
+     \fontsize #-4.5
+     \concat {
+      {
+       \hspace #(cond ((<= (ly:duration-log notetwo) 2) 4)
+                      ((> (ly:duration-log notetwo) 2) 3.75) )
+       \raise #(cond
+                ((= (ly:duration-log notetwo) 0) -2)
+                ((and (> (ly:duration-log notetwo) 0)
+                      (<= (ly:duration-log notetwo) 4) ) -.5)
+                ((> (ly:duration-log notetwo) 4)
+                 (+ (* (- (ly:duration-log notetwo) 5) 0.6) 0))
+                )
+       #(cond
+         ((= (length ratiotwo) 1)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            3.25
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons 0 -0.5 )
+                 (#:draw-line (cons 0 -0.5)))
+                )
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons -3.5 0)
+                (#:draw-line (cons -4.25 0))))
+              #:vspace
+              -0.35
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratiotwo)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratiotwo)))
+                             ":"
+                             (number->string (cadr (car ratiotwo))))  )
+                     (number->string (car (car ratiotwo)))
+                     )
+                 (#:italic
+                  (#:fontsize -5
+                              (#:musicglyph "space")))))))))))
+         ((= (length ratiotwo) 2)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            3.25
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+
+                (#:translate
+                 (cons 0 -0.5 )
+                 (#:draw-line (cons 0 -0.5)))
+                )
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons -3.5 0)
+                (#:draw-line (cons -4.25 0))))
+              #:vspace
+              -0.35
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratiotwo)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratiotwo)))
+                             ":"
+                             (number->string (cadr (car ratiotwo))))  )
+                     (number->string (car (car ratiotwo)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           #:line
+           (#:hspace
+            -4.8
+            #:raise
+            4.5
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons 0 -0.5 )
+                 (#:draw-line (cons 0 -0.5)))
+                )
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons -3.5 0)
+                (#:draw-line (cons -4.25 0)))
+               )
+              #:vspace
+              -0.35
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (cadr ratiotwo)) 2)
+                     (begin (string-append
+                             (number->string (car (cadr ratiotwo)))
+                             ":"
+                             (number->string (cadr (cadr ratiotwo)))))
+                     (number->string (car (cadr ratiotwo)))
+                     )
+
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           ))
+         )
+      }
+      {
+       \hspace #-4.25
+       \override #'(flag-style . modern-straight-flag)
+       \note { $notetwo } #(if (= (ly:duration-log notetwo) 4) 1 1 )
+      }
+      {
+       \hspace #0.5
+       \combine
+       \draw-line #'(-2 . 0)
+       \musicglyph "arrowheads.open.01"
+      }
+     }
+    }
+   #})
+  )
+
+
+MModEquationBeginSTR =
+#(define-music-function
+  (notevalue1 ratio1 notevalue2 ratio2 verticaloffset )
+  (ly:duration? list? ly:duration? list? number? )
+  (let* (
+         (noteone notevalue1)
+         (notetwo notevalue2)
+         (ratioone ratio1)
+         (ratiotwo ratio2)
+         )
+   #{
+
+    \tweak Y-offset #verticaloffset
+    \textMark  \markup \left-align {
+
+     \raise #0
+     \fontsize #-4.5
+     \override #'(self-alignment . LEFT)
+     {
+      {
+       \hspace #(if (< (ly:duration-log noteone) 3) -4.15
+                    (+ (* (ly:duration-dot-count noteone) -0.5) -4.5))
+       \concat {
+        \combine
+        \musicglyph "arrowheads.open.0M1"
+        \draw-line #'(2 . 0) \fontsize #-5 \musicglyph "space"
+       }
+      }
+
+      {
+       \hspace #-0.5
+       \override #'(flag-style . modern-straight-flag)
+       \note { $noteone } #(if (= (ly:duration-log noteone) 4) 1 1 )
+      }
+
+
+      {
+       \hspace #(cond
+                 ((<= (ly:duration-dot-count noteone) 1) -0.5)
+                 ((> (ly:duration-dot-count noteone) 1)
+                  (+ (* (ly:duration-dot-count noteone) -0.5) -0.25)))
+       \right-align
+       \raise #(cond
+                ((= (ly:duration-log noteone) 0) -2)
+                ((and (> (ly:duration-log noteone) 0)
+                      (<= (ly:duration-log noteone) 4) ) -.5)
+                ((> (ly:duration-log noteone) 4)
+                 (+ (* (- (ly:duration-log noteone) 5) 0.6) 0))
+                )
+
+       #(cond
+         ((= (length ratioone) 1)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone))))  )
+                     (number->string (car (car ratioone)))
+                     )
+
+                 (#:italic
+                  (#:fontsize -5
+                              (#:musicglyph "space")))))))))))
+
+         ((= (length ratioone) 2)
+          (markup
+           #:line
+           (#:hspace
+            -4.5
+            #:raise
+            2.75
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (car ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (car ratioone)))
+                             ":"
+                             (number->string (cadr (car ratioone)))))
+                     (number->string (car (car ratioone)))
+                     )
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+
+           #:line
+           (#:hspace
+            -4.8
+            #:raise
+            4
+            (#:center-column
+             (#:concat
+              (#:translate
+               (cons 3.5 0.5)
+               (#:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:hspace
+               -0.1
+               #:override
+               (cons 'thickness 1.5)
+               (#:translate
+                (cons 0 0.5)
+                (#:draw-line (cons 0 -0.5))))
+              #:vspace
+              -0.45
+              #:whiteout
+              (#:halign
+               1.75
+               (#:concat
+                (#:fontsize
+                 -1
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                 #:fontsize
+                 -1
+                 #:italic
+                 (if (= (length (cadr ratioone)) 2)
+                     (begin (string-append
+                             (number->string (car (cadr ratioone)))
+                             ":"
+                             (number->string (cadr (cadr ratioone))))  )
+                     (number->string (car (cadr ratioone)))
+                     )
+
+                 (#:italic (#:fontsize -5 (#:musicglyph "space")))))))))
+           ))
+         )
+
+      }
+      {
+       \hspace #(+ (* (ly:duration-dot-count noteone) 0.35) -0.2)
+       \fontsize #2 \lower #0.5  "="
+      }
+      \concat {
+
+       {
+        \hspace #(cond ((<= (ly:duration-log notetwo) 2) 4.15 )
+                       ((> (ly:duration-log notetwo) 2) 4.15) )
+        \raise #(cond
+                 ((= (ly:duration-log notetwo) 0) -2)
+                 ((and (> (ly:duration-log notetwo) 0)
+                       (<= (ly:duration-log notetwo) 4) ) -.5)
+                 ((> (ly:duration-log notetwo) 4)
+                  (+ (* (- (ly:duration-log notetwo) 5) 0.6) 0))
+                 )
+
+        #(cond
+          ((= (length ratiotwo) 1)
+           (markup
+            #:line
+            (#:hspace
+             -4.5
+             #:raise
+             3.25
+             (#:center-column
+              (#:concat
+               (#:translate
+                (cons 3.5 0.5)
+                (#:override
+                 (cons 'thickness 1.5)
+
+                 (#:translate
+                  (cons 0 -0.5 )
+                  (#:draw-line (cons 0 -0.5)))
+                 )
+
+                #:hspace
+                -0.1
+
+                #:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+
+
+               #:vspace
+               -0.35
+               #:whiteout
+               (#:halign
+                1.75
+                (#:concat
+                 (#:fontsize
+                  -1
+                  (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                  #:fontsize
+                  -1
+                  #:italic
+                  (if (= (length (car ratiotwo)) 2)
+                      (begin (string-append
+                              (number->string (car (car ratiotwo)))
+                              ":"
+                              (number->string (cadr (car ratiotwo)))))
+                      (number->string (car (car ratiotwo)))
+                      )
+                  (#:italic
+                   (#:fontsize -5
+                               (#:musicglyph "space")))))))))))
+
+          ((= (length ratiotwo) 2)
+           (markup
+            #:line
+            (#:hspace
+             -4.5
+             #:raise
+             3.25
+             (#:center-column
+              (#:concat
+               (#:translate
+                (cons 3.5 0.5)
+                (#:override
+                 (cons 'thickness 1.5)
+                 (#:translate
+                  (cons 0 -0.5 )
+                  (#:draw-line (cons 0 -0.5)))
+                 )
+                #:hspace
+                -0.1
+                #:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0))))
+               #:vspace
+               -0.35
+               #:whiteout
+               (#:halign
+                1.75
+                (#:concat
+                 (#:fontsize
+                  -1
+                  (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                  #:fontsize
+                  -1
+                  #:italic
+                  (if (= (length (car ratiotwo)) 2)
+                      (begin (string-append
+                              (number->string (car (car ratiotwo)))
+                              ":"
+                              (number->string (cadr (car ratiotwo)))))
+                      (number->string (car (car ratiotwo)))
+                      )
+                  (#:italic
+                   (#:fontsize -5
+                               (#:musicglyph "space")))))))))
+
+            #:line
+            (#:hspace
+             -4.8
+             #:raise
+             4.5
+             (#:center-column
+              (#:concat
+               (#:translate
+                (cons 3.5 0.5)
+                (#:override
+                 (cons 'thickness 1.5)
+                 (#:translate
+                  (cons 0 -0.5 )
+                  (#:draw-line (cons 0 -0.5)))
+                 )
+                #:hspace
+                -0.1
+                #:override
+                (cons 'thickness 1.5)
+                (#:translate
+                 (cons -3.5 0)
+                 (#:draw-line (cons -4.25 0)))
+                )
+               #:vspace
+               -0.35
+               #:whiteout
+               (#:halign
+                1.75
+                (#:concat
+                 (#:fontsize
+                  -1
+                  (#:italic (#:fontsize -5 (#:musicglyph "space")))
+                  #:fontsize
+                  -1
+                  #:italic
+                  (if (= (length (cadr ratiotwo)) 2)
+                      (begin (string-append
+                              (number->string (car (cadr ratiotwo)))
+                              ":"
+                              (number->string (cadr (cadr ratiotwo)))))
+                      (number->string (car (cadr ratiotwo)))
+                      )
+                  (#:italic
+                   (#:fontsize -5
+                               (#:musicglyph "space")))))))))
+            ))
+          )
+       }
+       {
+        \hspace #-4
+        \override #'(flag-style . modern-straight-flag)
+        \note { $notetwo }
+        #(if (= (ly:duration-log notetwo) 4) 1 1 )
+       }
+       {
+        \hspace #0.5
+        \combine
+        \draw-line #'(-2 . 0)
+        \musicglyph "arrowheads.open.01"
+       }
+      }
+     }
+    }
+   #})
+  )
+
+
+{
+ \time 2/4
+ \tempo 4 = 60
+ c'16
+ ^\markup {\translate #'(0 . 10) " "}
+ [ c'16 c'16 c'16 ]
+ \tuplet 5/4 {c'16 [ c'16 c'16 c'16 c'16 ] }
+ \MModEquationSTR 16 #'((5)) 16 #'() #8 #0
+ \tempo 4 = 75
+ c'16 [ c'16 c'16 c'16 ]
+ \tuplet 3/2 {c'8 [ c'8 c'8 ] }
+ \override TupletNumber.text = #tuplet-number::calc-fraction-text
+ \tuplet 5/4 {c'8 [ c'8 ] \tuplet 4/3 { c'8 [ c'8 c'8 c'8  ] }}
+ \MModEquationSTR 8 #'((4 3)(5 4)) 8 #'((3)) 8 #-3
+ \revert TupletNumber.text
+ \break
+ \MModEquationBeginSTR 8 #'((4 3)(5 4)) 8 #'((3)) #6.5
+ \tuplet 3/2 {
+  c'8
+  ^\markup {\translate #'(0 . 10) " "}
+  ^\markup
+  {\fontsize #-1 \raise #0.25 \note {4} #1 "= 83.33"}
+  [ c'8 c'8 ]
+ }
+ \tuplet 3/2 {
+  c'8 c'8 c'8
+  \MModEquationSTR 4 #'() 4. #'() #6 #0
+ }
+ \time 6/8
+ c'8 c'8 c'8 c'4.
+ \bar "|."
+}
+
+\layout {
+ \context{
+  \Score
+  harmonicDots = ##t
+  \override Flag.stencil = #modern-straight-flag
+  \override MetronomeMark.flag-style = #'modern-straight-flag
+  \override StemTremolo.shape = #'beam-like
+  \override StemTremolo.slope = #0.4
+
+ }
+}
+
+\end{Verbatim}
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break

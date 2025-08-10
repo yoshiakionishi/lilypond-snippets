@@ -33,6 +33,9 @@ Because the size the fractions is a half of the ordinary time signatures, it may
        #'(NUM1 NUM2 NUM3 NUM4) MEASURE_SPAN BEAT_STRUCT
 \fractionalTimeSignatureAPlus 
        #'(NUM2 NUM3 NUM4) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
@@ -44,11 +47,17 @@ where \verb|NUM1| is optional. The code has \verb|cond| clause, which adjusts th
 \item \verb|MEASURE_SPAN| denotes how the measure may be written using an \hyperref[sec:incompleteTuplet]{\textit{irrational time signature}}. In the example snippet, this would be: \par
 \[ \frac{3}{4} + \frac{2}{12} = \mathbf{\frac{11}{12}}\] \par
 \item \verb |BEAT_STRUCT| indicates beat structure, by which the beaming of the measure abides.
+
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
+
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 % Inspired by:
 % https://lists.gnu.org/archive/html/lilypond-user/2014-06/msg00209.html
+
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 \version "2.24.4"
 \language "english"
@@ -205,23 +214,44 @@ fractionalTimeSignatureAPlus =
 
         )
   #})
+
+
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
+
+
 \new Staff \with { instrumentName = \markup {\fontsize #4 \box "A"}} {
  \fractionalTimeSignatureA #'(3 2 3 4) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \new Staff \with { instrumentName = \markup {\fontsize #4 \box "B"}} {
  \fractionalTimeSignatureAPlus #'(3 2 3 4) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \new Staff \with { instrumentName = \markup {\fontsize #4 \box "C"}} {
  \fractionalTimeSignatureA #'(11 3 4) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 
 \end{Verbatim}
@@ -252,12 +282,16 @@ Style B differs from Style A, as the fraction has a bigger font size. This is si
        #'(NUM1 NUM2 NUM3 NUM4) MEASURE_SPAN BEAT_STRUCT
 \fractionalTimeSignatureBPlus 
        #'(NUM2 NUM3 NUM4) MEASURE_SPAN BEAT_STRUCT
+       
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
 \item \verb|\fractionalTimeSignatureB| lists time signatures \textit{without} the use of the \verb|+| (plus) sign. 
 \item \verb|\fractionalTimeSignatureBPlus| lists time signatures with the \verb|+| (plus) sign, when the list with four \verb|NUM|s are given.
 \item See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractional Time Signatures, Style A} for the explanation on the arguments.
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
@@ -265,40 +299,42 @@ Style B differs from Style A, as the fraction has a bigger font size. This is si
 \language "english"
 
 % Revised Jan 2 2025 for improving the appearance of fractions
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
-      (for-each
-       (lambda (warning)
-            (ly:expect-warning message))
-       (iota amount 1 1)))
+  (for-each
+   (lambda (warning)
+    (ly:expect-warning message))
+   (iota amount 1 1)))
 
 \suppressWarning 3 "strange time signature found"
 
 incompleteTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
 
 }
 incompleteSmallTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
-     \once \override Voice.TupletNumber.X-offset =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               2.2
-               1.2))
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletNumber.X-offset =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       2.2
+       1.2))
 
-     \once \override Voice.TupletBracket.shorten-pair =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(-0.7 . 0.15)
-               '(-0.3 . 0.8)))
-     \once \override Voice.TupletBracket.X-positions =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(1.8 . 3)
-               '(0.3 . 2.7)))
+ \once \override Voice.TupletBracket.shorten-pair =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(-0.7 . 0.15)
+       '(-0.3 . 0.8)))
+ \once \override Voice.TupletBracket.X-positions =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(1.8 . 3)
+       '(0.3 . 2.7)))
 }
 
 fractionalTimeSignatureB =
@@ -307,91 +343,91 @@ fractionalTimeSignatureB =
   (list? fraction? number-list?)
   #{
 
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
 
-       \override Staff.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Staff.TimeSignature.text =
+   \override Staff.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Staff.TimeSignature.text =
 
-       #(if (= (length timeSignatureToShow) 4)
+   #(if (= (length timeSignatureToShow) 4)
 
-            (markup
-             (make-override-markup
-              (cons 'baseline-skip 0)
-              (make-center-column-markup
-               (list
-                (make-line-markup
-                 (list
-                  (make-number-markup
-                   (number->string (car timeSignatureToShow)))
-
-
-                  (make-hspace-markup -0.5)
-                  (make-right-align-markup
-                   (make-number-markup
-                    (make-translate-markup
-                     (cons 0 1.5)
-                     (make-fontsize-markup
-                      -3
-                      (number->string (cadr timeSignatureToShow))))))
-
-                  (make-hspace-markup -1.5)
-
-                  (make-override-markup
-                   (cons 'alignment 0)
-                   (make-translate-markup
-                    (cons 0 0.8)
-                    (make-draw-line-markup (cons 1.5 1.35))))
-
-                  (make-hspace-markup -1.5)
-
-                  (make-number-markup
-                   (make-left-align-markup
-                    (make-fontsize-markup
-                     -3
-                     (number->string (caddr timeSignatureToShow)))))))
-
-                (make-number-markup
-                 (number->string (cadddr timeSignatureToShow)))))))
+        (markup
+         (make-override-markup
+          (cons 'baseline-skip 0)
+          (make-center-column-markup
+           (list
+            (make-line-markup
+             (list
+              (make-number-markup
+               (number->string (car timeSignatureToShow)))
 
 
-            (markup
-             (make-override-markup
-              (cons 'baseline-skip 0)
-              (make-center-column-markup
-               (list
-                (make-line-markup
-                 (list
-                  (make-number-markup
-                   (make-right-align-markup
-                    (make-translate-markup
-                     (cons 0 1.5)
-                     (make-fontsize-markup
-                      -3
-                      (number->string (car timeSignatureToShow))))))
+              (make-hspace-markup -0.5)
+              (make-right-align-markup
+               (make-number-markup
+                (make-translate-markup
+                 (cons 0 1.5)
+                 (make-fontsize-markup
+                  -3
+                  (number->string (cadr timeSignatureToShow))))))
 
-                  (make-hspace-markup -1.5)
+              (make-hspace-markup -1.5)
 
-                  (make-override-markup
-                   (cons 'alignment 0)
-                   (make-translate-markup
-                    (cons 0 0.8)
-                    (make-draw-line-markup (cons 1.5 1.35))))
+              (make-override-markup
+               (cons 'alignment 0)
+               (make-translate-markup
+                (cons 0 0.8)
+                (make-draw-line-markup (cons 1.5 1.35))))
 
-                  (make-hspace-markup -1.5)
+              (make-hspace-markup -1.5)
 
-                  (make-translate-markup
-                   (cons 0 0)
-                   (make-fontsize-markup
-                    -3
-                    (make-number-markup
-                     (number->string (cadr timeSignatureToShow)))))))
-
-                (make-number-markup
+              (make-number-markup
+               (make-left-align-markup
+                (make-fontsize-markup
+                 -3
                  (number->string (caddr timeSignatureToShow)))))))
 
-            )
+            (make-number-markup
+             (number->string (cadddr timeSignatureToShow)))))))
+
+
+        (markup
+         (make-override-markup
+          (cons 'baseline-skip 0)
+          (make-center-column-markup
+           (list
+            (make-line-markup
+             (list
+              (make-number-markup
+               (make-right-align-markup
+                (make-translate-markup
+                 (cons 0 1.5)
+                 (make-fontsize-markup
+                  -3
+                  (number->string (car timeSignatureToShow))))))
+
+              (make-hspace-markup -1.5)
+
+              (make-override-markup
+               (cons 'alignment 0)
+               (make-translate-markup
+                (cons 0 0.8)
+                (make-draw-line-markup (cons 1.5 1.35))))
+
+              (make-hspace-markup -1.5)
+
+              (make-translate-markup
+               (cons 0 0)
+               (make-fontsize-markup
+                -3
+                (make-number-markup
+                 (number->string (cadr timeSignatureToShow)))))))
+
+            (make-number-markup
+             (number->string (caddr timeSignatureToShow)))))))
+
+        )
   #})
 
 fractionalTimeSignatureBPlus =
@@ -400,106 +436,115 @@ fractionalTimeSignatureBPlus =
   (list? fraction? number-list?)
   #{
 
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
 
-       \override Staff.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Staff.TimeSignature.text =
+   \override Staff.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Staff.TimeSignature.text =
 
-       #(if (= (length timeSignatureToShow) 4)
-
-
-            (markup
-             (make-override-markup
-              (cons 'baseline-skip 0)
-              (make-center-column-markup
-               (list
-                (make-line-markup
-                 (list
-                  (make-number-markup
-                   (number->string (car timeSignatureToShow)))
-                  (make-fontsize-markup
-                   -12
-                   (make-simple-markup " "))
+   #(if (= (length timeSignatureToShow) 4)
 
 
-                  (make-hspace-markup -1.25)
-                  (make-translate-markup
-                   (cons 0 0.4)
-                   (make-bold-markup
-                    (make-simple-markup "+")))
-
-                  (make-hspace-markup -0.25)
-
-                  (make-hspace-markup -0.5)
-                  (make-right-align-markup
-                   (make-number-markup
-                    (make-translate-markup
-                     (cons 0 1.5)
-                     (make-fontsize-markup
-                      -3
-                      (number->string (cadr timeSignatureToShow))))))
+        (markup
+         (make-override-markup
+          (cons 'baseline-skip 0)
+          (make-center-column-markup
+           (list
+            (make-line-markup
+             (list
+              (make-number-markup
+               (number->string (car timeSignatureToShow)))
+              (make-fontsize-markup
+               -12
+               (make-simple-markup " "))
 
 
+              (make-hspace-markup -1.25)
+              (make-translate-markup
+               (cons 0 0.4)
+               (make-bold-markup
+                (make-simple-markup "+")))
+
+              (make-hspace-markup -0.25)
+
+              (make-hspace-markup -0.5)
+              (make-right-align-markup
+               (make-number-markup
+                (make-translate-markup
+                 (cons 0 1.5)
+                 (make-fontsize-markup
+                  -3
+                  (number->string (cadr timeSignatureToShow))))))
 
 
-                  (make-hspace-markup -1.5)
-
-                  (make-override-markup
-                   (cons 'alignment 0)
-                   (make-translate-markup
-                    (cons 0 0.8)
-                    (make-draw-line-markup (cons 1.5 1.35))))
-
-                  (make-hspace-markup -1.5)
-
-                  (make-number-markup
-                   (make-left-align-markup
-                    (make-fontsize-markup
-                     -3
-                     (number->string (caddr timeSignatureToShow)))))))
-
-                (make-number-markup
-                 (number->string (cadddr timeSignatureToShow)))))))
 
 
-            (markup
-             (make-override-markup
-              (cons 'baseline-skip 0)
-              (make-center-column-markup
-               (list
-                (make-line-markup
-                 (list
-                  (make-number-markup
-                   (make-right-align-markup
-                    (make-translate-markup
-                     (cons 0 1.6)
-                     (make-fontsize-markup
-                      -3
-                      (number->string (car timeSignatureToShow))))))
+              (make-hspace-markup -1.5)
 
-                  (make-hspace-markup -1.5)
+              (make-override-markup
+               (cons 'alignment 0)
+               (make-translate-markup
+                (cons 0 0.8)
+                (make-draw-line-markup (cons 1.5 1.35))))
 
-                  (make-override-markup
-                   (cons 'alignment 0)
-                   (make-translate-markup
-                    (cons 0 0.8)
-                    (make-draw-line-markup (cons 1.5 1.35))))
+              (make-hspace-markup -1.5)
 
-                  (make-hspace-markup -1.5)
-
-                  (make-translate-markup
-                   (cons 0 0)
-                   (make-fontsize-markup
-                    -3
-                    (make-number-markup
-                     (number->string (cadr timeSignatureToShow)))))))
-
-                (make-number-markup
+              (make-number-markup
+               (make-left-align-markup
+                (make-fontsize-markup
+                 -3
                  (number->string (caddr timeSignatureToShow)))))))
-            )
+
+            (make-number-markup
+             (number->string (cadddr timeSignatureToShow)))))))
+
+
+        (markup
+         (make-override-markup
+          (cons 'baseline-skip 0)
+          (make-center-column-markup
+           (list
+            (make-line-markup
+             (list
+              (make-number-markup
+               (make-right-align-markup
+                (make-translate-markup
+                 (cons 0 1.6)
+                 (make-fontsize-markup
+                  -3
+                  (number->string (car timeSignatureToShow))))))
+
+              (make-hspace-markup -1.5)
+
+              (make-override-markup
+               (cons 'alignment 0)
+               (make-translate-markup
+                (cons 0 0.8)
+                (make-draw-line-markup (cons 1.5 1.35))))
+
+              (make-hspace-markup -1.5)
+
+              (make-translate-markup
+               (cons 0 0)
+               (make-fontsize-markup
+                -3
+                (make-number-markup
+                 (number->string (cadr timeSignatureToShow)))))))
+
+            (make-number-markup
+             (number->string (caddr timeSignatureToShow)))))))
+        )
   #})
+
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
 
 
 {
@@ -507,6 +552,9 @@ fractionalTimeSignatureBPlus =
  \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 
 {
@@ -514,6 +562,9 @@ fractionalTimeSignatureBPlus =
  \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 
 {
@@ -521,6 +572,9 @@ fractionalTimeSignatureBPlus =
  \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \end{Verbatim}
 
@@ -547,52 +601,59 @@ Style C of the fractional time signatures offers the largest font size for displ
        #'(NUM1 NUM2 NUM3 NUM4) MEASURE_SPAN BEAT_STRUCT
 \fractionalTimeSignatureC 
        #'(NUM2 NUM3 NUM4) MEASURE_SPAN BEAT_STRUCT
+       
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
 \item By default, \verb|\fractionalTimeSignatureC| shows \verb|+| (plus) sign when four \verb|NUM|s are given. As the font size for the ordinary numerator and the fractions is the same, without \verb|+| it becomes very confusing to read the time signature. Thus, contrary to Styles A and B, there is no separate function for the time signature with the \verb|+| sign given.
 \item See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractional Time Signatures, Style A} for the explanation on the arguments.
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 \version "2.24.4"
 \language "english"
 
+
 % Revised Jan 2 2025 for improving the appearance of fractions
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
-      (for-each
-       (lambda (warning)
-            (ly:expect-warning message))
-       (iota amount 1 1)))
+  (for-each
+   (lambda (warning)
+    (ly:expect-warning message))
+   (iota amount 1 1)))
 
 \suppressWarning 2 "strange time signature found"
 
 incompleteTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
 
 }
 incompleteSmallTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
-     \once \override Voice.TupletNumber.X-offset =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               2.2
-               1.2))
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletNumber.X-offset =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       2.2
+       1.2))
 
-     \once \override Voice.TupletBracket.shorten-pair =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(-0.7 . 0.15)
-               '(-0.3 . 0.8)))
-     \once \override Voice.TupletBracket.X-positions =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(1.8 . 3)
-               '(0.3 . 2.7)))
+ \once \override Voice.TupletBracket.shorten-pair =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(-0.7 . 0.15)
+       '(-0.3 . 0.8)))
+ \once \override Voice.TupletBracket.X-positions =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(1.8 . 3)
+       '(0.3 . 2.7)))
 }
 
 fractionalTimeSignatureC =
@@ -601,111 +662,127 @@ fractionalTimeSignatureC =
   (list? fraction? number-list?)
   #{
 
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
 
-       \override Staff.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Staff.TimeSignature.text =
+   \override Staff.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Staff.TimeSignature.text =
 
-       #(if (= (length timeSignatureToShow) 4)
+   #(if (= (length timeSignatureToShow) 4)
 
-            (markup
-             (make-override-markup
-              (cons 'baseline-skip 0)
-              (make-center-column-markup
-               (list
-                (make-line-markup
-                 (list
-                  (make-number-markup
-                   (number->string
-                    (car timeSignatureToShow)))
-                  (make-fontsize-markup
-                   -12
-                   (make-simple-markup " "))
-
-
-                  (make-hspace-markup -1.25)
-                  (make-translate-markup
-                   (cons 0 0.4)
-                   (make-bold-markup
-                    (make-simple-markup "+")))
-
-                  (make-hspace-markup -0.25)
-
-                  (make-hspace-markup -0.5)
-                  (make-right-align-markup
-                   (make-number-markup
-                    (number->string
-                     (cadr timeSignatureToShow))))
-
-                  (make-hspace-markup -0.6)
-
-                  (make-override-markup
-                   (list (cons 'alignment 0)
-                         (cons 'thickness 2))
-                   (make-draw-line-markup (cons 0.5 2)))
-
-                  (make-hspace-markup -0.6)
-
-                  (make-number-markup
-                   (make-left-align-markup
-                    (number->string
-                     (caddr timeSignatureToShow))))))
-
-                (make-number-markup
-                 (number->string
-                  (cadddr timeSignatureToShow)))))))
+        (markup
+         (make-override-markup
+          (cons 'baseline-skip 0)
+          (make-center-column-markup
+           (list
+            (make-line-markup
+             (list
+              (make-number-markup
+               (number->string
+                (car timeSignatureToShow)))
+              (make-fontsize-markup
+               -12
+               (make-simple-markup " "))
 
 
-            (markup
-             (make-override-markup
-              (cons 'baseline-skip 0)
-              (make-center-column-markup
-               (list
-                (make-line-markup
-                 (list
+              (make-hspace-markup -1.25)
+              (make-translate-markup
+               (cons 0 0.4)
+               (make-bold-markup
+                (make-simple-markup "+")))
 
-                  (make-right-align-markup
-                   (make-number-markup
-                    (number->string
-                     (car timeSignatureToShow))))
+              (make-hspace-markup -0.25)
 
-                  (make-hspace-markup -0.6)
+              (make-hspace-markup -0.5)
+              (make-right-align-markup
+               (make-number-markup
+                (number->string
+                 (cadr timeSignatureToShow))))
 
-                  (make-override-markup
-                   (list (cons 'alignment 0)
-                         (cons 'thickness 2))
-                   (make-draw-line-markup
-                    (cons 0.5 2)))
+              (make-hspace-markup -0.6)
 
-                  (make-hspace-markup -0.6)
+              (make-override-markup
+               (list (cons 'alignment 0)
+                     (cons 'thickness 2))
+               (make-draw-line-markup (cons 0.5 2)))
 
-                  (make-number-markup
-                   (make-left-align-markup
-                    (number->string
-                     (cadr timeSignatureToShow))))))
+              (make-hspace-markup -0.6)
 
-                (make-number-markup
-                 (number->string
-                  (caddr timeSignatureToShow))))))
-             ))
+              (make-number-markup
+               (make-left-align-markup
+                (number->string
+                 (caddr timeSignatureToShow))))))
+
+            (make-number-markup
+             (number->string
+              (cadddr timeSignatureToShow)))))))
+
+
+        (markup
+         (make-override-markup
+          (cons 'baseline-skip 0)
+          (make-center-column-markup
+           (list
+            (make-line-markup
+             (list
+
+              (make-right-align-markup
+               (make-number-markup
+                (number->string
+                 (car timeSignatureToShow))))
+
+              (make-hspace-markup -0.6)
+
+              (make-override-markup
+               (list (cons 'alignment 0)
+                     (cons 'thickness 2))
+               (make-draw-line-markup
+                (cons 0.5 2)))
+
+              (make-hspace-markup -0.6)
+
+              (make-number-markup
+               (make-left-align-markup
+                (number->string
+                 (cadr timeSignatureToShow))))))
+
+            (make-number-markup
+             (number->string
+              (caddr timeSignatureToShow))))))
+         ))
   #})
 
-
+backToNormalTimeSignature =
 {
-     \fractionalTimeSignatureC #'(3 2 3 4) 11/12 3,3,3,2
-     \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
-     \tuplet 3/2 {c' c' c'}
-     \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
 }
 
 
 {
-     \fractionalTimeSignatureC #'(1 3 4) 11/12 3,3,3,2
-     \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
-     \tuplet 3/2 {c' c' c'}
-     \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \fractionalTimeSignatureC #'(3 2 3 4) 11/12 3,3,3,2
+ \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
+ \tuplet 3/2 {c' c' c'}
+ \incompleteTupletBracket \tuplet 3/2 {c' c'}
+
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
+}
+
+
+{
+ \fractionalTimeSignatureC #'(1 3 4) 11/12 3,3,3,2
+ \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
+ \tuplet 3/2 {c' c' c'}
+ \incompleteTupletBracket \tuplet 3/2 {c' c'}
+  \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \end{Verbatim}
 
@@ -730,6 +807,9 @@ This is an implementation of a compound meter with two fractional time signature
 \begin{verbatim}
 \compoundFractionalTimeSignatureATwo
        #'((TIME_SIG1)(TIME_SIG2)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
@@ -741,11 +821,15 @@ This is an implementation of a compound meter with two fractional time signature
 \end{itemize} 
 See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractional Time Signatures, Style A} for the explanation on the arguments for the order of arguments to specify time signatures.
 \item \verb|MEASURE_SPAN| and \verb|BEAT_STRUCT| follow the same convention as before.
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 \version "2.24.4"
 \language "english"
+
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
@@ -964,11 +1048,24 @@ compoundFractionalTimeSignatureATwo =
   #})
 
 
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
+
+
 {
  \compoundFractionalTimeSignatureATwo #'((3 4)(2 3 4)) 11/12 3,3,3,2
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \end{Verbatim}
 \label{sec:compoundfractionalmeter_discussion}
@@ -976,6 +1073,7 @@ compoundFractionalTimeSignatureATwo =
 \begin{enumerate}
 \item This was a tricky one to make, as I had to resort to building the Scheme code without using the syntactic sugars, i.e. \verb|#:|.\footnote{See \textit{Known issues and warnings} at: \url{https://lilypond.org/doc/v2.24/Documentation/extending/markup-construction-in-scheme}} If any modification are to be made to this code, it is recommended to carefully examine where the corresponding parenthesis of a starting parenthesis is located. It is also helpful to watch LilyPond Log for any errors, as it seems to give hints for how many argument(s) a function is looking for. 
 \item I am hoping to find ways to simplify the code, as the same bits (with variations in variables that are called upon) of the codes are used to streamline the formatting of the time signature appearances. 
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 
@@ -997,52 +1095,59 @@ This is an implementation of a compound meter with two fractional time signature
 \begin{verbatim}
 \compoundFractionalTimeSignatureBTwo 
        #'((TIME_SIG1)(TIME_SIG2)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
 \item Following the convention of \verb|\compoundMeter| to enter the two time signatures, you will create a list of lists. Each \verb|TIME_SIG| accepts: an ordinary time signature (list with two numbers), a time signature with a fraction (list with three numbers), or a time signature with an ordinary numerator and a fraction. See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractional Time Signatures, Style A} for the explanation on the arguments for the order of arguments to specify time signatures.
 \item \verb|MEASURE_SPAN| and \verb|BEAT_STRUCT| follow the same convention as before.
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 \version "2.24.4"
 \language "english"
 
+
 % Revised Jan 2 2025 for improving the appearance of fractions
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
-      (for-each
-       (lambda (warning)
-            (ly:expect-warning message))
-       (iota amount 1 1)))
+  (for-each
+   (lambda (warning)
+    (ly:expect-warning message))
+   (iota amount 1 1)))
 
 \suppressWarning 1 "strange time signature found"
 
 incompleteTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
 
 }
 incompleteSmallTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
-     \once \override Voice.TupletNumber.X-offset =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               2.2
-               1.2))
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletNumber.X-offset =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       2.2
+       1.2))
 
-     \once \override Voice.TupletBracket.shorten-pair =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(-0.7 . 0.15)
-               '(-0.3 . 0.8)))
-     \once \override Voice.TupletBracket.X-positions =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(1.8 . 3)
-               '(0.3 . 2.7)))
+ \once \override Voice.TupletBracket.shorten-pair =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(-0.7 . 0.15)
+       '(-0.3 . 0.8)))
+ \once \override Voice.TupletBracket.X-positions =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(1.8 . 3)
+       '(0.3 . 2.7)))
 }
 
 compoundFractionalTimeSignatureBTwo =
@@ -1050,251 +1155,264 @@ compoundFractionalTimeSignatureBTwo =
   (timeSignatureToShow underlyingMeter beatStructure)
   (list? fraction? number-list?)
   (define mkup
-       (markup
-        #:concat
-        (
+   (markup
+    #:concat
+    (
 
-             #:override
+     #:override
+     (cons 'baseline-skip 0)
+     (cond ((= (length (car timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (car timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (car timeSignatureToShow)))))))
+
+           ((= (length (car timeSignatureToShow)) 3)
+            (make-override-markup
              (cons 'baseline-skip 0)
-             (cond ((= (length (car timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (car timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (car timeSignatureToShow)))))))
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (make-right-align-markup
+                   (make-translate-markup
+                    (cons 0 1.6)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (car (car timeSignatureToShow)))))))
 
-                   ((= (length (car timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (make-right-align-markup
-                           (make-translate-markup
-                            (cons 0 1.6)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (car (car timeSignatureToShow)))))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup (cons 1.5 1.35))))
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup (cons 1.5 1.35))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-translate-markup
+                  (cons 0 0)
+                  (make-fontsize-markup
+                   -3
+                   (make-number-markup
+                    (number->string
+                     (cadr (car timeSignatureToShow))))))))
 
-                         (make-translate-markup
-                          (cons 0 0)
-                          (make-fontsize-markup
-                           -3
-                           (make-number-markup
-                            (number->string
-                             (cadr (car timeSignatureToShow))))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (car timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (car timeSignatureToShow))))))))
 
 
-                   ((= (length (car timeSignatureToShow)) 4)
+           ((= (length (car timeSignatureToShow)) 4)
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (car timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
-
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
-
-                         (make-hspace-markup -0.25)
-
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (make-translate-markup
-                            (cons 0 1.5)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (cadr (car timeSignatureToShow)))))))
-
-                         (make-hspace-markup -1.5)
-
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup
-                            (cons 1.5 1.35))))
-
-                         (make-hspace-markup -1.5)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (make-fontsize-markup
-                            -3
-                            (number->string
-                             (caddr (car timeSignatureToShow))))))))
-
-                       (make-number-markup
-                        (number->string
-                         (cadddr (car timeSignatureToShow)))))))))
-
-
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-             #:translate
-             (cons 0 -0.5)
-             (#:bold "+")
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-
-             #:override
+            (make-override-markup
              (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (car timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
 
-             (cond ((= (length (cadr timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (cadr timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (cadr timeSignatureToShow)))))))
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
 
-                   ((= (length (cadr timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (make-right-align-markup
-                           (make-translate-markup
-                            (cons 0 1.6)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (car (cadr timeSignatureToShow)))))))
+                 (make-hspace-markup -0.25)
 
-                         (make-hspace-markup -1.5)
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (make-translate-markup
+                    (cons 0 1.5)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (cadr (car timeSignatureToShow)))))))
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup (cons 1.5 1.35))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup
+                    (cons 1.5 1.35))))
 
-                         (make-translate-markup
-                          (cons 0 0)
-                          (make-fontsize-markup
-                           -3
-                           (make-number-markup
-                            (number->string
-                             (cadr (cadr timeSignatureToShow))))))))
+                 (make-hspace-markup -1.5)
 
-                       (make-number-markup
-                        (number->string
-                         (caddr (cadr timeSignatureToShow))))))))
+                 (make-number-markup
+                  (make-left-align-markup
+                   (make-fontsize-markup
+                    -3
+                    (number->string
+                     (caddr (car timeSignatureToShow))))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (car timeSignatureToShow)))))))))
 
 
-                   ((= (length (cadr timeSignatureToShow)) 4)
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+     #:translate
+     (cons 0 -0.5)
+     (#:bold "+")
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (cadr timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
+     #:override
+     (cons 'baseline-skip 0)
 
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
+     (cond ((= (length (cadr timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (cadr timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -0.25)
+           ((= (length (cadr timeSignatureToShow)) 3)
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (make-right-align-markup
+                   (make-translate-markup
+                    (cons 0 1.6)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (car (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (make-translate-markup
-                            (cons 0 1.5)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (cadr (cadr timeSignatureToShow)))))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup (cons 1.5 1.35))))
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup
-                            (cons 1.5 1.35))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-translate-markup
+                  (cons 0 0)
+                  (make-fontsize-markup
+                   -3
+                   (make-number-markup
+                    (number->string
+                     (cadr (cadr timeSignatureToShow))))))))
 
-                         (make-number-markup
-                          (make-left-align-markup
-                           (make-fontsize-markup
-                            -3
-                            (number->string
-                             (caddr (cadr timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (cadr timeSignatureToShow))))))))
 
-                       (make-number-markup
-                        (number->string
-                         (cadddr (cadr timeSignatureToShow)))))))))
-             )))
+
+           ((= (length (cadr timeSignatureToShow)) 4)
+
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (cadr timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
+
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
+
+                 (make-hspace-markup -0.25)
+
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (make-translate-markup
+                    (cons 0 1.5)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (cadr (cadr timeSignatureToShow)))))))
+
+                 (make-hspace-markup -1.5)
+
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup
+                    (cons 1.5 1.35))))
+
+                 (make-hspace-markup -1.5)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (make-fontsize-markup
+                    -3
+                    (number->string
+                     (caddr (cadr timeSignatureToShow))))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (cadr timeSignatureToShow)))))))))
+     )))
 
   #{
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
 
-       \override Timing.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Timing.TimeSignature.text =
-       #mkup
+   \override Timing.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Timing.TimeSignature.text =
+   #mkup
   #})
 
 
+backToNormalTimeSignature =
 {
-
-     \compoundFractionalTimeSignatureBTwo #'((3 4)(2 3 4)) 11/12 3,3,3,2
-     \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
-     \tuplet 3/2 {c' c' c'}
-     \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
 }
+
+
+{
+ \compoundFractionalTimeSignatureBTwo #'((3 4)(2 3 4)) 11/12 3,3,3,2
+ \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
+ \tuplet 3/2 {c' c' c'}
+ \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
+}
+
 \end{Verbatim}
 \subsection{Discussion}
 See \hyperref[sec:compoundfractionalmeter_discussion]{\textbf{Discussion}} of the entry \textit{Compound Meter with Two Fractional Time Signatures, Style A.} \par
@@ -1319,52 +1437,59 @@ This is an implementation of a compound meter with two fractional time signature
 \begin{verbatim}
 \compoundFractionalTimeSignatureCTwo 
        #'((TIME_SIG1)(TIME_SIG2)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
 \item Following the convention of \verb|\compoundMeter| to enter the two time signatures, you will create a list of lists. Each \verb|TIME_SIG| accepts: an ordinary time signature (list with two numbers), a time signature with a fraction (list with three numbers), or a time signature with an ordinary numerator and a fraction. See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractional Time Signatures, Style A} for the explanation on the arguments for the order of arguments to specify time signatures.
 \item \verb|MEASURE_SPAN| and \verb|BEAT_STRUCT| follow the same convention as before.
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 \version "2.24.4"
 \language "english"
 
+
 % Revised Jan 2 2025 for improving the appearance of fractions
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
-      (for-each
-       (lambda (warning)
-            (ly:expect-warning message))
-       (iota amount 1 1)))
+  (for-each
+   (lambda (warning)
+    (ly:expect-warning message))
+   (iota amount 1 1)))
 
 \suppressWarning 1 "strange time signature found"
 
 incompleteTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
 
 }
 incompleteSmallTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
-     \once \override Voice.TupletNumber.X-offset =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               2.2
-               1.2))
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletNumber.X-offset =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       2.2
+       1.2))
 
-     \once \override Voice.TupletBracket.shorten-pair =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(-0.7 . 0.15)
-               '(-0.3 . 0.8)))
-     \once \override Voice.TupletBracket.X-positions =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(1.8 . 3)
-               '(0.3 . 2.7)))
+ \once \override Voice.TupletBracket.shorten-pair =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(-0.7 . 0.15)
+       '(-0.3 . 0.8)))
+ \once \override Voice.TupletBracket.X-positions =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(1.8 . 3)
+       '(0.3 . 2.7)))
 }
 
 compoundFractionalTimeSignatureCTwo =
@@ -1372,224 +1497,236 @@ compoundFractionalTimeSignatureCTwo =
   (timeSignatureToShow underlyingMeter beatStructure)
   (list? fraction? number-list?)
   (define mkup
-       (markup
-        #:concat
-        (
+   (markup
+    #:concat
+    (
 
-             #:override
+     #:override
+     (cons 'baseline-skip 0)
+     (cond ((= (length (car timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (car timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (car timeSignatureToShow)))))))
+
+           ((= (length (car timeSignatureToShow)) 3)
+            (make-override-markup
              (cons 'baseline-skip 0)
-             (cond ((= (length (car timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (car timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (car timeSignatureToShow)))))))
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
 
-                   ((= (length (car timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (car (car timeSignatureToShow)))))
 
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (car (car timeSignatureToShow)))))
+                 (make-hspace-markup -0.6)
 
-                         (make-hspace-markup -0.6)
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup
+                   (cons 0.5 2)))
 
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup
-                           (cons 0.5 2)))
+                 (make-hspace-markup -0.6)
 
-                         (make-hspace-markup -0.6)
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (cadr (car timeSignatureToShow)))))))
 
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (cadr (car timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (car timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (car timeSignatureToShow))))))))
 
 
-                   ((= (length (car timeSignatureToShow)) 4)
+           ((= (length (car timeSignatureToShow)) 4)
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (car timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
-
-
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
-
-                         (make-hspace-markup -0.25)
-
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (cadr (car timeSignatureToShow)))))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup (cons 0.5 2)))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (caddr (car timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (cadddr (car timeSignatureToShow)))))))))
-
-
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-             #:translate
-             (cons 0 -0.5)
-             (#:bold "+")
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-
-             #:override
+            (make-override-markup
              (cons 'baseline-skip 0)
-
-             (cond ((= (length (cadr timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (cadr timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (cadr timeSignatureToShow)))))))
-
-                   ((= (length (cadr timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (car (cadr timeSignatureToShow)))))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup
-                           (cons 0.5 2)))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (cadr (cadr timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (cadr timeSignatureToShow))))))))
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (car timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
 
 
-                   ((= (length (cadr timeSignatureToShow)) 4)
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (cadr timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
+                 (make-hspace-markup -0.25)
+
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (cadr (car timeSignatureToShow)))))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup (cons 0.5 2)))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (caddr (car timeSignatureToShow)))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (car timeSignatureToShow)))))))))
 
 
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+     #:translate
+     (cons 0 -0.5)
+     (#:bold "+")
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
 
-                         (make-hspace-markup -0.25)
+     #:override
+     (cons 'baseline-skip 0)
 
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (cadr (cadr timeSignatureToShow)))))
+     (cond ((= (length (cadr timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (cadr timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -0.6)
+           ((= (length (cadr timeSignatureToShow)) 3)
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
 
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup (cons 0.5 2)))
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (car (cadr timeSignatureToShow)))))
 
-                         (make-hspace-markup -0.6)
+                 (make-hspace-markup -0.6)
 
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (caddr (cadr timeSignatureToShow)))))))
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup
+                   (cons 0.5 2)))
 
-                       (make-number-markup
-                        (number->string
-                         (cadddr (cadr timeSignatureToShow)))))))))
-             )))
+                 (make-hspace-markup -0.6)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (cadr (cadr timeSignatureToShow)))))))
+
+               (make-number-markup
+                (number->string
+                 (caddr (cadr timeSignatureToShow))))))))
+
+
+           ((= (length (cadr timeSignatureToShow)) 4)
+
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (cadr timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
+
+
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
+
+                 (make-hspace-markup -0.25)
+
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (cadr (cadr timeSignatureToShow)))))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup (cons 0.5 2)))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (caddr (cadr timeSignatureToShow)))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (cadr timeSignatureToShow)))))))))
+     )))
 
   #{
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
-       \override Timing.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Timing.TimeSignature.text =
-       #mkup
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
+   \override Timing.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Timing.TimeSignature.text =
+   #mkup
   #})
+
+
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
 
 
 {
 
-     \compoundFractionalTimeSignatureCTwo
-     	 #'((3 4)(2 3 4)) 11/12 3,3,3,2
-     \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
-     \tuplet 3/2 {c' c' c'}
-     \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \compoundFractionalTimeSignatureCTwo #'((3 4)(2 3 4)) 11/12 3,3,3,2
+ \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
+ \tuplet 3/2 {c' c' c'}
+ \incompleteTupletBracket \tuplet 3/2 {c' c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \end{Verbatim}
 \subsection{Discussion}
@@ -1619,6 +1756,9 @@ This is an implementation of a compound meter with three fractional time signatu
 \begin{verbatim}
 \compoundFractionalTimeSignatureAThree 
      #'((TIME_SIG1)(TIME_SIG2)(TIME_SIG3)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB} 
 \begin{enumerate}
@@ -1632,11 +1772,16 @@ See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractio
 \item In the code of the given snippet, the value for \verb|MEASURE_SPAN| may appear absurd. However, this results from following the same convention as before, i.e. adding the constituent time signatures to give a general irrational time signature for the entire bar. Thus: \par
 \[ \frac{3}{4} +\frac{4}{20} + \frac{2}{12} = \mathbf{\frac{67}{60}}\] \par
 \item \verb|BEAT_STRUCT| follows the same convention as before; however, as the given code shows, it may be necessary to still use \verb|[| and \verb|]| to explicitly specify the beaming. 
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
+
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
 \version "2.24.4"
 \language "english"
+
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
@@ -1939,14 +2084,27 @@ compoundFractionalTimeSignatureAThree =
    #mkup
   #})
 
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
+
 
 {
- \compoundFractionalTimeSignatureAThree 
- 	#'((3 4)(4 5 4)(2 3 4)) 67/60 3,3,3,4,2
+
+ \compoundFractionalTimeSignatureAThree #'((3 4)(4 5 4)(2 3 4)) 67/60 3,3,3,4,2
  \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c'[ c' c']}
  \incompleteTupletBracket \tuplet 5/4 {c'16[ c' c' c']}
  \incompleteTupletBracket \tuplet 3/2 {c'8 c'}
+
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 \end{Verbatim}
 
@@ -1957,6 +2115,7 @@ compoundFractionalTimeSignatureAThree =
 \begin{enumerate}
 \item As mentioned in the \textbf{Grammar} section, it appears that specifying the beaming in the LilyPond code is still necessary. This is probably because of the unusual value of the fraction that needs to be given in the second argument of the function, \verb|MEASURE_SPAN|.
 \item As in the case of the other compound meters introduced in this document, I am hoping to find ways to simplify the code. 
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 
 
@@ -1984,10 +2143,14 @@ This is an implementation of a compound meter with three fractional time signatu
 \begin{verbatim}
 \compoundFractionalTimeSignatureBThree 
       #'((TIME_SIG1)(TIME_SIG2)(TIME_SIG3)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB}
 \begin{enumerate}
 \item See \hyperref[sec:compoundfractionalmeter_grammar]{\textbf{Grammar}} of the entry \textit{Compound Meter with Three Fractional Time Signatures, Style A.}
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 
 \subsection{Code}
@@ -1996,41 +2159,42 @@ This is an implementation of a compound meter with three fractional time signatu
 \language "english"
 
 % Revised Jan 2 2025 for improving the appearance of fractions
-
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
-      (for-each
-       (lambda (warning)
-            (ly:expect-warning message))
-       (iota amount 1 1)))
+  (for-each
+   (lambda (warning)
+    (ly:expect-warning message))
+   (iota amount 1 1)))
 
 \suppressWarning 1 "strange time signature found"
 
 incompleteTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
 
 }
 incompleteSmallTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
-     \once \override Voice.TupletNumber.X-offset =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               2.2
-               1.2))
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletNumber.X-offset =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       2.2
+       1.2))
 
-     \once \override Voice.TupletBracket.shorten-pair =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(-0.7 . 0.15)
-               '(-0.3 . 0.8)))
-     \once \override Voice.TupletBracket.X-positions =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(1.8 . 3)
-               '(0.3 . 2.7)))
+ \once \override Voice.TupletBracket.shorten-pair =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(-0.7 . 0.15)
+       '(-0.3 . 0.8)))
+ \once \override Voice.TupletBracket.X-positions =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(1.8 . 3)
+       '(0.3 . 2.7)))
 }
 
 compoundFractionalTimeSignatureBThree =
@@ -2038,370 +2202,382 @@ compoundFractionalTimeSignatureBThree =
   (timeSignatureToShow underlyingMeter beatStructure)
   (list? fraction? number-list?)
   (define mkup
-       (markup
-        #:concat
+   (markup
+    #:concat
 
-        (
+    (
 
-             #:override
+     #:override
+     (cons 'baseline-skip 0)
+     (cond ((= (length (car timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (car timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (car timeSignatureToShow)))))))
+
+           ((= (length (car timeSignatureToShow)) 3)
+            (make-override-markup
              (cons 'baseline-skip 0)
-             (cond ((= (length (car timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (car timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (car timeSignatureToShow)))))))
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (make-right-align-markup
+                   (make-translate-markup
+                    (cons 0 1.6)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (car (car timeSignatureToShow)))))))
 
-                   ((= (length (car timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (make-right-align-markup
-                           (make-translate-markup
-                            (cons 0 1.6)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (car (car timeSignatureToShow)))))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup (cons 1.5 1.35))))
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup (cons 1.5 1.35))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-translate-markup
+                  (cons 0 0)
+                  (make-fontsize-markup
+                   -3
+                   (make-number-markup
+                    (number->string
+                     (cadr (car timeSignatureToShow))))))))
 
-                         (make-translate-markup
-                          (cons 0 0)
-                          (make-fontsize-markup
-                           -3
-                           (make-number-markup
-                            (number->string
-                             (cadr (car timeSignatureToShow))))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (car timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (car timeSignatureToShow))))))))
 
 
-                   ((= (length (car timeSignatureToShow)) 4)
+           ((= (length (car timeSignatureToShow)) 4)
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (car timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
-
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
-
-                         (make-hspace-markup -0.25)
-
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (make-translate-markup
-                            (cons 0 1.5)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (cadr (car timeSignatureToShow)))))))
-
-                         (make-hspace-markup -1.5)
-
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup
-                            (cons 1.5 1.35))))
-
-                         (make-hspace-markup -1.5)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (make-fontsize-markup
-                            -3
-                            (number->string
-                             (caddr (car timeSignatureToShow))))))))
-
-                       (make-number-markup
-                        (number->string
-                         (cadddr (car timeSignatureToShow)))))))))
-
-
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-             #:translate
-             (cons 0 -0.5)
-             (#:bold "+")
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-
-             #:override
+            (make-override-markup
              (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (car timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
 
-             (cond ((= (length (cadr timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (cadr timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (cadr timeSignatureToShow)))))))
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
 
-                   ((= (length (cadr timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (make-right-align-markup
-                           (make-translate-markup
-                            (cons 0 1.6)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (car (cadr timeSignatureToShow)))))))
+                 (make-hspace-markup -0.25)
 
-                         (make-hspace-markup -1.5)
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (make-translate-markup
+                    (cons 0 1.5)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (cadr (car timeSignatureToShow)))))))
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup (cons 1.5 1.35))))
+                 (make-hspace-markup -1.5)
 
-                         (make-hspace-markup -1.5)
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup
+                    (cons 1.5 1.35))))
 
-                         (make-translate-markup
-                          (cons 0 0)
-                          (make-fontsize-markup
-                           -3
-                           (make-number-markup
-                            (number->string
-                             (cadr (cadr timeSignatureToShow))))))))
+                 (make-hspace-markup -1.5)
 
-                       (make-number-markup
-                        (number->string
-                         (caddr (cadr timeSignatureToShow))))))))
+                 (make-number-markup
+                  (make-left-align-markup
+                   (make-fontsize-markup
+                    -3
+                    (number->string
+                     (caddr (car timeSignatureToShow))))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (car timeSignatureToShow)))))))))
 
 
-                   ((= (length (cadr timeSignatureToShow)) 4)
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+     #:translate
+     (cons 0 -0.5)
+     (#:bold "+")
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (cadr timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
+     #:override
+     (cons 'baseline-skip 0)
 
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
+     (cond ((= (length (cadr timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (cadr timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -0.25)
-
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (make-translate-markup
-                            (cons 0 1.5)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (cadr (cadr timeSignatureToShow)))))))
-
-                         (make-hspace-markup -1.5)
-
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup
-                            (cons 1.5 1.35))))
-
-                         (make-hspace-markup -1.5)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (make-fontsize-markup
-                            -3
-                            (number->string
-                             (caddr (cadr timeSignatureToShow))))))))
-
-                       (make-number-markup
-                        (number->string
-                         (cadddr (cadr timeSignatureToShow)))))))))
-
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-             #:translate
-             (cons 0 -0.5)
-             (#:bold "+")
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-
-             #:override
+           ((= (length (cadr timeSignatureToShow)) 3)
+            (make-override-markup
              (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (make-right-align-markup
+                   (make-translate-markup
+                    (cons 0 1.6)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (car (cadr timeSignatureToShow)))))))
 
-             (cond ((= (length (caddr timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (caddr timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (caddr timeSignatureToShow)))))))
+                 (make-hspace-markup -1.5)
 
-                   ((= (length (caddr timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (make-right-align-markup
-                           (make-translate-markup
-                            (cons 0 1.6)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (car (caddr timeSignatureToShow)))))))
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup (cons 1.5 1.35))))
 
-                         (make-hspace-markup -1.5)
+                 (make-hspace-markup -1.5)
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup (cons 1.5 1.35))))
+                 (make-translate-markup
+                  (cons 0 0)
+                  (make-fontsize-markup
+                   -3
+                   (make-number-markup
+                    (number->string
+                     (cadr (cadr timeSignatureToShow))))))))
 
-                         (make-hspace-markup -1.5)
-
-                         (make-translate-markup
-                          (cons 0 0)
-                          (make-fontsize-markup
-                           -3
-                           (make-number-markup
-                            (number->string
-                             (cadr (caddr timeSignatureToShow))))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (caddr timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (cadr timeSignatureToShow))))))))
 
 
-                   ((= (length (caddr timeSignatureToShow)) 4)
+           ((= (length (cadr timeSignatureToShow)) 4)
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (caddr timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (cadr timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
 
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
 
-                         (make-hspace-markup -0.25)
+                 (make-hspace-markup -0.25)
 
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (make-translate-markup
-                            (cons 0 1.5)
-                            (make-fontsize-markup
-                             -3
-                             (number->string
-                              (cadr (caddr timeSignatureToShow)))))))
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (make-translate-markup
+                    (cons 0 1.5)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (cadr (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -1.5)
+                 (make-hspace-markup -1.5)
 
-                         (make-override-markup
-                          (cons 'alignment 0)
-                          (make-translate-markup
-                           (cons 0 0.8)
-                           (make-draw-line-markup
-                            (cons 1.5 1.35))))
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup
+                    (cons 1.5 1.35))))
 
-                         (make-hspace-markup -1.5)
+                 (make-hspace-markup -1.5)
 
-                         (make-number-markup
-                          (make-left-align-markup
-                           (make-fontsize-markup
-                            -3
-                            (number->string
-                             (caddr (caddr timeSignatureToShow))))))))
+                 (make-number-markup
+                  (make-left-align-markup
+                   (make-fontsize-markup
+                    -3
+                    (number->string
+                     (caddr (cadr timeSignatureToShow))))))))
 
-                       (make-number-markup
-                        (number->string
-                         (cadddr (caddr timeSignatureToShow)))))))))
-             )
+               (make-number-markup
+                (number->string
+                 (cadddr (cadr timeSignatureToShow)))))))))
 
-        ))
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+     #:translate
+     (cons 0 -0.5)
+     (#:bold "+")
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+
+     #:override
+     (cons 'baseline-skip 0)
+
+     (cond ((= (length (caddr timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (caddr timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (caddr timeSignatureToShow)))))))
+
+           ((= (length (caddr timeSignatureToShow)) 3)
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (make-right-align-markup
+                   (make-translate-markup
+                    (cons 0 1.6)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (car (caddr timeSignatureToShow)))))))
+
+                 (make-hspace-markup -1.5)
+
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup (cons 1.5 1.35))))
+
+                 (make-hspace-markup -1.5)
+
+                 (make-translate-markup
+                  (cons 0 0)
+                  (make-fontsize-markup
+                   -3
+                   (make-number-markup
+                    (number->string
+                     (cadr (caddr timeSignatureToShow))))))))
+
+               (make-number-markup
+                (number->string
+                 (caddr (caddr timeSignatureToShow))))))))
+
+
+           ((= (length (caddr timeSignatureToShow)) 4)
+
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (caddr timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
+
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
+
+                 (make-hspace-markup -0.25)
+
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (make-translate-markup
+                    (cons 0 1.5)
+                    (make-fontsize-markup
+                     -3
+                     (number->string
+                      (cadr (caddr timeSignatureToShow)))))))
+
+                 (make-hspace-markup -1.5)
+
+                 (make-override-markup
+                  (cons 'alignment 0)
+                  (make-translate-markup
+                   (cons 0 0.8)
+                   (make-draw-line-markup
+                    (cons 1.5 1.35))))
+
+                 (make-hspace-markup -1.5)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (make-fontsize-markup
+                    -3
+                    (number->string
+                     (caddr (caddr timeSignatureToShow))))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (caddr timeSignatureToShow)))))))))
+     )
+
+    ))
 
   #{
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
 
-       \override Timing.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Timing.TimeSignature.text =
-       #mkup
+   \override Timing.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Timing.TimeSignature.text =
+   #mkup
   #})
+
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
 
 {
 
-     \compoundFractionalTimeSignatureBThree 
-     	#'((3 4)(4 5 4)(2 3 4)) 67/60 3,3,3,4,2
-     \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
-     \tuplet 3/2 {c'[ c' c']}
-     \incompleteTupletBracket \tuplet 5/4 {c'16[ c' c' c']}
-     \incompleteTupletBracket \tuplet 3/2 {c'8 c'}
+ \compoundFractionalTimeSignatureBThree #'((3 4)(4 5 4)(2 3 4)) 67/60 3,3,3,4,2
+ \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
+ \tuplet 3/2 {c'[ c' c']}
+ \incompleteTupletBracket \tuplet 5/4 {c'16[ c' c' c']}
+ \incompleteTupletBracket \tuplet 3/2 {c'8 c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
+
 }
 \end{Verbatim}
 
@@ -2435,10 +2611,14 @@ This is an implementation of a compound meter with three fractional time signatu
 \begin{verbatim}
 \compoundFractionalTimeSignatureCThree
        #'((TIME_SIG1)(TIME_SIG2)(TIME_SIG3)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB}
 \begin{enumerate}
 \item See \hyperref[sec:compoundfractionalmeter_grammar]{\textbf{Grammar}} of the entry \textit{Compound Meter with Three Fractional Time Signatures, Style A.}
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 
 \subsection{Code}
@@ -2446,41 +2626,44 @@ This is an implementation of a compound meter with three fractional time signatu
 \version "2.24.4"
 \language "english"
 
+
 % Revised Jan 2 2025 for improving the appearance of fractions
+% Revised Aug 10 2025 to include the function to revert to a
+% regular time signature
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
-      (for-each
-       (lambda (warning)
-            (ly:expect-warning message))
-       (iota amount 1 1)))
+  (for-each
+   (lambda (warning)
+    (ly:expect-warning message))
+   (iota amount 1 1)))
 
 \suppressWarning 1 "strange time signature found"
 
 incompleteTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
 
 }
 incompleteSmallTupletBracket =  {
-     \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
-     \once \override Voice.TupletBracket.bracket-visibility = ##t
-     \once \override Voice.TupletNumber.X-offset =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               2.2
-               1.2))
+ \once \override Voice.TupletBracket.edge-height = #'(0.7 . 0)
+ \once \override Voice.TupletBracket.bracket-visibility = ##t
+ \once \override Voice.TupletNumber.X-offset =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       2.2
+       1.2))
 
-     \once \override Voice.TupletBracket.shorten-pair =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(-0.7 . 0.15)
-               '(-0.3 . 0.8)))
-     \once \override Voice.TupletBracket.X-positions =
-     #(lambda (grob)
-           (if (= UP (ly:grob-property grob 'direction))
-               '(1.8 . 3)
-               '(0.3 . 2.7)))
+ \once \override Voice.TupletBracket.shorten-pair =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(-0.7 . 0.15)
+       '(-0.3 . 0.8)))
+ \once \override Voice.TupletBracket.X-positions =
+ #(lambda (grob)
+   (if (= UP (ly:grob-property grob 'direction))
+       '(1.8 . 3)
+       '(0.3 . 2.7)))
 }
 
 compoundFractionalTimeSignatureCThree =
@@ -2488,330 +2671,341 @@ compoundFractionalTimeSignatureCThree =
   (timeSignatureToShow underlyingMeter beatStructure)
   (list? fraction? number-list?)
   (define mkup
-       (markup
-        #:concat
-        (
+   (markup
+    #:concat
+    (
 
-             #:override
+     #:override
+     (cons 'baseline-skip 0)
+     (cond ((= (length (car timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (car timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (car timeSignatureToShow)))))))
+
+           ((= (length (car timeSignatureToShow)) 3)
+            (make-override-markup
              (cons 'baseline-skip 0)
-             (cond ((= (length (car timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (car timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (car timeSignatureToShow)))))))
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
 
-                   ((= (length (car timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (car (car timeSignatureToShow)))))
 
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (car (car timeSignatureToShow)))))
+                 (make-hspace-markup -0.6)
 
-                         (make-hspace-markup -0.6)
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup
+                   (cons 0.5 2)))
 
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup
-                           (cons 0.5 2)))
+                 (make-hspace-markup -0.6)
 
-                         (make-hspace-markup -0.6)
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (cadr (car timeSignatureToShow)))))))
 
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (cadr (car timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (car timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (car timeSignatureToShow))))))))
 
 
-                   ((= (length (car timeSignatureToShow)) 4)
+           ((= (length (car timeSignatureToShow)) 4)
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (car timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
-
-
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
-
-                         (make-hspace-markup -0.25)
-
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (cadr (car timeSignatureToShow)))))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup (cons 0.5 2)))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (caddr (car timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (cadddr (car timeSignatureToShow)))))))))
-
-
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-             #:translate
-             (cons 0 -0.5)
-             (#:bold "+")
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-
-             #:override
+            (make-override-markup
              (cons 'baseline-skip 0)
-
-             (cond ((= (length (cadr timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (cadr timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (cadr timeSignatureToShow)))))))
-
-                   ((= (length (cadr timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (car (cadr timeSignatureToShow)))))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup
-                           (cons 0.5 2)))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (cadr (cadr timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (cadr timeSignatureToShow))))))))
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (car timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
 
 
-                   ((= (length (cadr timeSignatureToShow)) 4)
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (cadr timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
+                 (make-hspace-markup -0.25)
+
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (cadr (car timeSignatureToShow)))))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup (cons 0.5 2)))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (caddr (car timeSignatureToShow)))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (car timeSignatureToShow)))))))))
 
 
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+     #:translate
+     (cons 0 -0.5)
+     (#:bold "+")
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
 
-                         (make-hspace-markup -0.25)
+     #:override
+     (cons 'baseline-skip 0)
 
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (cadr (cadr timeSignatureToShow)))))
+     (cond ((= (length (cadr timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (cadr timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -0.6)
-
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup (cons 0.5 2)))
-
-                         (make-hspace-markup -0.6)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (caddr (cadr timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (cadddr (cadr timeSignatureToShow)))))))))
-
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-             #:translate
-             (cons 0 -0.5)
-             (#:bold "+")
-             #:translate
-             (cons 0 -0.5)
-             (#:fontsize -12 " ")
-
-             #:override
+           ((= (length (cadr timeSignatureToShow)) 3)
+            (make-override-markup
              (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
 
-             (cond ((= (length (caddr timeSignatureToShow)) 2)
-                    (make-center-column-markup
-                     (list (make-number-markup
-                            (number->string
-                             (car (caddr timeSignatureToShow))))
-                           (make-number-markup
-                            (number->string
-                             (cadr (caddr timeSignatureToShow)))))))
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (car (cadr timeSignatureToShow)))))
 
-                   ((= (length (caddr timeSignatureToShow)) 3)
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
+                 (make-hspace-markup -0.6)
 
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (car (caddr timeSignatureToShow)))))
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup
+                   (cons 0.5 2)))
 
-                         (make-hspace-markup -0.6)
+                 (make-hspace-markup -0.6)
 
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup
-                           (cons 0.5 2)))
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (cadr (cadr timeSignatureToShow)))))))
 
-                         (make-hspace-markup -0.6)
-
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (cadr (caddr timeSignatureToShow)))))))
-
-                       (make-number-markup
-                        (number->string
-                         (caddr (caddr timeSignatureToShow))))))))
+               (make-number-markup
+                (number->string
+                 (caddr (cadr timeSignatureToShow))))))))
 
 
-                   ((= (length (caddr timeSignatureToShow)) 4)
+           ((= (length (cadr timeSignatureToShow)) 4)
 
-                    (make-override-markup
-                     (cons 'baseline-skip 0)
-                     (make-center-column-markup
-                      (list
-                       (make-line-markup
-                        (list
-                         (make-number-markup
-                          (number->string
-                           (car (caddr timeSignatureToShow))))
-                         (make-fontsize-markup
-                          -12
-                          (make-simple-markup " "))
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (cadr timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
 
 
-                         (make-hspace-markup -1.25)
-                         (make-translate-markup
-                          (cons 0 0.4)
-                          (make-bold-markup
-                           (make-simple-markup "+")))
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
 
-                         (make-hspace-markup -0.25)
+                 (make-hspace-markup -0.25)
 
-                         (make-hspace-markup -0.5)
-                         (make-right-align-markup
-                          (make-number-markup
-                           (number->string
-                            (cadr (caddr timeSignatureToShow)))))
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (cadr (cadr timeSignatureToShow)))))
 
-                         (make-hspace-markup -0.6)
+                 (make-hspace-markup -0.6)
 
-                         (make-override-markup
-                          (list (cons 'alignment 0)
-                                (cons 'thickness 2))
-                          (make-draw-line-markup (cons 0.5 2)))
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup (cons 0.5 2)))
 
-                         (make-hspace-markup -0.6)
+                 (make-hspace-markup -0.6)
 
-                         (make-number-markup
-                          (make-left-align-markup
-                           (number->string
-                            (caddr (caddr timeSignatureToShow)))))))
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (caddr (cadr timeSignatureToShow)))))))
 
-                       (make-number-markup
-                        (number->string
-                         (cadddr (caddr timeSignatureToShow)))))))))
-             )
-        ))
+               (make-number-markup
+                (number->string
+                 (cadddr (cadr timeSignatureToShow)))))))))
+
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+     #:translate
+     (cons 0 -0.5)
+     (#:bold "+")
+     #:translate
+     (cons 0 -0.5)
+     (#:fontsize -12 " ")
+
+     #:override
+     (cons 'baseline-skip 0)
+
+     (cond ((= (length (caddr timeSignatureToShow)) 2)
+            (make-center-column-markup
+             (list (make-number-markup
+                    (number->string
+                     (car (caddr timeSignatureToShow))))
+                   (make-number-markup
+                    (number->string
+                     (cadr (caddr timeSignatureToShow)))))))
+
+           ((= (length (caddr timeSignatureToShow)) 3)
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (car (caddr timeSignatureToShow)))))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup
+                   (cons 0.5 2)))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (cadr (caddr timeSignatureToShow)))))))
+
+               (make-number-markup
+                (number->string
+                 (caddr (caddr timeSignatureToShow))))))))
+
+
+           ((= (length (caddr timeSignatureToShow)) 4)
+
+            (make-override-markup
+             (cons 'baseline-skip 0)
+             (make-center-column-markup
+              (list
+               (make-line-markup
+                (list
+                 (make-number-markup
+                  (number->string
+                   (car (caddr timeSignatureToShow))))
+                 (make-fontsize-markup
+                  -12
+                  (make-simple-markup " "))
+
+
+                 (make-hspace-markup -1.25)
+                 (make-translate-markup
+                  (cons 0 0.4)
+                  (make-bold-markup
+                   (make-simple-markup "+")))
+
+                 (make-hspace-markup -0.25)
+
+                 (make-hspace-markup -0.5)
+                 (make-right-align-markup
+                  (make-number-markup
+                   (number->string
+                    (cadr (caddr timeSignatureToShow)))))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-override-markup
+                  (list (cons 'alignment 0)
+                        (cons 'thickness 2))
+                  (make-draw-line-markup (cons 0.5 2)))
+
+                 (make-hspace-markup -0.6)
+
+                 (make-number-markup
+                  (make-left-align-markup
+                   (number->string
+                    (caddr (caddr timeSignatureToShow)))))))
+
+               (make-number-markup
+                (number->string
+                 (cadddr (caddr timeSignatureToShow)))))))))
+     )
+    ))
 
   #{
-       \time $underlyingMeter
-       \set beatStructure = $beatStructure
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
 
-       \override Timing.TimeSignature.stencil =
-       #ly:text-interface::print
-       \override Timing.TimeSignature.text =
-       #mkup
+   \override Timing.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Timing.TimeSignature.text =
+   #mkup
   #})
+
+backToNormalTimeSignature =
+{
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
+}
 
 
 {
 
-     \compoundFractionalTimeSignatureCThree 
-     	#'((3 4)(4 5 4)(2 3 4)) 67/60 3,3,3,4,2
-     \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
-     \tuplet 3/2 {c'[ c' c']}
-     \incompleteTupletBracket \tuplet 5/4 {c'16[ c' c' c']}
-     \incompleteTupletBracket \tuplet 3/2 {c'8 c'}
+ \compoundFractionalTimeSignatureCThree #'((3 4)(4 5 4)(2 3 4)) 67/60 3,3,3,4,2
+ \tuplet 3/2 {c'8 c' c'} \tuplet 3/2 {c' c' c'}
+ \tuplet 3/2 {c'[ c' c']}
+ \incompleteTupletBracket \tuplet 5/4 {c'16[ c' c' c']}
+ \incompleteTupletBracket \tuplet 3/2 {c'8 c'}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
 
 \end{Verbatim}
@@ -2842,6 +3036,9 @@ This is an implementation of a time signature with decimals. This function allow
 \begin{verbatim}
 \decimalPointTimeSignature
        #'((NUMERATOR)(DENOMINATOR)) MEASURE_SPAN BEAT_STRUCT
+
+\backToNormalTimeSignature
+
 \end{verbatim}
 \textbf{NB}
 \begin{enumerate}
@@ -2853,7 +3050,7 @@ This is an implementation of a time signature with decimals. This function allow
 \end{enumerate}
 \item \verb|MEASURE_SPAN| denotes how the measure may be written without the use of "decimal point" time signature. 
 \item \verb |BEAT_STRUCT| indicates beat structure, by which the beaming of the measure abides.
-
+\item When you wish to go back to a regular time signature, use \verb|\backToNormalTimeSignature|, otherwise the identical fractional time signature will keep showing up.
 \end{enumerate}
 
 \subsection{Code}
@@ -2861,125 +3058,140 @@ This is an implementation of a time signature with decimals. This function allow
 \version "2.24.4"
 \language "english"
 
-
 decimalPointTimeSignature =
 #(define-music-function
   (timeSignatureToShow underlyingMeter beatStructure)
   (list? fraction? number-list?)
 
   (define (is-float? x)
-    (and (number? x) (inexact? x)))
+   (and (number? x) (inexact? x)))
 
   #{
-    \time $underlyingMeter
-    \set beatStructure = $beatStructure
-    \override Staff.TimeSignature.stencil =
-    #ly:text-interface::print
-    \override Staff.TimeSignature.text =
-    #(markup
-      (make-override-markup
-       (cons 'baseline-skip 0)
-       (make-center-column-markup
-        (list
-         (if (= (length (car  timeSignatureToShow)) 1)
-             (make-number-markup
-              (number->string
+   \time $underlyingMeter
+   \set beatStructure = $beatStructure
+   \override Staff.TimeSignature.stencil =
+   #ly:text-interface::print
+   \override Staff.TimeSignature.text =
+   #(markup
+     (make-override-markup
+      (cons 'baseline-skip 0)
+      (make-center-column-markup
+       (list
+        (if (= (length (car  timeSignatureToShow)) 1)
+            (make-number-markup
+             (number->string
 
-               (car (car timeSignatureToShow))))
-             (make-line-markup
-              (list
-               (make-number-markup
-                (number->string
-                 (car (car timeSignatureToShow))))
-               (make-hspace-markup -0.5)
-               (make-translate-markup
-                '(0 . 0.15)
-                (make-musicglyph-markup "period"))
-               (make-hspace-markup -0.5)
-               (if (not (is-float? (cadr (car timeSignatureToShow))))
-                   (make-number-markup
-                    (number->string
-                     (inexact->exact (cadr (car timeSignatureToShow)))
-                     ))
-                   (make-line-markup
-                    (list (make-number-markup
-                           (number->string
-                            (inexact->exact
-                             (cadr (car timeSignatureToShow)))
-                            ))
-                          (make-hspace-markup -0.5)
-                          (make-translate-markup
-                           '(0 . 0.15)
-                           (make-musicglyph-markup "period"))
-                          (make-hspace-markup -0.5)
-                          (make-translate-markup
-                           '(0 . 0.15)
-                           (make-musicglyph-markup "period"))
-                          (make-hspace-markup -0.5)
-                          (make-translate-markup
-                           '(0 . 0.15)
-                           (make-musicglyph-markup "period"))))
-                   )
-               )
+              (car (car timeSignatureToShow))))
+            (make-line-markup
+             (list
+              (make-number-markup
+               (number->string
+                (car (car timeSignatureToShow))))
+              (make-hspace-markup -0.5)
+              (make-translate-markup
+               '(0 . 0.15)
+               (make-musicglyph-markup "period"))
+              (make-hspace-markup -0.5)
+              (if (not (is-float? (cadr (car timeSignatureToShow))))
+                  (make-number-markup
+                   (number->string
+                    (inexact->exact (cadr (car timeSignatureToShow)))
+                    ))
+                  (make-line-markup
+                   (list (make-number-markup
+                          (number->string
+                           (inexact->exact
+                            (cadr (car timeSignatureToShow)))
+                           ))
+                         (make-hspace-markup -0.5)
+                         (make-translate-markup
+                          '(0 . 0.15)
+                          (make-musicglyph-markup "period"))
+                         (make-hspace-markup -0.5)
+                         (make-translate-markup
+                          '(0 . 0.15)
+                          (make-musicglyph-markup "period"))
+                         (make-hspace-markup -0.5)
+                         (make-translate-markup
+                          '(0 . 0.15)
+                          (make-musicglyph-markup "period"))))
+                  )
               )
              )
-         (if (= (length (cadr  timeSignatureToShow)) 1)
-             (make-number-markup
-              (number->string
-               (car (cadr timeSignatureToShow))))
-             (make-line-markup
-              (list
-               (make-number-markup
-                (number->string
-                 (car (cadr timeSignatureToShow))))
-               (make-hspace-markup -0.5)
-               (make-translate-markup
-                '(0 . 0.15)
-                (make-musicglyph-markup "period"))
-               (make-hspace-markup -0.5)
-               (if (not (is-float? (cadr (cadr timeSignatureToShow))))
-                   (make-number-markup
-                    (number->string
-                     (inexact->exact (cadr (cadr timeSignatureToShow)))
-                     ))
-                   (make-line-markup
-                    (list (make-number-markup
-                           (number->string
-                            (inexact->exact
-                             (cadr (cadr timeSignatureToShow)))
-                            ))
-                          (make-hspace-markup -0.5)
-                          (make-translate-markup
-                           '(0 . 0.15)
-                           (make-musicglyph-markup "period"))
-                          (make-hspace-markup -0.5)
-                          (make-translate-markup
-                           '(0 . 0.15)
-                           (make-musicglyph-markup "period"))
-                          (make-hspace-markup -0.5)
-                          (make-translate-markup
-                           '(0 . 0.15)
-                           (make-musicglyph-markup "period"))))
-                   )
-               )
+            )
+        (if (= (length (cadr  timeSignatureToShow)) 1)
+            (make-number-markup
+             (number->string
+              (car (cadr timeSignatureToShow))))
+            (make-line-markup
+             (list
+              (make-number-markup
+               (number->string
+                (car (cadr timeSignatureToShow))))
+              (make-hspace-markup -0.5)
+              (make-translate-markup
+               '(0 . 0.15)
+               (make-musicglyph-markup "period"))
+              (make-hspace-markup -0.5)
+              (if (not (is-float? (cadr (cadr timeSignatureToShow))))
+                  (make-number-markup
+                   (number->string
+                    (inexact->exact (cadr (cadr timeSignatureToShow)))
+                    ))
+                  (make-line-markup
+                   (list (make-number-markup
+                          (number->string
+                           (inexact->exact
+                            (cadr (cadr timeSignatureToShow)))
+                           ))
+                         (make-hspace-markup -0.5)
+                         (make-translate-markup
+                          '(0 . 0.15)
+                          (make-musicglyph-markup "period"))
+                         (make-hspace-markup -0.5)
+                         (make-translate-markup
+                          '(0 . 0.15)
+                          (make-musicglyph-markup "period"))
+                         (make-hspace-markup -0.5)
+                         (make-translate-markup
+                          '(0 . 0.15)
+                          (make-musicglyph-markup "period"))))
+                  )
               )
              )
-         )
-        ))
-      (make-hspace-markup -1))
+            )
+        )
+       ))
+     (make-hspace-markup -1))
   #})
 
-
+backToNormalTimeSignature =
 {
-  \decimalPointTimeSignature #'((2 5)(4)) 5/8 2,3
-  c'8 c' c' c' c'
+ \unset beatStructure
+ \revert Timing.TimeSignature.stencil
+ \revert Timing.TimeSignature.text
+ \revert Staff.TimeSignature.stencil
+ \revert Staff.TimeSignature.text
 }
 
 
 {
-  \decimalPointTimeSignature #'((9)(3 1415.)) 9/4 3,3,3
-  \tuplet 9/9 {c'4 4 4 4 4 4 4 4 4}
+ \decimalPointTimeSignature #'((2 5)(4)) 5/8 2,3
+ c'8 c' c' c' c'
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
 }
+
+
+{
+ \decimalPointTimeSignature #'((9)(3 1415.)) 9/4 3,3,3
+ \tuplet 9/9 {c'4 4 4 4 4 4 4 4 4}
+ \backToNormalTimeSignature
+ \time 3/4
+ c'2.
+}
+
 \end{Verbatim}
 
 \subsection{Discussion}
