@@ -280,6 +280,37 @@
       \field{title}{... explosante-fixe ... transitoire VII : (version 1991/93)}
       \field{year}{1991}
     \endentry
+    \entry{RN1000}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=e6b88fae929d232f7e877b0cfb1f643e}{%
+           family={Boulez},
+           familyi={B\bibinitperiod},
+           given={Pierre},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {London}%
+      }
+      \list{publisher}{1}{%
+        {Universal Edition}%
+      }
+      \strng{namehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{fullhash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{fullhashraw}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{bibnamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorbibnamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authornamehash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorfullhash}{e6b88fae929d232f7e877b0cfb1f643e}
+      \strng{authorfullhashraw}{e6b88fae929d232f7e877b0cfb1f643e}
+      \field{extraname}{2}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Pli selon pli: V. Tombeau}
+      \field{year}{1971}
+    \endentry
     \entry{RN1738}{book}{}{}
       \name{author}{1}{}{%
         {{un=0,uniquepart=base,hash=e6b88fae929d232f7e877b0cfb1f643e}{%
@@ -300,7 +331,7 @@
       \strng{authornamehash}{e6b88fae929d232f7e877b0cfb1f643e}
       \strng{authorfullhash}{e6b88fae929d232f7e877b0cfb1f643e}
       \strng{authorfullhashraw}{e6b88fae929d232f7e877b0cfb1f643e}
-      \field{extraname}{2}
+      \field{extraname}{3}
       \field{sortinit}{B}
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}

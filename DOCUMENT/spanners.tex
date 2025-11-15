@@ -5,6 +5,7 @@
 
 This chapter covers snippets that take advantages of spanners (text, line, etc.) in one way or another. Because functions such as \verb|\startTextSpan| and \verb|\stopTextSpan| activate and deactivate these snippets, caution must be paid when using more than one of them at the same time. See \hyperref[sec:comb_spanners]{Example in \textbf{Combinations}} to avoid conflicts between or among the spanner snippets.
 \clearpage
+
 \section {Arrow Lines}
 \label{sec:arrow_lines}
 \lilypondfile[staffsize=20,hpadding=4,voffset=4pt]{/arrow_lines.ly}
@@ -178,6 +179,92 @@ There are a few things to consider when using the arrow lines on dyads and chord
 
 %%%%%%%%%%%%%%%%%%%
 
+
+\section {Boulez Tie}
+\label{sec:arrow_lines}
+\lilypondfile[staffsize=20,hpadding=4,voffset=4pt]{/boulez_tie.ly}
+\hfill
+
+\subsection{Description}
+Implementation of ties seen in Movement 5 \textit{Tombeau} of \textit{Pli selon pli} by Pierre Boulez\autocite{RN1000}. The shape is roughly a combination of a short, \textit{laissez vibrer} sign on both originating and arriving notes, connected by a horizontal line. In the score, these are manually written in, and the shape is somewhat irregular. 
+ 
+\subsection{Grammar}
+\begin{verbatim}
+
+\override Tie.stencil = \boulezTie
+ 
+\end{verbatim}
+
+
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+\language "english"
+
+\pointAndClickOff
+
+boulezTie =
+#(lambda (grob)
+
+  (let (
+        ;defines four control points, each of which containing
+        ;x and y, defined from a to h...
+        (a (caar (ly:grob-property grob 'control-points)) )
+        (b  (cdar (ly:grob-property grob 'control-points)) )
+        (c (car (cadr (ly:grob-property grob 'control-points))))
+        (d (cdr (cadr (ly:grob-property grob 'control-points))))
+        (e (car (caddr (ly:grob-property grob 'control-points))))
+        (f (cdr (caddr (ly:grob-property grob 'control-points))))
+        (g (car (cadddr (ly:grob-property grob 'control-points))))
+        (h (cdr (cadddr (ly:grob-property grob 'control-points))))
+        )
+   (make-path-stencil
+
+    (list 'moveto a b
+          'curveto a b (* (+ a (+ c 0.5)) 0.5) d (+ c 0.5) b
+          'lineto (- e 0.5) b
+          'curveto (- e 0.5) b (+ (- e 0.5) (* (- g (- e 0.5)) 0.5)) f g h
+
+          'curveto g h (+ (- e 0.5) (* (- g (- e 0.5)) 0.6))
+          (+ f 0.1) (- e 0.5) (+ b 0.15)
+          'lineto (+ c 0.5) (+ b 0.15)
+          'curveto (+ c 0.5) (+ b 0.15) (* (+ a (+ c 0.5)) 0.5) (+ d 0.1) a b
+          'closepath
+          )
+
+    0.01
+    1
+    1
+    #t
+    )
+   )
+  )
+
+{
+
+ \override Tie.stencil = \boulezTie
+
+ c'1 ~ c'1
+ c''' ~ c'''
+ <a' d'' g''> ~ <a' d'' g''>
+}}
+
+
+\end{Verbatim}
+\subsection{Discussion}
+\label{sec:boulez_tie_discussion}
+It is possible to adjust the shape of the tie using \verb|\shape| and \verb|\vshape| commands. 
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
 \section {Dashed Arrow Lines}
 \lilypondfile[staffsize=20,hpadding=4,voffset=4pt]{/dashed_arrow_lines.ly}
 \hfill
@@ -346,6 +433,162 @@ See \hyperref[sec:arrow_lines_discussion]{\textbf{Discussion} of the Arrow Lines
 
 
 
+
+
+\section {Flat Slurs}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/flat_slur.ly}
+\hfill
+
+\subsection{Description}
+
+Implementation of a straight-line slur in which only the beginning and ending parts are curved. This type of slurs can be found in scores by such composers as Brian Ferneyhough, Claus-Steffen Mahnkopf, and Donald Martino, where such slurs were manually drawn using a ruler. Even in the age of digital musical engraving, composers such as Stefan Beyer have emulated this slur using the musical engraving software programs.
+
+See \hyperref[sec:flat_slurs_discussion]{\textbf{Discussion}} for more details.
+
+\subsection{Grammar}
+\begin{verbatim}
+\override Slur.stencil = \flatSlur
+\end{verbatim}
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+\language "english"
+
+\pointAndClickOff
+
+flatSlur =
+#(lambda (grob)
+
+  (let (
+        ;defines four control points, each of which containing
+        ;x and y, defined from a to h...
+        (a (caar (ly:grob-property grob 'control-points)) )
+        (b  (cdar (ly:grob-property grob 'control-points)) )
+        (c (car (cadr (ly:grob-property grob 'control-points))))
+        (d (cdr (cadr (ly:grob-property grob 'control-points))))
+        (e (car (caddr (ly:grob-property grob 'control-points))))
+        (f (cdr (caddr (ly:grob-property grob 'control-points))))
+        (g (car (cadddr (ly:grob-property grob 'control-points))))
+        (h (cdr (cadddr (ly:grob-property grob 'control-points))))
+        )
+   (make-path-stencil
+    (if (= (ly:grob-property grob 'direction) 1)
+        ;this is if the slur/tie direction is up...
+        (list 'moveto a b
+              'curveto a b a (- d 0.2) c (- d 0.2)
+              'lineto e (- f 0.2)
+              'curveto e (- f 0.2) g (- f 0.2) g h
+
+              'curveto g h (+ g 0.1) (- f 0.5) e (- f 0.4)
+              'lineto c (- d 0.4)
+              'curveto c (- d 0.4) (+ a 0.1) (- d 0.3) a b
+              'closepath
+              )
+        ;if the direction is down...
+        (list 'moveto a b
+              'curveto a b a (+ d 0.2) c (+ d 0.2)
+              'lineto e (+ f 0.2)
+
+              'curveto e (+ f 0.2) g (+ f 0.2) g h
+
+              'curveto g h (- g 0.1) (+ f 0.5) e (+ f 0.4)
+              'lineto c (+ d 0.4)
+              'curveto c (+ d 0.4) (+ a 0.3) (+ d 0.3) a b
+              'closepath
+              ))
+
+    0.01
+    1
+    1
+    #t
+    )
+   )
+  )
+\layout {
+ indent = 0
+ line-width = 80
+}
+{
+ \time 2/4
+ \override Slur.stencil = \flatSlur
+
+ \override Slur.details =
+ #'(
+    (max-slope . 0)
+    (max-slope-factor . 100)
+    (free-head-distance . 0.2)
+    (free-slur-distance . 0)
+    (extra-encompass-free-distance . 0.3)
+    (extra-encompass-collision-distance . 0.8)
+    (head-slur-distance-max-ratio . 3)
+    (head-slur-distance-factor . 10)
+    )
+
+ \shape #'(
+           (0 . 1)
+           (0 . 0.5)
+           (0 . 0.5)
+           (0 . 0.25)
+           ) Slur
+
+ e'16 ( d' c' d' e' d' c'8 )
+
+ \shape #'(
+           (0 . 0)
+           (0 . -0.5)
+           (0 . -0.5)
+           (0 . -1)
+           ) Slur
+ g''16 ( f'' e'' f'' g'' f'' e''8 ) \break
+
+
+
+ c''4 ( b' a' g' ~ | \break
+
+ g'8 )
+
+ \shape #'(
+           (0 . 0)
+           (0 . 0.2)
+           (0.75 . 2.5)
+           (0 . 3)
+           ) Slur
+
+
+ a ( c' e' g' b' ) r4 |
+
+
+}
+\end{Verbatim}
+\subsection{Discussion}
+\label{sec:flat_slurs_discussion}
+While this code can be used out of box by overriding \verb|Slur.stencil| to \verb|\flatSlur|, you may find that tweak will be needed. Initial experiments have shown that the following overrides of \verb|Slur.details| help:
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+ \override Slur.details =
+ #'(
+    (max-slope . 0)
+    (max-slope-factor . 100)
+    (free-head-distance . 0.2)
+    (free-slur-distance . 0)
+    (extra-encompass-free-distance . 0.3)
+    (extra-encompass-collision-distance . 0.8)
+    (head-slur-distance-max-ratio . 3)
+    (head-slur-distance-factor . 10)
+    )
+\end{Verbatim}
+
+There may be other effective \verb|Slur.details| configurations.
+
+Beyond this, further refinements can be made using \verb|\shape| and \verb|\vshape|.
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
 
 
 
