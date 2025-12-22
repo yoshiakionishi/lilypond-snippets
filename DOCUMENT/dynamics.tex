@@ -141,4 +141,2199 @@ In scores by Lachenmann, in concordance with German quotation marks (\textit{Anf
 \vfill \break
 
 
+
 %%%%%%%%%%%%%%%%%%%
+
+
+\section {Enhanced Constante Hairpins I (Under The Staff)}
+\label{sec:enhanced_constante_hairpins_1}
+\hfill
+\lilypondfile{/dynamics_enhanced_constante_hairpins_DOWN.ly}
+\hfill
+
+\subsection{Description}
+
+A constante hairpin, a horizontal line with a short hook at the end, indicates that a dynamic remains unchanged throughout the notes to which it is applied. There are many contemporary scores that utilize this type of hairpins, e.g. works by Brian Ferneyhough. In LilyPond, it is possible to specify constante hairpins by writing an override function: 
+
+\verb|\override Hairpin.stencil = #constante-hairpin|
+
+However, similar to the issues raised in the \hyperref[sec:enhanced_flared_hairpins_1]{Flared Hairpins}, LilyPond's default constante hairpins could use some enhancements, particularly in regards to accommodating three separate components when they break into new systems: 1. beginning; 2. intermediate; and; 3. ending. Furthermore, when the constante hairpins break into a new system, it would sometimes be helpful to have the dynamic in parentheses to remind what the dynamic had been in the previous system, which could be taking place before the page turn. 
+
+\subsection{Grammar}
+\begin{verbatim}
+
+NOTE \constante \DYNAMIC NOTE(S) \DYNAMIC OR \!
+ 
+\end{verbatim}
+
+This \verb|\constante| accepts three optional arguments:
+\begin{enumerate}
+\item Vertical offset of the constante hairpin, indicated by a direction \verb|#UP|, \verb|#CENTER|, or \verb|#DOWN|. Without specifying this argument, the default is \verb|#CENTER|. You may use \verb|#UP| when it is followed by a decrescendo hairpin, while you may use \verb|#DOWN| when it is followed by a crescendo hairpin. 
+\item Whether or not to use cautionary dynamics in subsequent systems when the hairpin breaks into new systems, indicated by \verb|##f| or \verb|##t|. The default is \verb|##f|.
+\item Extra vertical adjustment is possible with the third argument by specifying a number. The default is \verb|#0|. 
+\end{enumerate}
+
+
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+
+qf = #(make-dynamic-script
+       (markup
+        #:pad-x -1
+        ( #:combine
+          #:combine
+          #:translate '(-0.75 . 0)
+          #:normal-text (#:italic #:fontsize 0.75 "\"")
+          #:dynamic "f"
+          #:translate '(1.65 . 0)
+          #:normal-text (#:italic #:fontsize 0.75 "\""))))
+
+qmp = #(make-dynamic-script
+        (markup
+         #:pad-x -1
+         ( #:combine
+           #:combine
+           #:translate '(-0.85 . -0.1)
+           #:normal-text (#:italic #:fontsize 0.75 "\"")
+           #:dynamic "mp"
+           #:translate '(3.25 . -0.1)
+           #:normal-text (#:italic #:fontsize 0.75 "\""))))
+
+
+constante =
+#(define-music-function (vOff cautionary moreOff dyn)
+  ( (ly:dir? CENTER)  (boolean? #f) (number? 0) ly:event?   )
+  (define-public
+   ((constante-hairpin-revised coords mirrored?) grob)
+   "This scheme code was originally the scheme code 'elbowed-hairpin
+taken from output-lib.scm, and was revised to suit the need."
+   (define (scale-coords coords-list x y)
+    (map
+     (lambda (coord) (cons (* x (car coord)) (* y (cdr coord))))
+     coords-list))
+
+   (define (hairpin::print-part points decresc? me)
+    (let ((stil (make-connected-line points me)))
+     (ly:stencil-scale stil 1 1)))
+
+   ;; outer let to trigger suicide
+   (let ((sten (ly:hairpin::print grob)))
+    (if (grob::is-live? grob)
+        (let*
+         (
+          ;I've left decresc? function but removed all the if clause
+          ;associated with it, to simplify the code a little bit
+          (verticalOffset vOff)
+          (useCautionary? cautionary)
+          (moreOffset moreOff)
+          (hairpinHeight (ly:grob-property grob 'height))
+          (decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
+          (toBarline? (ly:grob-property grob 'to-barline))
+          ;    (circled-tip? (ly:grob-property grob 'circled-tip))
+          (hairpinTypeA?
+           (and (eqv? (end-broken-spanner? grob )               #f)
+                (eqv? (first-broken-spanner? grob )             #f)
+                (eqv? (middle-broken-spanner? grob )            #f)
+                (eqv? (not-first-broken-spanner? grob )         #f)
+                (eqv? (not-last-broken-spanner? grob )          #f)
+                (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                (eqv? (unbroken-spanner? grob )                 #t)
+                )) ;Hairpins that end within one line without
+          ;reaching to the end of the system
+          (hairpinTypeB?
+           (or (and (eqv? (end-broken-spanner? grob )               #t)
+                    (eqv? (first-broken-spanner? grob )             #t)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #f)
+                    (eqv? (not-last-broken-spanner? grob )          #f)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )
+               (and (eqv? (end-broken-spanner? grob )               #f)
+                    (eqv? (first-broken-spanner? grob )             #t)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #f)
+                    (eqv? (not-last-broken-spanner? grob )          #t)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )
+               )) ;Hairpins that breaks into next line
+          (hairpinTypeC?
+           (and (eqv? (end-broken-spanner? grob )               #f)
+                (eqv? (first-broken-spanner? grob )             #f)
+                (eqv? (middle-broken-spanner? grob )            #t)
+                (eqv? (not-first-broken-spanner? grob )         #t)
+                (eqv? (not-last-broken-spanner? grob )          #t)
+                (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                (eqv? (unbroken-spanner? grob )                 #f)
+                )) ;Midway-through Hairpins
+          (hairpinTypeD?
+           (and (eqv? (end-broken-spanner? grob )               #t)
+                (eqv? (first-broken-spanner? grob )             #f)
+                (eqv? (middle-broken-spanner? grob )            #f)
+                (eqv? (not-first-broken-spanner? grob )         #t)
+                (eqv? (not-last-broken-spanner? grob )          #f)
+                (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                (eqv? (unbroken-or-last-broken-spanner? grob )   #t)
+                (eqv? (unbroken-spanner? grob )                 #f)
+                )) ;multi-system Hairpin that terminates
+          (xex
+           (cons (car (ly:stencil-extent sten X))
+                 (- (cdr (ly:stencil-extent sten X)) 1.25))
+           )
+          (lenx (interval-length xex))
+          (yex (ly:stencil-extent sten Y))
+          (leny (interval-length yex))
+          (xtrans (+ (car xex)  0))
+          (ytrans (car yex))
+          (uplist (scale-coords coords lenx (/ leny 2)))
+
+          (crescStencil
+
+           (if toBarline?
+               ;I added here to make it default to stretch
+               ;the hairpin immediately to the dynamics
+
+               (ly:stencil-translate
+                (hairpin::print-part
+                 (scale-coords coords
+                               (+ lenx 2.35) (/ leny 2))
+                 decresc? grob)
+
+                '(-0.5 . 0))
+               ;if not to barline
+               (ly:stencil-translate
+                (hairpin::print-part
+                 (scale-coords coords
+                               (+ lenx 2.35)  (/ leny 2))
+                 decresc? grob)
+
+                '(-0.5 . 0))
+
+               )
+           )
+          (crescStencilBrokenBeginning
+
+           (if toBarline?
+               ;I added here to make it default to stretch
+               ;the hairpin immediately to the dynamics
+
+               (hairpin::print-part (scale-coords
+                                     '((0 . 0) (1 . 0))
+                                     (+ lenx 2) (/ leny 2))
+                                    decresc? grob)
+               ;if not to barline
+               (ly:stencil-translate
+                (hairpin::print-part
+                 (scale-coords '((0 . 0) (1 . 0))
+                               (+ lenx 2.35)  (/ leny 2))
+                 decresc? grob)
+
+                '(-0.5 . 0))
+
+               )
+           )
+          (crescStencilBrokenContinuation
+           (ly:stencil-combine-at-edge
+            ;if the cautionary accidentals are turned on
+            (if cautionary
+                (if (list? (ly:music-property dyn 'text))
+                    ;this means, when the custom-made dynamics
+                    ;(e.g. \qmp) are used
+                    (grob-interpret-markup
+                     grob
+                     (markup
+                      #:hspace 2
+                      #:whiteout
+                      #:center-align
+                      (
+                       #:concat
+                       (#:normal-text
+                        (#:translate '(0 . -0.25)
+                                     #:italic (#:fontsize -0.5 "( "
+                                                          ))
+                        #:pad-x
+                        0.35
+                        #:dynamic (ly:music-property dyn 'text)
+                        #:normal-text
+                        (#:translate '(0.5 . -0.25)
+                                     #:italic (#:fontsize -0.5 ")")))
+                       )
+                      )
+                     )
+                    ;when in-house dynamics (e.g. \p) are used
+                    (grob-interpret-markup
+                     grob
+                     (markup
+                      #:hspace 2
+                      #:center-align
+                      #:whiteout
+                      #:concat
+                      (#:normal-text
+                       (#:translate '(0 . -0.25)
+                                    #:italic (#:fontsize 0.5 "("
+                                                         ))
+                       (#:translate '(0 . -0.25)
+                                    #:italic (#:fontsize -10 " "
+                                                         ))
+                       #:pad-x
+                       0
+                       #:dynamic (ly:music-property dyn 'text)
+                       #:normal-text
+                       (#:translate '(0 . -0.25)
+                                    #:italic (#:fontsize 0.5 ")")))
+                      )
+                     ))
+                empty-stencil)
+            1
+            1
+            (hairpin::print-part (scale-coords
+                                  '((0.01 . 0.15) (1 . 0.15))
+                                  (+ lenx 2)  (/ leny 2))
+                                 decresc? grob)
+            -1.5
+            )
+           )
+          (crescStencilBrokenEnding
+           ;if the flare end is applied
+           ;on the dynamic at the beginning
+           ;of the system, meaning lenx is super low
+
+           (cond
+            ((< lenx 1)
+             (ly:stencil-combine-at-edge
+              ;if the cautionary accidentals are turned on
+              (if cautionary
+                  (if (list? (ly:music-property dyn 'text))
+                      ;this means, when the custom-made dynamics
+                      ;(e.g. \qmp) are used
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace -1
+                        #:whiteout
+                        #:center-align
+                        #:concat
+                        (#:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize -0.5 "( "
+                                                           ))
+                         #:pad-x
+                         0.25
+                         #:dynamic (ly:music-property dyn 'text)
+                         #:normal-text
+                         (#:translate '(0.5 . -0.25)
+                                      #:italic (#:fontsize -0.5 ")")))
+                        )
+                       )
+                      ;when in-house dynamics (e.g. \p) are used
+                      (grob-interpret-markup
+                       grob
+                       (markup
+
+                        #:hspace -1
+                        #:whiteout
+                        #:center-align
+                        (
+                         #:concat
+                         (#:normal-text
+                          (#:translate '(0 . -0.25)
+                                       #:italic (#:fontsize 0.5 "("
+                                                            ))
+                          (#:translate '(0 . -0.25)
+                                       #:italic (#:fontsize -10 " "
+                                                            ))
+                          #:pad-x 0
+                          #:dynamic (ly:music-property dyn 'text)
+                          #:normal-text
+                          (#:translate '(0 . -0.25)
+                                       #:italic (#:fontsize 0.5 ")")))
+                         ))
+                       ))
+                  empty-stencil
+                  )
+              1
+              1
+              (hairpin::print-part
+               (scale-coords  coords
+                              (+ lenx 1.85) (/ leny 2) )
+               decresc? grob)
+              ;vertical alignment (to be refined possibly...?)
+              -1.75
+              )
+             )
+            ((>= lenx 1)
+             ;if the normal ending flare crescendo
+             ;is applied...
+             (ly:stencil-combine-at-edge
+              ;if the cautionary accidentals are turned on
+              (if cautionary
+                  (if (list? (ly:music-property dyn 'text))
+                      ;this means, when the custom-made dynamics
+                      ;(e.g. \qmp) are used
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace 2
+                        #:whiteout
+                        #:center-align
+                        #:concat
+                        (#:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize -0.5 "( "
+                                                           ))
+                         #:pad-x 0.25
+                         #:dynamic (ly:music-property dyn 'text)
+                         #:normal-text
+                         (#:translate '(0.5 . -0.25)
+                                      #:italic (#:fontsize -0.5 ")")))
+                        )
+                       )
+                      ;if the in-house dynmamics are used
+
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace 2
+                        #:whiteout
+                        #:center-align
+                        #:concat
+                        (#:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize 0.5 "("
+                                                           ))
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize -10 " "
+                                                           ))
+                         #:pad-x
+                         0
+                         #:dynamic (ly:music-property dyn 'text)
+                         #:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize 0.5 ")")))
+                        )
+                       ))
+                  empty-stencil
+                  )
+              1
+              1
+              (hairpin::print-part
+               (scale-coords  coords
+                              (+ lenx 1.85) (/ leny 2) )
+               decresc? grob)
+              ;vertical alignment (to be refined possibly...?)
+              -1.75
+              )
+             )
+            )
+           )
+
+
+          (cresc
+           (cond (hairpinTypeA? crescStencil)
+                 (hairpinTypeB? crescStencilBrokenBeginning)
+                 (hairpinTypeC? crescStencilBrokenContinuation)
+                 (hairpinTypeD? crescStencilBrokenEnding)
+                 )
+           )
+
+          (stil
+           (ly:stencil-aligned-to
+            (ly:stencil-translate
+             cresc
+             (cons xtrans ytrans))
+            Y CENTER))
+          (stil-y-extent (ly:stencil-extent stil Y)))
+         ; FOR DEBUG ONLY
+         ; (display (list? (ly:music-property dyn 'text)))
+         ; (newline)
+         ; (display dyn)
+         ; (newline)
+         ; (newline)
+         ; (display "Is this type A Hairpin? " )
+         ; (display hairpinTypeA?)
+         ; (newline)
+         ; (display "Is this type B Hairpin? " )
+         ; (display hairpinTypeB?)
+         ; (newline)
+         ; (display "Is this type C Hairpin? " )
+         ; (display hairpinTypeC?)
+         ; (newline)
+         ; (display "Is this type D Hairpin? " )
+         ; (display hairpinTypeD?)
+         ;
+         ; (newline)
+         ; (display "Is it decrescendo? " )
+         ; (display decresc?)
+         ; (newline)
+         ; (display "end-broken-spanner???  " )
+         ; (display (end-broken-spanner? grob ))
+         ; (newline)
+         ; (display "(first-broken-spanner?) Is spanner broken
+         ;         and the first of its broken siblings? " )
+         ; (display (first-broken-spanner? grob ) )
+         ; (newline)
+         ; (display "middle-broken-spanner??? " )
+         ; (display (middle-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "Is spanner broken and not the first of
+         ;         its broken siblings? " )
+         ; (display (not-first-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "Is spanner broken and not the last of
+         ;         its broken siblings? " )
+         ; (display (not-last-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "unbroken-or-first-broken-spanner??? " )
+         ; (display (unbroken-or-first-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "unbroken-or-first-broken-spanner??? " )
+         ; (display (unbroken-or-last-broken-spanner? grob ) )
+         ; (newline)
+         ; (display "unbroken spanner?? " )
+         ; (display (unbroken-spanner? grob ) )
+         ; (newline)
+         ; (newline)
+         ; (display "distance of xex " )
+         ; (display lenx )
+         ; (newline)
+         ; (newline)
+         (ly:make-stencil (ly:stencil-expr stil) xex stil-y-extent))
+        ;; return empty, if no Hairpin.stencil present.
+        '())))
+
+  #{
+   #dyn
+   \tweak Hairpin.stencil
+   #(lambda (grob)
+     ;depending on the hairpin opening width,
+     ;you can adjust the value here vvv
+     (constante-hairpin-revised '((0 . 0) (1.0 . 0) (1.0 . 0.9)) #f)
+     )
+   % This calculates the tweak value for
+   % the value of the constante V-offset
+   \tweak Y-offset #(lambda (grob)
+                     (+ (* vOff (ly:grob-property grob 'height))
+                        (* (ly:grob-property grob 'height) -0.5 vOff )
+                        moreOff
+                        )
+                     )
+
+   \<
+  #}
+  )
+\layout {
+ indent = #0
+ line-width = #100
+ ragged-last = ##f
+}
+{
+
+ \override Hairpin.height = #0.5
+ \override Hairpin.to-barline = ##f
+ % \override Hairpin.stencil = #constante-hairpin
+ \override Hairpin.after-line-breaking = ##t
+ c'2  \constante #UP \mf  c'2 c'2 \>  c'2
+ c'2 \constante #DOWN ##t #0.3 \p c'2
+ \break  c'4 4 4 4 c'4 4 4 4 \break
+ c''2 \< c'2 \! \constante #DOWN ##f \qf \break
+ c'2 c'2\< c'2 c'2 c'2
+ \revert Hairpin.to-barline
+ \afterGrace 31/32
+ { c'2 \constante #CENTER ##f \ff}  s32\!  \break
+ c'2\f c'2\< c'2 c'2 c'2
+ \revert Hairpin.to-barline
+ \after 1*25/64 \!
+ { c'2 \constante #CENTER ##f \ff }
+ \bar "|."
+}
+
+\end{Verbatim}
+\subsection{Discussion}
+
+For the purpose of using it in my own musical typesetting, this constante hairpin snippet has been designed to work with a narrower hairpin height, e.g.
+
+\verb|\override Hairpin.height = #0.5| (the default is \verb|0.666|.)
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
+\section {Enhanced Constante Hairpins II (Over The Staff)}
+\label{sec:enhanced_constante_hairpins_2}
+\hfill
+\lilypondfile{/dynamics_enhanced_constante_hairpins_UP.ly}
+\hfill
+
+\subsection{Description}
+
+The motivation for creating an enhancement to the default constante hairpin provided by LilyPond was that it would not allow the hook to be inverted when placed over the staff. 
+
+See \hyperref[sec:enhanced_constante_hairpins_1]{Enhanced Constante Hairpins I (Under The Staff)} for more information.
+
+\subsection{Grammar}
+\begin{verbatim}
+
+NOTE \constante \DYNAMIC NOTE(S) \DYNAMIC OR \!
+ 
+\end{verbatim}
+
+This \verb|\constante| accepts three optional arguments:
+\begin{enumerate}
+\item Vertical offset of the constante hairpin, indicated by a direction \verb|#UP|, \verb|#CENTER|, or \verb|#DOWN|. Without specifying this argument, the default is \verb|#CENTER|. You may use \verb|#DOWN| when it is followed by a decrescendo hairpin, while you may use \verb|#UP| when it is followed by a crescendo hairpin.\footnote{Note that the directions are flipped from Enhanced Constante Hairpins I!} 
+\item Whether or not to use cautionary dynamics in subsequent systems when the hairpin breaks into new systems, indicated by \verb|##f| or \verb|##t|. The default is \verb|##f|.
+\item Extra vertical adjustment is possible with the third argument by specifying a number. The default is \verb|#0|. 
+\end{enumerate}
+
+Furthermore, when using the dynamic \textit{\textbf{p}}, \textbf{\textit{pp}}, etc., it is possible that the initial horizontal line may be too high. In this case, use \verb|\tweak Y-offset #0| to be placed between the numerical value for the extra vertical adjustment and the dynamics. 
+
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+
+qf = #(make-dynamic-script
+       (markup
+        #:pad-x -1
+        ( #:combine
+          #:combine
+          #:translate '(-0.75 . 0)
+          #:normal-text (#:italic #:fontsize 0.75 "\"")
+          #:dynamic "f"
+          #:translate '(1.65 . 0)
+          #:normal-text (#:italic #:fontsize 0.75 "\""))))
+
+qmp = #(make-dynamic-script
+        (markup
+         #:pad-x -1
+         ( #:combine
+           #:combine
+           #:translate '(-0.85 . -0.1)
+           #:normal-text (#:italic #:fontsize 0.75 "\"")
+           #:dynamic "mp"
+           #:translate '(3.25 . -0.1)
+           #:normal-text (#:italic #:fontsize 0.75 "\""))))
+
+
+constanteUP =
+#(define-music-function ( vOff cautionary moreOff dyn)
+  ( (ly:dir? CENTER)  (boolean? #t) (number? 0) ly:event?   )
+  (define-public
+   ((constante-hairpin-revised coords mirrored?) grob)
+   "This scheme code was originally the scheme code 'elbowed-hairpin
+taken from output-lib.scm, and was revised to suit the need."
+   (define (scale-coords coords-list x y)
+    (map
+     (lambda (coord) (cons (* x (car coord)) (* y (cdr coord))))
+     coords-list))
+
+   (define (hairpin::print-part points decresc? me)
+    (let ((stil (make-connected-line points me)))
+     (ly:stencil-scale stil 1 1)))
+
+   ;; outer let to trigger suicide
+   (let ((sten (ly:hairpin::print grob)))
+    (if (grob::is-live? grob)
+        (let*
+         (
+          ;I've left decresc? function but removed all the if clause
+          ;associated with it, to simplify the code a little bit
+          (verticalOffset vOff)
+          (useCautionary? cautionary)
+          (moreOffset moreOff)
+          (hairpinHeight (ly:grob-property grob 'height))
+          (decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
+          (toBarline? (ly:grob-property grob 'to-barline))
+          ;    (circled-tip? (ly:grob-property grob 'circled-tip))
+          (hairpinTypeA?
+           (and (eqv? (end-broken-spanner? grob )               #f)
+                (eqv? (first-broken-spanner? grob )             #f)
+                (eqv? (middle-broken-spanner? grob )            #f)
+                (eqv? (not-first-broken-spanner? grob )         #f)
+                (eqv? (not-last-broken-spanner? grob )          #f)
+                (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                (eqv? (unbroken-spanner? grob )                 #t)
+                )) ;Hairpins that end within one line without
+          ;reaching to the end of the system
+          (hairpinTypeB?
+           (or (and (eqv? (end-broken-spanner? grob )               #t)
+                    (eqv? (first-broken-spanner? grob )             #t)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #f)
+                    (eqv? (not-last-broken-spanner? grob )          #f)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )
+               (and (eqv? (end-broken-spanner? grob )               #f)
+                    (eqv? (first-broken-spanner? grob )             #t)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #f)
+                    (eqv? (not-last-broken-spanner? grob )          #t)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )
+               )) ;Hairpins that breaks into next line
+          (hairpinTypeC?
+           (and (eqv? (end-broken-spanner? grob )               #f)
+                (eqv? (first-broken-spanner? grob )             #f)
+                (eqv? (middle-broken-spanner? grob )            #t)
+                (eqv? (not-first-broken-spanner? grob )         #t)
+                (eqv? (not-last-broken-spanner? grob )          #t)
+                (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                (eqv? (unbroken-spanner? grob )                 #f)
+                )) ;Midway-through Hairpins
+          (hairpinTypeD?
+           (and (eqv? (end-broken-spanner? grob )               #t)
+                (eqv? (first-broken-spanner? grob )             #f)
+                (eqv? (middle-broken-spanner? grob )            #f)
+                (eqv? (not-first-broken-spanner? grob )         #t)
+                (eqv? (not-last-broken-spanner? grob )          #f)
+                (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                (eqv? (unbroken-or-last-broken-spanner? grob )   #t)
+                (eqv? (unbroken-spanner? grob )                 #f)
+                )) ;multi-system Hairpin that terminates
+          (xex
+           (cons (car (ly:stencil-extent sten X))
+                 (- (cdr (ly:stencil-extent sten X)) 1.25))
+           )
+          (lenx (interval-length xex))
+          (yex (ly:stencil-extent sten Y))
+          (leny (interval-length yex))
+          (xtrans (+ (car xex)  0))
+          (ytrans (car yex))
+          (uplist (scale-coords coords lenx (/ leny 2)))
+
+          (crescStencil
+
+           (if toBarline?
+               ;I added here to make it default to stretch
+               ;the hairpin immediately to the dynamics
+
+               (ly:stencil-translate
+                (hairpin::print-part
+                 (scale-coords coords
+                               (+ lenx 2.35) (/ leny 2))
+                 decresc? grob)
+
+                '(-0.5 . 0))
+               ;if not to barline
+               (ly:stencil-translate
+                (hairpin::print-part
+                 (scale-coords coords
+                               (+ lenx 2.35)  (/ leny 2))
+                 decresc? grob)
+
+                '(-0.5 . 0))
+
+               )
+           )
+          (crescStencilBrokenBeginning
+
+           (if toBarline?
+               ;I added here to make it default to stretch
+               ;the hairpin immediately to the dynamics
+
+               (hairpin::print-part (scale-coords
+                                     '((0 . 0) (1 . 0))
+                                     (+ lenx 2.35) (/ leny 2))
+                                    decresc? grob)
+               ;if not to barline
+               (ly:stencil-translate
+                (hairpin::print-part
+                 (scale-coords '((0 . 0) (1 . 0))
+                               (+ lenx 2.35) (/ leny 2))
+                 decresc? grob)
+
+                '(-0.5 . 0))
+
+               )
+           )
+          (crescStencilBrokenContinuation
+           (ly:stencil-combine-at-edge
+            ;if the cautionary accidentals are turned on
+            (if cautionary
+                (if (list? (ly:music-property dyn 'text))
+                    ;this means, when the custom-made dynamics
+                    ;(e.g. \qmp) are used
+                    (grob-interpret-markup
+                     grob
+                     (markup
+                      #:hspace 2
+                      #:whiteout
+                      #:center-align
+                      (
+                       #:concat
+                       (#:normal-text
+                        (#:translate '(0 . -0.25)
+                                     #:italic (#:fontsize -0.5 "( "
+                                                          ))
+                        #:pad-x
+                        0.35
+                        #:dynamic (ly:music-property dyn 'text)
+                        #:normal-text
+                        (#:translate '(0.5 . -0.25)
+                                     #:italic (#:fontsize -0.5 ")")))
+                       )
+                      )
+                     )
+                    ;when in-house dynamics (e.g. \p) are used
+                    (grob-interpret-markup
+                     grob
+                     (markup
+                      #:hspace 2
+                      #:center-align
+                      #:whiteout
+                      #:concat
+                      (#:normal-text
+                       (#:translate '(0 . -0.25)
+                                    #:italic (#:fontsize 0.5 "("
+                                                         ))
+                       (#:translate '(0 . -0.25)
+                                    #:italic (#:fontsize -10 " "
+                                                         ))
+                       #:pad-x
+                       0
+                       #:dynamic (ly:music-property dyn 'text)
+                       #:normal-text
+                       (#:translate '(0 . -0.25)
+                                    #:italic (#:fontsize 0.5 ")")))
+                      )
+                     ))
+                empty-stencil)
+            1
+            1
+            (hairpin::print-part (scale-coords
+                                  '((0.01 . 0.15) (1 . 0.15))
+                                  (+ lenx 2)  (/ leny 2))
+                                 decresc? grob)
+            -1.5
+            )
+           )
+          (crescStencilBrokenEnding
+           ;if the flare end is applied
+           ;on the dynamic at the beginning
+           ;of the system, meaning lenx is super low
+
+           (cond
+            ((< lenx 1)
+             (ly:stencil-combine-at-edge
+              ;if the cautionary accidentals are turned on
+              (if cautionary
+                  (if (list? (ly:music-property dyn 'text))
+                      ;this means, when the custom-made dynamics
+                      ;(e.g. \qmp) are used
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace 0
+                        #:whiteout
+                        #:center-align
+                        #:concat
+                        (#:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize -0.5 "( "
+                                                           ))
+                         #:pad-x
+                         0.25
+                         #:dynamic (ly:music-property dyn 'text)
+                         #:normal-text
+                         (#:translate '(0.5 . -0.25)
+                                      #:italic (#:fontsize -0.5 ")")))
+                        )
+                       )
+                      ;when in-house dynamics (e.g. \p) are used
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace 0
+
+                        #:whiteout
+                        #:center-align
+                        (
+                         #:concat
+                         (#:normal-text
+                          (#:translate '(0 . -0.25)
+                                       #:italic (#:fontsize 0.5 "("
+                                                            ))
+                          (#:translate '(0 . -0.25)
+                                       #:italic (#:fontsize -10 " "
+                                                            ))
+                          #:pad-x
+                          0
+                          #:dynamic (ly:music-property dyn 'text)
+                          #:normal-text
+                          (#:translate '(0 . -0.25)
+                                       #:italic (#:fontsize 0.5 ")")))
+                         ))
+                       ))
+                  empty-stencil
+                  )
+              1
+              1
+              (hairpin::print-part
+               (scale-coords  coords
+                              (+ lenx 1.85) (/ leny 2) )
+               decresc? grob)
+              ;vertical alignment (to be refined possibly...?)
+              -1.75
+              )
+             )
+            ((>= lenx 1)
+             ;if the normal ending flare crescendo
+             ;is applied...
+             (ly:stencil-combine-at-edge
+              ;if the cautionary accidentals are turned on
+              (if cautionary
+                  (if (list? (ly:music-property dyn 'text))
+                      ;this means, when the custom-made dynamics
+                      ;(e.g. \qmp) are used
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace 2
+                        #:whiteout
+                        #:center-align
+                        #:concat
+                        (#:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize -0.5 "( "
+                                                           ))
+                         #:pad-x 0.25
+                         #:dynamic (ly:music-property dyn 'text)
+                         #:normal-text
+                         (#:translate '(0.5 . -0.25)
+                                      #:italic (#:fontsize -0.5 ")")))
+                        )
+                       )
+                      ;if the in-house dynmamics are used
+
+                      (grob-interpret-markup
+                       grob
+                       (markup
+                        #:hspace 2
+                        #:whiteout
+                        #:center-align
+                        #:concat
+                        (#:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize 0.5 "("
+                                                           ))
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize -10 " "
+                                                           ))
+                         #:pad-x
+                         0
+                         #:dynamic (ly:music-property dyn 'text)
+                         #:normal-text
+                         (#:translate '(0 . -0.25)
+                                      #:italic (#:fontsize 0.5 ")")))
+                        )
+                       ))
+                  empty-stencil
+                  )
+              1
+              1
+              (hairpin::print-part
+               (scale-coords  coords
+                              (+ lenx 1.85) (/ leny 2) )
+               decresc? grob)
+              ;vertical alignment (to be refined possibly...?)
+              -1.75
+              )
+             )
+            )
+           )
+
+
+          (cresc
+           (cond (hairpinTypeA? crescStencil)
+                 (hairpinTypeB? crescStencilBrokenBeginning)
+                 (hairpinTypeC? crescStencilBrokenContinuation)
+                 (hairpinTypeD? crescStencilBrokenEnding)
+                 )
+           )
+
+          (stil
+           (ly:stencil-aligned-to
+            (ly:stencil-translate
+             cresc
+             (cons xtrans ytrans))
+            Y CENTER))
+          (stil-y-extent (ly:stencil-extent stil Y)))
+         ; FOR DEBUG ONLY
+         ; (display (list? (ly:music-property dyn 'text)))
+         ; (newline)
+         ; (display dyn)
+         ; (newline)
+         ; (newline)
+         ; (display "Is this type A Hairpin? " )
+         ; (display hairpinTypeA?)
+         ; (newline)
+         ; (display "Is this type B Hairpin? " )
+         ; (display hairpinTypeB?)
+         ; (newline)
+         ; (display "Is this type C Hairpin? " )
+         ; (display hairpinTypeC?)
+         ; (newline)
+         ; (display "Is this type D Hairpin? " )
+         ; (display hairpinTypeD?)
+         ;
+         ; (newline)
+         ; (display "Is it decrescendo? " )
+         ; (display decresc?)
+         ; (newline)
+         ; (display "end-broken-spanner???  " )
+         ; (display (end-broken-spanner? grob ))
+         ; (newline)
+         ; (display "(first-broken-spanner?) Is spanner broken
+         ;         and the first of its broken siblings? " )
+         ; (display (first-broken-spanner? grob ) )
+         ; (newline)
+         ; (display "middle-broken-spanner??? " )
+         ; (display (middle-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "Is spanner broken and not the first of
+         ;         its broken siblings? " )
+         ; (display (not-first-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "Is spanner broken and not the last of
+         ;         its broken siblings? " )
+         ; (display (not-last-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "unbroken-or-first-broken-spanner??? " )
+         ; (display (unbroken-or-first-broken-spanner? grob ) )
+         ; (newline)
+         ;
+         ; (display "unbroken-or-first-broken-spanner??? " )
+         ; (display (unbroken-or-last-broken-spanner? grob ) )
+         ; (newline)
+         ; (display "unbroken spanner?? " )
+         ; (display (unbroken-spanner? grob ) )
+         ; (newline)
+         ; (newline)
+         ; (display "distance of xex " )
+         ; (display lenx )
+         ; (newline)
+         ; (newline)
+         (ly:make-stencil (ly:stencil-expr stil) xex stil-y-extent))
+        ;; return empty, if no Hairpin.stencil present.
+        '())))
+
+  #{
+   #dyn
+   \tweak Hairpin.stencil
+   #(lambda (grob)
+     ;depending on the hairpin opening width,
+     ;you can adjust the value here vvv
+     (constante-hairpin-revised '((0 . 0) (1.0 . 0) (1.0 . -0.9)) #f)
+
+     )
+   % This calculates the tweak value for
+   % the value of the constante V-offset
+   \tweak Y-offset #(lambda (grob)
+                     (+ (* vOff (ly:grob-property grob 'height))
+                        (* (ly:grob-property grob 'height) -0.5 vOff )
+                        moreOff
+                        )
+                     )
+
+   \<
+  #}
+  )
+\layout {
+ indent = #0
+ line-width = #100
+ ragged-last = ##f
+}
+{
+ \dynamicUp
+ \override Hairpin.height = #0.5
+ \override Hairpin.to-barline = ##f
+ % \override Hairpin.stencil = #constante-hairpin
+ \override Hairpin.after-line-breaking = ##t
+ c'2  \constanteUP #DOWN \mf  c'2 c'2 \>  c'2
+ c'2 \constanteUP #UP ##t #0.3 \tweak Y-offset #0 \p c'2
+ \break  c'4 4 4 4 c'4 4 4 4 \break
+ c''2 \< c'2 \! \constanteUP #UP ##f \qf \break
+ c'2 c'2\< c'2 c'2 c'2
+ \revert Hairpin.to-barline
+ \afterGrace 31/32
+ { c'2 \constanteUP #CENTER ##f \ff}  s32\!  \break
+ c'2\f c'2\< c'2 c'2 c'2
+ \revert Hairpin.to-barline
+ \after 1*25/64 \!
+ { c'2 \constanteUP #CENTER ##f \ff }
+ \bar "|."
+}
+
+\end{Verbatim}
+\subsection{Discussion}
+
+For the purpose of using it in my own musical typesetting, this constante hairpin snippet has been designed to work with a narrower hairpin height, e.g.
+
+\verb|\override Hairpin.height = #0.5| (the default is \verb|0.666|.)
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
+\section {Enhanced Flared Hairpins I (Original Version)}
+\label{sec:enhanced_flared_hairpins_1}
+\hfill
+\lilypondfile{/dynamics_enhanced_flared_hairpins.ly}
+\hfill
+
+\subsection{Description}
+
+(See \hyperref[sec:enhanced_flared_hairpins_2]{\textbf{Enhanced Flared Hairpins II}} for the flared hairpins with curved flares.)
+
+In LilyPond, it is possible to specify flared hairpins by writing an override function: 
+
+\verb|\override Hairpin.stencil = #flared-hairpin|
+
+As useful as it may be, there are several aspects to the default flared hairpin that could be seen as limitaions that would be best overcome:
+
+\begin{enumerate}
+
+\item Because the flare of the hairpin is drawn using the scheme code \verb|'elbowed-hairpin| in the file \verb|output-lib.scm| that uses list of points from \verb|0| (beginning) to \verb|1| (end), the longer the hairpin is, the longer its flare becomes. While there may be a case where the longer flare is preferred, in the case of a long hairpin, it becomes more difficult to immediately discern a flared hairpin.
+\item While LilyPond's ordinary hairpins do have three separate components when they break into new systems: 1. beginning; 2. intermediate; and; 3. ending, the default flared hairpins draw identical \say{flared} hairpins when the lines break. This could invite confusions as it may tempt players to do flared crescendo/diminuendos at the end of each system.
+\item When the default flared hairpins are activated, \verb|\override Hairpin.circled-tips| (i.e. to apply circled tips at the onset of the crescendo or at the end of decrescendo) ceases to work.   
+
+\end{enumerate}
+
+In developing this enhanced flared hairpin, I have attempted to accommodate different case scenarios, e.g. having \verb|\override Hairpin.to-barline|, \verb|\override Hairpin.after-line-breaking| set to either \verb|##t| or  \verb|##f|. It is subject to further refinements. 
+
+\subsection{Grammar}
+\begin{verbatim}
+\override Hairpin.stencil = #flared-hairpin-new
+\override Hairpin.to-barline = ##f OR ##t
+\override Hairpin.after-line-breaking = ##t OR ##g
+\end{verbatim}
+
+If you wish to use circled tips, instead of using \verb|\override Hairpin.circled-tip = ##t|, do:
+
+\begin{verbatim}
+NOTE \o \nCrescTweak \< NOTE(S) \DYNAMIC OR \! \nDecrescTweak \> NOTE(S) \o
+\end{verbatim}
+
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.24.4"
+
+% similar to the original version
+
+#(define-public ((elbowed-hairpin-revised coords mirrored?) grob)
+  "This scheme code was originally the scheme code 'elbowed-hairpin
+taken from output-lib.scm, and was revised to suit the need.
+"
+  (define (scale-coords coords-list x y)
+   (map
+    (lambda (coord) (cons (* x (car coord)) (* y (cdr coord))))
+    coords-list))
+
+  (define (hairpin::print-part points decresc? me)
+   (let ((stil (make-connected-line points me)))
+    (if decresc? (ly:stencil-scale stil -1 1) (ly:stencil-scale stil 1 1))))
+
+  ;; outer let to trigger suicide
+  (let ((sten (ly:hairpin::print grob)))
+   (if (grob::is-live? grob)
+       (let* ((decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
+              (toBarline? (ly:grob-property grob 'to-barline))
+              ;    (circled-tip? (ly:grob-property grob 'circled-tip))
+              (hairpinTypeA?
+               (and (eqv? (end-broken-spanner? grob )               #f)
+                    (eqv? (first-broken-spanner? grob )             #f)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #f)
+                    (eqv? (not-last-broken-spanner? grob )          #f)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                    (eqv? (unbroken-spanner? grob )                 #t)
+                    )) ;Hairpins that end within one line without reaching
+              ;to the end of the system
+              (hairpinTypeB?
+               (or (and (eqv? (end-broken-spanner? grob )               #t)
+                        (eqv? (first-broken-spanner? grob )             #t)
+                        (eqv? (middle-broken-spanner? grob )            #f)
+                        (eqv? (not-first-broken-spanner? grob )         #f)
+                        (eqv? (not-last-broken-spanner? grob )          #f)
+                        (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                        (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                        (eqv? (unbroken-spanner? grob )                 #f)
+                        )
+                   (and (eqv? (end-broken-spanner? grob )               #f)
+                        (eqv? (first-broken-spanner? grob )             #t)
+                        (eqv? (middle-broken-spanner? grob )            #f)
+                        (eqv? (not-first-broken-spanner? grob )         #f)
+                        (eqv? (not-last-broken-spanner? grob )          #t)
+                        (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                        (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                        (eqv? (unbroken-spanner? grob )                 #f)
+                        )
+                   )) ;Hairpins that breaks into next line
+              (hairpinTypeC?
+               (and (eqv? (end-broken-spanner? grob )               #f)
+                    (eqv? (first-broken-spanner? grob )             #f)
+                    (eqv? (middle-broken-spanner? grob )            #t)
+                    (eqv? (not-first-broken-spanner? grob )         #t)
+                    (eqv? (not-last-broken-spanner? grob )          #t)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )) ;Midway-through Hairpins
+              (hairpinTypeD?
+               (and (eqv? (end-broken-spanner? grob )               #t)
+                    (eqv? (first-broken-spanner? grob )             #f)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #t)
+                    (eqv? (not-last-broken-spanner? grob )          #f)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )   #t)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )) ;multi-system Hairpin that terminates
+              (xex (if decresc?
+                       (cons (+ (car (ly:stencil-extent sten X)) 0.75)
+                             (cdr (ly:stencil-extent sten X)))
+                       (cons (car (ly:stencil-extent sten X))
+                             (- (cdr (ly:stencil-extent sten X)) 1.25))
+                       ))
+              (lenx (interval-length xex))
+              (yex (ly:stencil-extent sten Y))
+              (leny (interval-length yex))
+              (xtrans (+ (car xex) (if decresc? lenx 0)))
+              (ytrans (car yex))
+              (uplist (scale-coords coords lenx (/ leny 2)))
+              (downlist (scale-coords coords lenx (/ leny -2)))
+              (crescStencil
+               (if toBarline?
+                   ;I added here to make it default to stretch
+                   ;the hairpin immediately to the dynamics
+                   (ly:stencil-combine-at-edge
+                    (ly:stencil-combine-at-edge
+                     (hairpin::print-part uplist decresc? grob)
+                     1
+                     -1
+                     (if mirrored?
+                         (hairpin::print-part downlist decresc? grob)
+                         empty-stencil)
+                     -0.1 ;vertical padding value here
+                     )
+                    0
+                    1
+                    (make-path-stencil
+                     (list
+                      'moveto 0 0.15
+                      'rlineto 0.25 0.3
+                      'moveto 0 -0.15
+                      'rlineto 0.25 -0.3
+                      )
+                     0.1
+                     2
+                     2
+                     #f
+                     )
+                    -0.075
+                    )
+                   ;if not to barline
+                   (ly:stencil-combine-at-edge
+                    (ly:stencil-combine-at-edge
+                     (hairpin::print-part (scale-coords
+                                           coords
+                                           (+ lenx 1) (/ leny 2))  decresc? grob)
+                     1
+                     -1
+                     (if mirrored?
+                         (hairpin::print-part (scale-coords
+                                               coords
+                                               (+ lenx 1) (/ leny -2))  decresc? grob)
+                         empty-stencil)
+                     -0.1 ;vertical padding value here
+                     )
+                    0
+                    1
+                    (make-path-stencil
+
+                     (list
+                      'moveto 0 0.15
+                      'rlineto 0.25 0.3
+                      'moveto 0 -0.15
+                      'rlineto 0.25 -0.3
+                      )
+                     0.1
+                     2
+                     2
+                     #f
+                     )
+                    -0.075
+                    ))
+               )
+              (crescStencilBrokenBeginning
+               (ly:stencil-combine-at-edge
+                (hairpin::print-part
+                 (scale-coords
+                  '((0 . 0.15) (1 . 0.65))
+                  (+ lenx 2) (/ leny 2)) decresc? grob)
+                1
+                -1
+                (if mirrored?
+                    (hairpin::print-part
+                     (scale-coords
+                      '((0 . -0.15) (1 . -0.65))
+                      (+ lenx 2) (/ leny 2))  decresc? grob)
+                    empty-stencil)
+                -0.1 ;vertical padding value here
+                )
+               )
+              (crescStencilBrokenContinuation
+               (ly:stencil-combine-at-edge
+                (hairpin::print-part (scale-coords
+                                      '((0 . 0.15) (1 . 0.65))
+                                      (+ lenx 2) (/ leny 2)) decresc? grob)
+                1
+                -1
+                (if mirrored?
+                    (hairpin::print-part
+                     (scale-coords
+                      '((0 . -0.15) (1 . -0.65))
+                      (+ lenx 2) (/ leny 2))  decresc? grob)
+                    empty-stencil)
+                0.15 ;vertical padding value here
+                )
+               )
+              (crescStencilBrokenEnding
+               ;if the flare end is applied
+               ;on the dynamic at the beginning
+               ;of the system, meaning lenx is super low
+               (cond ((< lenx 0.2)
+                      (make-path-stencil
+                       (list 'moveto 0.45 0.135
+                             'lineto -0.5 0.1
+                             'moveto 0.45 0.135
+                             'rlineto 0.25 0.3
+                             'moveto 0.45 -0.135
+                             'lineto -0.5 -0.1
+                             'moveto 0.45 -0.135
+                             'rlineto 0.25 -0.3
+
+                             )
+                       0.1
+                       2
+                       2
+                       #f
+                       ))
+                     ((and (>= lenx 0.2)(< lenx 2))
+                      ;if the flare end is applied
+                      ;on the note at the beginning of the system
+                      ;without the dynamics (lenx is about 1 to 2
+
+                      (ly:stencil-combine-at-edge
+                       (ly:stencil-combine-at-edge
+                        (hairpin::print-part
+                         (scale-coords
+                          '((-0.05 . 0.3) (1 . 0.415))
+                          (+ lenx 0.55) (/ leny 2))
+                         decresc? grob)
+                        1
+                        -1
+                        (if mirrored?
+                            (hairpin::print-part
+                             (scale-coords
+                              '((-0.05 . -0.3) (1 . -0.415))
+                              (+ lenx 0.55)  (/ leny 2)) decresc? grob)
+                            empty-stencil)
+                        0.325 ;vertical padding value here
+                        )
+                       0
+                       1
+                       (make-path-stencil
+                        (list  'moveto 0 0.15
+                               'rlineto 0.25 0.3
+                               'moveto 0 -0.15
+                               'rlineto 0.25 -0.3
+                               )
+                        0.1
+                        2
+                        2
+                        #f
+                        )
+                       -0.075
+                       ))
+                     ((>= lenx 2)
+                      ;if the normal ending flare crescendo
+                      ;is applied...
+                      (ly:stencil-combine-at-edge
+                       (ly:stencil-combine-at-edge
+                        (hairpin::print-part
+                         (scale-coords
+                          '((0 . 0.15) (1 . 0.415))
+                          (+ lenx 0.85) (/ leny 2)) decresc? grob)
+                        1
+                        -1
+                        (if mirrored?
+                            (hairpin::print-part
+                             (scale-coords
+                              '((0 . -0.15) (1 . -0.415))
+                              (+ lenx 0.85) (/ leny 2)) decresc? grob)
+                            empty-stencil)
+                        0.115 ;vertical padding value here
+                        )
+                       0
+                       1
+                       (make-path-stencil
+                        (list 'moveto 0 0.15
+                              'rlineto 0.25 0.3
+                              'moveto 0 -0.15
+                              'rlineto 0.25 -0.3
+                              )
+                        0.1
+                        2
+                        2
+                        #f
+                        )
+                       -0.075
+                       ))
+                     )
+               )
+              (decrescStencil
+               (ly:stencil-combine-at-edge
+                (ly:stencil-combine-at-edge
+                 (hairpin::print-part
+                  (scale-coords
+                   '((0 . 0) (1 . 0.415))
+                   (+ lenx 0.25) (/ leny 2)) decresc? grob)
+                 1
+                 -1
+                 (if mirrored?
+                     (hairpin::print-part
+                      (scale-coords
+                       '((0 . 0) (1 . -0.415))
+                       (+ lenx 0.25) (/ leny 2))  decresc? grob)
+                     empty-stencil)
+                 -0.1 ;vertical padding value here
+                 )
+                0
+                -1
+                (make-path-stencil
+                 (list 'moveto 0 0.15
+                       'rlineto -0.25 0.3
+                       'moveto 0 -0.15
+                       'rlineto -0.25 -0.3
+                       )
+                 0.1
+                 2
+                 2
+                 #f
+                 )
+
+                -0.075
+                ))
+              (decrescStencilBrokenBeginning
+               (ly:stencil-combine-at-edge
+                (ly:stencil-combine-at-edge
+                 (hairpin::print-part
+                  (scale-coords
+                   '((0 . 0.15) (1 . 0.415))
+                   (+ lenx 0.25) (/ leny 2)) decresc? grob)
+                 1
+                 -1
+                 (if mirrored?
+                     (hairpin::print-part
+                      (scale-coords
+                       '((0 . -0.15) (1 . -0.415))
+                       (+ lenx 0.25) (/ leny 2)) decresc? grob)
+                     empty-stencil)
+                 0.1 ;vertical padding value here
+                 )
+                0
+                -1
+                (make-path-stencil
+                 (list 'moveto 0 0.15
+                       'rlineto -0.25 0.3
+                       'moveto 0 -0.15
+                       'rlineto -0.25 -0.3
+                       )
+                 0.1
+                 2
+                 2
+                 #f
+                 )
+                -0.075
+                )
+               )
+              (decrescStencilBrokenEnding
+               (ly:stencil-combine-at-edge
+                (hairpin::print-part uplist decresc? grob)
+                1
+                -1
+                (if mirrored?
+                    (hairpin::print-part downlist decresc? grob)
+                    empty-stencil)
+                -0.1 ;vertical padding value here
+                )
+               )
+              (cresc
+               (cond (hairpinTypeA? crescStencil)
+                     (hairpinTypeB? crescStencilBrokenBeginning)
+                     (hairpinTypeC? crescStencilBrokenContinuation)
+                     (hairpinTypeD? crescStencilBrokenEnding)
+                     )
+               )
+              (decres
+               (cond (hairpinTypeA? decrescStencil)
+                     (hairpinTypeB? decrescStencilBrokenBeginning)
+                     (hairpinTypeC? crescStencilBrokenContinuation)
+                     ;crescStencilBrokenContinuation can be used for decresc
+                     ;as well, because it gets inverted.
+                     (hairpinTypeD? decrescStencilBrokenEnding)
+                     )
+               )
+              (stil
+               (ly:stencil-aligned-to
+                (ly:stencil-translate
+                 (if decresc?
+                     decres
+                     cresc
+                     )
+                 (cons xtrans ytrans))
+                Y CENTER))
+              (stil-y-extent (ly:stencil-extent stil Y)))
+        ; for debugging purposes
+        ;         (display "Is this type A Hairpin? " )
+        ;         (display hairpinTypeA?)
+        ;         (newline)
+        ;         (display "Is this type B Hairpin? " )
+        ;         (display hairpinTypeB?)
+        ;         (newline)
+        ;         (display "Is this type C Hairpin? " )
+        ;         (display hairpinTypeC?)
+        ;         (newline)
+        ;         (display "Is this type D Hairpin? " )
+        ;         (display hairpinTypeD?)
+        ;
+        ;         (newline)
+        ;         (display "Is it decrescendo? " )
+        ;         (display decresc?)
+        ;         (newline)
+        ;         (display "end-broken-spanner???  " )
+        ;         (display (end-broken-spanner? grob ))
+        ;         (newline)
+        ;         (display "(first-broken-spanner?) Is spanner broken
+        ;and the first of its broken siblings? " )
+        ;         (display (first-broken-spanner? grob ) )
+        ;         (newline)
+        ;         (display "middle-broken-spanner??? " )
+        ;         (display (middle-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "Is spanner broken and not the first of
+        ;its broken siblings? " )
+        ;         (display (not-first-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "Is spanner broken and not the last of
+        ;its broken siblings? " )
+        ;         (display (not-last-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "unbroken-or-first-broken-spanner??? " )
+        ;         (display (unbroken-or-first-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "unbroken-or-first-broken-spanner??? " )
+        ;         (display (unbroken-or-last-broken-spanner? grob ) )
+        ;         (newline)
+        ;         (display "unbroken spanner?? " )
+        ;         (display (unbroken-spanner? grob ) )
+        ;         (newline)
+        ;         (newline)
+        ;         (display "distance of xex " )
+        ;         (display lenx )
+        ;         (newline)
+        ;         (newline)
+        (ly:make-stencil (ly:stencil-expr stil) xex stil-y-extent))
+       ;; return empty, if no Hairpin.stencil present.
+       '())))
+
+#(define-public flared-hairpin-new (elbowed-hairpin-revised '((0 . 0) (1 . 0.415))
+                                                            #t))
+
+#(define-public o
+  (make-music 'AbsoluteDynamicEvent
+              'text
+              (markup
+               #:pad-x -inf.0
+               #:concat (
+                         #:translate '(0 . 0.6)
+                         #:musicglyph "scripts.flageolet"
+                         ))
+              ))
+
+nCrescTweak = #(define-music-function (music)
+                ( ly:music? )
+                (_i "The \tweak function comes from 
+music-functions-init.ly
+which I modified for this function.")
+                (let ((p (check-grob-path 'shorten-pair
+                                          #:start 1
+                                          #:default #t
+                                          #:min 2)))
+                 (define (tweak-this music)
+                  (set! (ly:music-property music 'tweaks)
+                        (acons (cond ((pair? (cddr p)) p)
+                                     ((symbol? (car p))
+                                      (cons (car p) (cadr p)))
+                                     (else (cadr p)))
+                               '(-0.6 . 0)
+                               (ly:music-property music 'tweaks))))
+                 (if p
+                     ;; p now contains at least two elements.  The first
+                     ;; element is #t when no grob has been explicitly
+                     ;; specified, otherwise it is a grob name.
+                     (for-each tweak-this (get-tweakable-music music)))
+                 music
+                 )
+                )
+
+nDecrescTweak = #(define-music-function (music)
+                  ( ly:music? )
+                  (_i "The \tweak function comes from 
+music-functions-init.ly
+which I modified for this function.
+")
+                  (let ((p (check-grob-path 'shorten-pair
+                                            #:start 1
+                                            #:default #t
+                                            #:min 2)))
+                   (define (tweak-this music)
+                    (set! (ly:music-property music 'tweaks)
+                          (acons (cond ((pair? (cddr p)) p)
+                                       ((symbol? (car p))
+                                        (cons (car p) (cadr p)))
+                                       (else (cadr p)))
+                                 '(0 . -0.6)
+                                 (ly:music-property music 'tweaks))))
+                   (if p
+                       ;; p now contains at least two elements.  The first
+                       ;; element is #t when no grob has been explicitly
+                       ;; specified, otherwise it is a grob name.
+                       (for-each tweak-this (get-tweakable-music music)))
+                   music
+                   )
+                  )
+\layout {
+ indent = #0
+ line-width = #150
+ ragged-last = ##t
+}
+{
+ \override Hairpin.stencil = #flared-hairpin-new
+ \override Hairpin.to-barline = ##f
+ \override Hairpin.after-line-breaking = ##t
+
+ c'\o\nCrescTweak\<  c' c' c'
+ c' c' c'\f \nDecrescTweak \> c' \break
+ c' c' \o c'\f\<  c'
+ c' c' c' c'
+ c' c' c' c' \break
+ c' c'\! \> c' c'\p
+}
+\end{Verbatim}
+\subsection{Discussion}
+
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
+\section {Enhanced Flared Hairpins II (Curvy Version)}
+\label{sec:enhanced_flared_hairpins_2}
+\hfill
+\lilypondfile{/dynamics_curvy_flared_hairpins.ly}
+\hfill
+
+\subsection{Description}
+
+See \hyperref[sec:enhanced_flared_hairpins_1]{\textbf{Enhanced Flared Hairpins I}} for the flared hairpins similar to \href{https://lilypond.org/doc/v2.24/Documentation/snippets/expressive-marks#expressive-marks-printing-hairpins-in-various-styles}{\textbf{LilyPond's default flared hairpins.}}
+
+This version implements hairpins with flares that are curved. Initially Santiago Beis inspired me to take advantage of Phi Curve in making the curvy flares as natural as possible, though I have departed from that approach as I found using \verb|rcurve| useful in \verb|make-path-stencil|, which I then combined with the crescendo lines using \verb|ly:stencil-combine-at-edge|.
+
+\subsection{Grammar}
+\begin{verbatim}
+\override Hairpin.stencil = #flared-hairpin-curvy
+\override Hairpin.to-barline = ##f OR ##t
+\override Hairpin.after-line-breaking = ##t OR ##g
+\end{verbatim}
+
+If you wish to use circled tips, instead of using \verb|\override Hairpin.circled-tip = ##t|, do:
+
+\begin{verbatim}
+NOTE \o \nCrescTweak \< NOTE(S) \DYNAMIC OR \! \nDecrescTweak \> NOTE(S) \o
+\end{verbatim}
+
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+
+\version "2.24.4"
+
+% curvy version
+
+#(define-public ((curvy-elbowed-hairpin coords mirrored?) grob)
+  "This scheme code was originally the scheme code 'elbowed-hairpin
+taken from output-lib.scm, and was revised to suit the need.
+"
+  (define (scale-coords coords-list x y)
+   (map
+    (lambda (coord) (cons (* x (car coord)) (* y (cdr coord))))
+    coords-list))
+
+  (define (hairpin::print-part points decresc? me)
+   (let ((stil (make-connected-line points me)))
+    (if decresc? (ly:stencil-scale stil -1 1) (ly:stencil-scale stil 1 1))))
+
+  ;; outer let to trigger suicide
+  (let ((sten (ly:hairpin::print grob)))
+   (if (grob::is-live? grob)
+       (let* ((decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
+              (toBarline? (ly:grob-property grob 'to-barline))
+              ;    (circled-tip? (ly:grob-property grob 'circled-tip))
+              (hairpinTypeA?
+               (and (eqv? (end-broken-spanner? grob )               #f)
+                    (eqv? (first-broken-spanner? grob )             #f)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #f)
+                    (eqv? (not-last-broken-spanner? grob )          #f)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                    (eqv? (unbroken-spanner? grob )                 #t)
+                    )) ;Hairpins that end within one line without
+              ;reaching to the end of the system
+              (hairpinTypeB?
+               (or (and (eqv? (end-broken-spanner? grob )               #t)
+                        (eqv? (first-broken-spanner? grob )             #t)
+                        (eqv? (middle-broken-spanner? grob )            #f)
+                        (eqv? (not-first-broken-spanner? grob )         #f)
+                        (eqv? (not-last-broken-spanner? grob )          #f)
+                        (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                        (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
+                        (eqv? (unbroken-spanner? grob )                 #f)
+                        )
+                   (and (eqv? (end-broken-spanner? grob )               #f)
+                        (eqv? (first-broken-spanner? grob )             #t)
+                        (eqv? (middle-broken-spanner? grob )            #f)
+                        (eqv? (not-first-broken-spanner? grob )         #f)
+                        (eqv? (not-last-broken-spanner? grob )          #t)
+                        (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
+                        (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                        (eqv? (unbroken-spanner? grob )                 #f)
+                        )
+                   )) ;Hairpins that breaks into next line
+              (hairpinTypeC?
+               (and (eqv? (end-broken-spanner? grob )               #f)
+                    (eqv? (first-broken-spanner? grob )             #f)
+                    (eqv? (middle-broken-spanner? grob )            #t)
+                    (eqv? (not-first-broken-spanner? grob )         #t)
+                    (eqv? (not-last-broken-spanner? grob )          #t)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )) ;Midway-through Hairpins
+              (hairpinTypeD?
+               (and (eqv? (end-broken-spanner? grob )               #t)
+                    (eqv? (first-broken-spanner? grob )             #f)
+                    (eqv? (middle-broken-spanner? grob )            #f)
+                    (eqv? (not-first-broken-spanner? grob )         #t)
+                    (eqv? (not-last-broken-spanner? grob )          #f)
+                    (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
+                    (eqv? (unbroken-or-last-broken-spanner? grob )   #t)
+                    (eqv? (unbroken-spanner? grob )                 #f)
+                    )) ;multi-system Hairpin that terminates
+              (xex (if decresc?
+                       (cons (+ (car (ly:stencil-extent sten X)) 0.75)
+                             (cdr (ly:stencil-extent sten X)))
+                       (cons (car (ly:stencil-extent sten X))
+                             (- (cdr (ly:stencil-extent sten X)) 1.75))
+                       ))
+              (lenx (interval-length xex))
+              (yex (ly:stencil-extent sten Y))
+              (leny (interval-length yex))
+              (xtrans (+ (car xex) (if decresc? lenx 0)))
+              (ytrans (car yex))
+              (uplist (scale-coords coords lenx (/ leny 2)))
+              (downlist (scale-coords coords lenx (/ leny -2)))
+              (crescStencil
+               (if toBarline?
+                   ;I added here to make it default to stretch
+                   ;the hairpin immediately to the dynamics
+                   (ly:stencil-combine-at-edge
+                    (ly:stencil-combine-at-edge
+                     (hairpin::print-part uplist decresc? grob)
+                     1
+                     -1
+                     (if mirrored?
+                         (hairpin::print-part downlist decresc? grob)
+                         empty-stencil)
+                     -0.1 ;vertical padding value here
+                     )
+                    0
+                    1
+                    (make-path-stencil
+                     (list
+                      'moveto 0 0.15
+                      'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                      'moveto 0 -0.15
+                      'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                      )
+                     0.1
+                     2
+                     2
+                     #f
+                     )
+                    -0.075
+                    )
+                   ;if not to barline
+                   (ly:stencil-combine-at-edge
+                    (ly:stencil-combine-at-edge
+                     (hairpin::print-part
+                      (scale-coords
+                       coords
+                       (+ lenx 1) (/ leny 2))  decresc? grob)
+                     1
+                     -1
+                     (if mirrored?
+                         (hairpin::print-part
+                          (scale-coords
+                           coords
+                           (+ lenx 1) (/ leny -2))  decresc? grob)
+                         empty-stencil)
+                     -0.1 ;vertical padding value here
+                     )
+                    0
+                    1
+                    (make-path-stencil
+
+                     (list 'moveto 0 0.15
+                           'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                           'moveto 0 -0.15
+                           'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                           )
+                     0.1
+                     2
+                     2
+                     #f
+                     )
+                    -0.075
+                    ))
+               )
+              (crescStencilBrokenBeginning
+               (ly:stencil-combine-at-edge
+                (hairpin::print-part
+                 (scale-coords
+                  '((0 . 0.15) (1 . 0.65))
+                  (+ lenx 2) (/ leny 2)) decresc? grob)
+                1
+                -1
+                (if mirrored?
+                    (hairpin::print-part
+                     (scale-coords
+                      '((0 . -0.15) (1 . -0.65))
+                      (+ lenx 2) (/ leny 2))  decresc? grob)
+                    empty-stencil)
+                -0.1 ;vertical padding value here
+                )
+               )
+              (crescStencilBrokenContinuation
+               (ly:stencil-combine-at-edge
+                (hairpin::print-part
+                 (scale-coords
+                  '((0 . 0.15) (1 . 0.65))
+                  (+ lenx 2) (/ leny 2)) decresc? grob)
+                1
+                -1
+                (if mirrored?
+                    (hairpin::print-part
+                     (scale-coords
+                      '((0 . -0.15) (1 . -0.65))
+                      (+ lenx 2) (/ leny 2))  decresc? grob)
+                    empty-stencil)
+                0.15 ;vertical padding value here
+                )
+               )
+              (crescStencilBrokenEnding
+               ;if the flare end is applied
+               ;on the dynamic at the beginning
+               ;of the system, meaning lenx is super low
+               (cond ((< lenx 0.2)
+                      (make-path-stencil
+                       (list 'moveto 0.25 0.135
+                             'lineto -0.5 0.1
+                             'moveto 0.25 0.135
+                             'rcurveto 0 0 0.3 0 0.4 0.3
+                             'moveto 0.25 -0.135
+                             'lineto -0.5 -0.1
+                             'moveto 0.25 -0.135
+                             'rcurveto 0 0 0.3 0 0.4 -0.3
+                             )
+                       0.1
+                       2
+                       2
+                       #f
+                       ))
+                     ((and (>= lenx 0.2)(< lenx 2))
+                      ;if the flare end is applied
+                      ;on the note at the beginning of the system
+                      ;without the dynamics (lenx is about 1 to 2
+
+                      (ly:stencil-combine-at-edge
+                       (ly:stencil-combine-at-edge
+                        (hairpin::print-part
+                         (scale-coords
+                          '((-0.05 . 0.3) (1 . 0.415))
+                          (+ lenx 0.75)  (/ leny 2)) decresc? grob)
+                        1
+                        -1
+                        (if mirrored?
+                            (hairpin::print-part
+                             (scale-coords
+                              '((-0.05 . -0.3) (1 . -0.415))
+                              (+ lenx 0.75)  (/ leny 2)) decresc? grob)
+                            empty-stencil)
+                        0.325 ;vertical padding value here
+                        )
+                       0
+                       1
+                       (make-path-stencil
+                        (list 'moveto 0 0.15
+                              'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                              'moveto 0 -0.15
+                              'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                              )
+                        0.1
+                        2
+                        2
+                        #f
+                        )
+                       -0.075
+                       ))
+                     ((>= lenx 2)
+                      ;if the normal ending flare crescendo
+                      ;is applied...
+                      (ly:stencil-combine-at-edge
+                       (ly:stencil-combine-at-edge
+                        (hairpin::print-part
+                         (scale-coords
+                          '((0 . 0.15) (1 . 0.415))
+                          (+ lenx 1) (/ leny 2)) decresc? grob)
+                        1
+                        -1
+                        (if mirrored?
+                            (hairpin::print-part
+                             (scale-coords
+                              '((0 . -0.15) (1 . -0.415))
+                              (+ lenx 1) (/ leny 2)) decresc? grob)
+                            empty-stencil)
+                        0.115 ;vertical padding value here
+                        )
+                       0
+                       1
+                       (make-path-stencil
+                        (list 'moveto 0 0.15
+                              'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                              'moveto 0 -0.15
+                              'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                              )
+                        0.1
+                        2
+                        2
+                        #f
+                        )
+                       -0.075
+                       ))
+                     )
+               )
+              (decrescStencil
+               (ly:stencil-combine-at-edge
+                (ly:stencil-combine-at-edge
+                 (hairpin::print-part uplist decresc? grob)
+                 1
+                 -1
+                 (if mirrored?
+                     (hairpin::print-part downlist decresc? grob)
+                     empty-stencil)
+                 -0.1 ;vertical padding value here
+                 )
+                0
+                -1
+                (make-path-stencil
+                 (list 'moveto 0 0.15
+                       'rcurveto 0 0 -0.3 -0.05 -0.4 0.3
+                       'moveto 0 -0.15
+                       'rcurveto 0 0 -0.3 0.05 -0.4 -0.3
+                       )
+                 0.1
+                 2
+                 2
+                 #f
+                 )
+
+                -0.075
+                ))
+              (decrescStencilBrokenBeginning
+               (ly:stencil-combine-at-edge
+                (ly:stencil-combine-at-edge
+                 (hairpin::print-part
+                  (scale-coords
+                   '((0 . 0.15) (1 . 0.415))
+                   lenx (/ leny 2)) decresc? grob)
+                 1
+                 -1
+                 (if mirrored?
+                     (hairpin::print-part
+                      (scale-coords
+                       '((0 . -0.15) (1 . -0.415))
+                       lenx (/ leny 2)) decresc? grob)
+                     empty-stencil)
+                 0.1 ;vertical padding value here
+                 )
+                0
+                -1
+                (make-path-stencil
+                 (list 'moveto 0 0.15
+                       'rcurveto 0 0 -0.3 -0.05 -0.4 0.3
+                       'moveto 0 -0.15
+                       'rcurveto 0 0 -0.3 0.05 -0.4 -0.3
+                       )
+                 0.1
+                 2
+                 2
+                 #f
+                 )
+                -0.075
+                )
+               )
+              (decrescStencilBrokenEnding
+               (ly:stencil-combine-at-edge
+                (hairpin::print-part uplist decresc? grob)
+                1
+                -1
+                (if mirrored?
+                    (hairpin::print-part downlist decresc? grob)
+                    empty-stencil)
+                -0.1 ;vertical padding value here
+                )
+               )
+              (cresc
+               (cond (hairpinTypeA? crescStencil)
+                     (hairpinTypeB? crescStencilBrokenBeginning)
+                     (hairpinTypeC? crescStencilBrokenContinuation)
+                     (hairpinTypeD? crescStencilBrokenEnding)
+                     )
+               )
+              (decres
+               (cond (hairpinTypeA? decrescStencil)
+                     (hairpinTypeB? decrescStencilBrokenBeginning)
+                     (hairpinTypeC? crescStencilBrokenContinuation)
+                     ;crescStencilBrokenContinuation can be used for decresc
+                     ;as well, because it gets inverted.
+                     (hairpinTypeD? decrescStencilBrokenEnding)
+                     )
+               )
+              (stil
+               (ly:stencil-aligned-to
+                (ly:stencil-translate
+                 (if decresc?
+                     decres
+                     cresc
+                     )
+                 (cons xtrans ytrans))
+                Y CENTER))
+              (stil-y-extent (ly:stencil-extent stil Y)))
+        ; for debugging purposes
+        ;         (display "Is this type A Hairpin? " )
+        ;         (display hairpinTypeA?)
+        ;         (newline)
+        ;         (display "Is this type B Hairpin? " )
+        ;         (display hairpinTypeB?)
+        ;         (newline)
+        ;         (display "Is this type C Hairpin? " )
+        ;         (display hairpinTypeC?)
+        ;         (newline)
+        ;         (display "Is this type D Hairpin? " )
+        ;         (display hairpinTypeD?)
+        ;
+        ;         (newline)
+        ;         (display "Is it decrescendo? " )
+        ;         (display decresc?)
+        ;         (newline)
+        ;         (display "end-broken-spanner???  " )
+        ;         (display (end-broken-spanner? grob ))
+        ;         (newline)
+        ;         (display "(first-broken-spanner?) Is spanner broken
+        ;and the first of its broken siblings? " )
+        ;         (display (first-broken-spanner? grob ) )
+        ;         (newline)
+        ;         (display "middle-broken-spanner??? " )
+        ;         (display (middle-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "Is spanner broken and not the first of
+        ;its broken siblings? " )
+        ;         (display (not-first-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "Is spanner broken and not the last of
+        ;its broken siblings? " )
+        ;         (display (not-last-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "unbroken-or-first-broken-spanner??? " )
+        ;         (display (unbroken-or-first-broken-spanner? grob ) )
+        ;         (newline)
+        ;
+        ;         (display "unbroken-or-first-broken-spanner??? " )
+        ;         (display (unbroken-or-last-broken-spanner? grob ) )
+        ;         (newline)
+        ;         (display "unbroken spanner?? " )
+        ;         (display (unbroken-spanner? grob ) )
+        ;         (newline)
+        ;         (newline)
+        ;         (display "distance of xex " )
+        ;         (display lenx )
+        ;         (newline)
+        ;         (newline)
+        (ly:make-stencil (ly:stencil-expr stil) xex stil-y-extent))
+       ;; return empty, if no Hairpin.stencil present.
+       '())))
+
+#(define-public flared-hairpin-curvy
+  (curvy-elbowed-hairpin '((0 . 0) (1 . 0.415))
+                         #t))
+
+#(define-public o
+  (make-music 'AbsoluteDynamicEvent
+              'text
+              (markup
+               #:pad-x -inf.0
+               #:concat (
+                         #:translate '(0 . 0.6)
+                         #:musicglyph "scripts.flageolet"
+                         ))
+              ))
+
+nCrescTweak = #(define-music-function (music)
+                ( ly:music? )
+                (_i "The \tweak function comes from 
+music-functions-init.ly
+which I modified for this function.")
+                (let ((p (check-grob-path 'shorten-pair
+                                          #:start 1
+                                          #:default #t
+                                          #:min 2)))
+                 (define (tweak-this music)
+                  (set! (ly:music-property music 'tweaks)
+                        (acons (cond ((pair? (cddr p)) p)
+                                     ((symbol? (car p))
+                                      (cons (car p) (cadr p)))
+                                     (else (cadr p)))
+                               '(-0.6 . 0)
+                               (ly:music-property music 'tweaks))))
+                 (if p
+                     ;; p now contains at least two elements.  The first
+                     ;; element is #t when no grob has been explicitly
+                     ;; specified, otherwise it is a grob name.
+                     (for-each tweak-this (get-tweakable-music music)))
+                 music
+                 )
+                )
+
+nDecrescTweak = #(define-music-function (music)
+                  ( ly:music? )
+                  (_i "The \tweak function comes from 
+music-functions-init.ly
+which I modified for this function.
+")
+                  (let ((p (check-grob-path 'shorten-pair
+                                            #:start 1
+                                            #:default #t
+                                            #:min 2)))
+                   (define (tweak-this music)
+                    (set! (ly:music-property music 'tweaks)
+                          (acons (cond ((pair? (cddr p)) p)
+                                       ((symbol? (car p))
+                                        (cons (car p) (cadr p)))
+                                       (else (cadr p)))
+                                 '(0 . -0.6)
+                                 (ly:music-property music 'tweaks))))
+                   (if p
+                       ;; p now contains at least two elements.  The first
+                       ;; element is #t when no grob has been explicitly
+                       ;; specified, otherwise it is a grob name.
+                       (for-each tweak-this (get-tweakable-music music)))
+                   music
+                   )
+                  )
+\layout {
+ indent = #0
+ line-width = #150
+ ragged-last = ##t
+}
+{
+ \override Hairpin.stencil = #flared-hairpin-curvy
+ \override Hairpin.to-barline = ##f
+ \override Hairpin.after-line-breaking = ##t
+
+ c'\o\nCrescTweak\<  c' c' c'
+ c' c' c'\f \nDecrescTweak \> c' \break
+ c' c' \o c'\f\<  c'
+ c' c' c' c'
+ c' c' c' c' \break
+ c' c'\! \> c' c'\p
+}
+\end{Verbatim}
+\subsection{Discussion}
+
+
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+\vfill \break
+
+
+%%%%%%%%%%%%%%%%%%%
+
+
