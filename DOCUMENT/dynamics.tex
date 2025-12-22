@@ -1217,21 +1217,21 @@ For the purpose of using it in my own musical typesetting, this constante hairpi
 
 (See \hyperref[sec:enhanced_flared_hairpins_2]{\textbf{Enhanced Flared Hairpins II}} for the flared hairpins with curved flares.)
 
-In LilyPond, it is possible to specify flared hairpins by writing an override function: 
+In LilyPond, it is possible to specify flared hairpins by writing an override command: 
 
 \verb|\override Hairpin.stencil = #flared-hairpin|
 
-As useful as it may be, there are several aspects to the default flared hairpin that could be seen as limitaions that would be best overcome:
+There are several aspects to LilyPond's default flared hairpin that could be seen as limitations and would be best overcome:
 
 \begin{enumerate}
 
-\item Because the flare of the hairpin is drawn using the scheme code \verb|'elbowed-hairpin| in the file \verb|output-lib.scm| that uses list of points from \verb|0| (beginning) to \verb|1| (end), the longer the hairpin is, the longer its flare becomes. While there may be a case where the longer flare is preferred, in the case of a long hairpin, it becomes more difficult to immediately discern a flared hairpin.
+\item Because the flare of the hairpin is drawn using the scheme code \verb|'elbowed-hairpin| in the file \verb|output-lib.scm| that uses a list of points from \verb|0| (beginning) to \verb|1| (end), the longer the hairpin is, the longer its flare becomes. While there may be a case where the longer flare is preferred, in the case of a long hairpin, it becomes more difficult to immediately discern a flared hairpin.
 \item While LilyPond's ordinary hairpins do have three separate components when they break into new systems: 1. beginning; 2. intermediate; and; 3. ending, the default flared hairpins draw identical \say{flared} hairpins when the lines break. This could invite confusions as it may tempt players to do flared crescendo/diminuendos at the end of each system.
 \item When the default flared hairpins are activated, \verb|\override Hairpin.circled-tips| (i.e. to apply circled tips at the onset of the crescendo or at the end of decrescendo) ceases to work.   
 
 \end{enumerate}
 
-In developing this enhanced flared hairpin, I have attempted to accommodate different case scenarios, e.g. having \verb|\override Hairpin.to-barline|, \verb|\override Hairpin.after-line-breaking| set to either \verb|##t| or  \verb|##f|. It is subject to further refinements. 
+In developing this enhanced flared hairpin, I have attempted to accommodate different case scenarios, e.g. having \verb|\override Hairpin.to-barline|, \verb|\override Hairpin.after-line-breaking| set to either \verb|##t| or  \verb|##f|. It is subject to further refinements. I have also coded the circled-tip dynamic sign as well as tweak functions to be used when the circled-tip dynamic signs are used in tandem with the hairpins.
 
 \subsection{Grammar}
 \begin{verbatim}
@@ -1369,15 +1369,17 @@ taken from output-lib.scm, and was revised to suit the need.
                    ;if not to barline
                    (ly:stencil-combine-at-edge
                     (ly:stencil-combine-at-edge
-                     (hairpin::print-part (scale-coords
-                                           coords
-                                           (+ lenx 1) (/ leny 2))  decresc? grob)
+                     (hairpin::print-part
+                      (scale-coords
+                       coords
+                       (+ lenx 1) (/ leny 2))  decresc? grob)
                      1
                      -1
                      (if mirrored?
-                         (hairpin::print-part (scale-coords
-                                               coords
-                                               (+ lenx 1) (/ leny -2))  decresc? grob)
+                         (hairpin::print-part
+                          (scale-coords
+                           coords
+                           (+ lenx 1) (/ leny -2))  decresc? grob)
                          empty-stencil)
                      -0.1 ;vertical padding value here
                      )
@@ -1418,9 +1420,10 @@ taken from output-lib.scm, and was revised to suit the need.
                )
               (crescStencilBrokenContinuation
                (ly:stencil-combine-at-edge
-                (hairpin::print-part (scale-coords
-                                      '((0 . 0.15) (1 . 0.65))
-                                      (+ lenx 2) (/ leny 2)) decresc? grob)
+                (hairpin::print-part
+                 (scale-coords
+                  '((0 . 0.15) (1 . 0.65))
+                  (+ lenx 2) (/ leny 2)) decresc? grob)
                 1
                 -1
                 (if mirrored?
@@ -1686,8 +1689,9 @@ taken from output-lib.scm, and was revised to suit the need.
        ;; return empty, if no Hairpin.stencil present.
        '())))
 
-#(define-public flared-hairpin-new (elbowed-hairpin-revised '((0 . 0) (1 . 0.415))
-                                                            #t))
+#(define-public flared-hairpin-new
+  (elbowed-hairpin-revised '((0 . 0) (1 . 0.415))
+                           #t))
 
 #(define-public o
   (make-music 'AbsoluteDynamicEvent
@@ -1695,8 +1699,10 @@ taken from output-lib.scm, and was revised to suit the need.
               (markup
                #:pad-x -inf.0
                #:concat (
+                         #:pad-to-box '(0 . 0.1) '(-0.75 . 1.75)
                          #:translate '(0 . 0.6)
                          #:musicglyph "scripts.flageolet"
+
                          ))
               ))
 
@@ -1754,7 +1760,7 @@ which I modified for this function.
                   )
 \layout {
  indent = #0
- line-width = #150
+ line-width = #100
  ragged-last = ##t
 }
 {
@@ -1767,6 +1773,7 @@ which I modified for this function.
  c' c' \o c'\f\<  c'
  c' c' c' c'
  c' c' c' c' \break
+ \repeat unfold 3  {c' c' c' c'} \break
  c' c'\! \> c' c'\p
 }
 \end{Verbatim}
@@ -1809,7 +1816,6 @@ NOTE \o \nCrescTweak \< NOTE(S) \DYNAMIC OR \! \nDecrescTweak \> NOTE(S) \o
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-
 \version "2.24.4"
 
 % curvy version
@@ -2169,8 +2175,8 @@ taken from output-lib.scm, and was revised to suit the need.
                (cond (hairpinTypeA? decrescStencil)
                      (hairpinTypeB? decrescStencilBrokenBeginning)
                      (hairpinTypeC? crescStencilBrokenContinuation)
-                     ;crescStencilBrokenContinuation can be used for decresc
-                     ;as well, because it gets inverted.
+                     ;crescStencilBrokenContinuation can be used for
+                     ;decresc as well, because it gets inverted.
                      (hairpinTypeD? decrescStencilBrokenEnding)
                      )
                )
@@ -2251,8 +2257,10 @@ taken from output-lib.scm, and was revised to suit the need.
               (markup
                #:pad-x -inf.0
                #:concat (
+                         #:pad-to-box '(0 . 0.1) '(-0.75 . 1.75)
                          #:translate '(0 . 0.6)
                          #:musicglyph "scripts.flageolet"
+
                          ))
               ))
 
@@ -2310,7 +2318,7 @@ which I modified for this function.
                   )
 \layout {
  indent = #0
- line-width = #150
+ line-width = #100
  ragged-last = ##t
 }
 {
@@ -2323,6 +2331,7 @@ which I modified for this function.
  c' c' \o c'\f\<  c'
  c' c' c' c'
  c' c' c' c' \break
+ \repeat unfold 3  {c' c' c' c'} \break
  c' c'\! \> c' c'\p
 }
 \end{Verbatim}

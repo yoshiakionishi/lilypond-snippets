@@ -118,15 +118,17 @@ taken from output-lib.scm, and was revised to suit the need.
                    ;if not to barline
                    (ly:stencil-combine-at-edge
                     (ly:stencil-combine-at-edge
-                     (hairpin::print-part (scale-coords
-                                           coords
-                                           (+ lenx 1) (/ leny 2))  decresc? grob)
+                     (hairpin::print-part
+                      (scale-coords
+                       coords
+                       (+ lenx 1) (/ leny 2))  decresc? grob)
                      1
                      -1
                      (if mirrored?
-                         (hairpin::print-part (scale-coords
-                                               coords
-                                               (+ lenx 1) (/ leny -2))  decresc? grob)
+                         (hairpin::print-part
+                          (scale-coords
+                           coords
+                           (+ lenx 1) (/ leny -2))  decresc? grob)
                          empty-stencil)
                      -0.1 ;vertical padding value here
                      )
@@ -167,9 +169,10 @@ taken from output-lib.scm, and was revised to suit the need.
                )
               (crescStencilBrokenContinuation
                (ly:stencil-combine-at-edge
-                (hairpin::print-part (scale-coords
-                                      '((0 . 0.15) (1 . 0.65))
-                                      (+ lenx 2) (/ leny 2)) decresc? grob)
+                (hairpin::print-part
+                 (scale-coords
+                  '((0 . 0.15) (1 . 0.65))
+                  (+ lenx 2) (/ leny 2)) decresc? grob)
                 1
                 -1
                 (if mirrored?
@@ -435,8 +438,9 @@ taken from output-lib.scm, and was revised to suit the need.
        ;; return empty, if no Hairpin.stencil present.
        '())))
 
-#(define-public flared-hairpin-new (elbowed-hairpin-revised '((0 . 0) (1 . 0.415))
-                                                            #t))
+#(define-public flared-hairpin-new
+  (elbowed-hairpin-revised '((0 . 0) (1 . 0.415))
+                           #t))
 
 #(define-public o
   (make-music 'AbsoluteDynamicEvent
@@ -444,8 +448,10 @@ taken from output-lib.scm, and was revised to suit the need.
               (markup
                #:pad-x -inf.0
                #:concat (
+                         #:pad-to-box '(0 . 0.1) '(-0.75 . 1.75)
                          #:translate '(0 . 0.6)
                          #:musicglyph "scripts.flageolet"
+
                          ))
               ))
 
@@ -503,7 +509,7 @@ which I modified for this function.
                   )
 \layout {
  indent = #0
- line-width = #150
+ line-width = #100
  ragged-last = ##t
 }
 {
@@ -516,5 +522,6 @@ which I modified for this function.
  c' c' \o c'\f\<  c'
  c' c' c' c'
  c' c' c' c' \break
+ \repeat unfold 3  {c' c' c' c'} \break
  c' c'\! \> c' c'\p
 }

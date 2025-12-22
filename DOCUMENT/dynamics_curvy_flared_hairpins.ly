@@ -357,8 +357,8 @@ taken from output-lib.scm, and was revised to suit the need.
                (cond (hairpinTypeA? decrescStencil)
                      (hairpinTypeB? decrescStencilBrokenBeginning)
                      (hairpinTypeC? crescStencilBrokenContinuation)
-                     ;crescStencilBrokenContinuation can be used for decresc
-                     ;as well, because it gets inverted.
+                     ;crescStencilBrokenContinuation can be used for
+                     ;decresc as well, because it gets inverted.
                      (hairpinTypeD? decrescStencilBrokenEnding)
                      )
                )
@@ -439,8 +439,10 @@ taken from output-lib.scm, and was revised to suit the need.
               (markup
                #:pad-x -inf.0
                #:concat (
+                         #:pad-to-box '(0 . 0.1) '(-0.75 . 1.75)
                          #:translate '(0 . 0.6)
                          #:musicglyph "scripts.flageolet"
+
                          ))
               ))
 
@@ -498,7 +500,7 @@ which I modified for this function.
                   )
 \layout {
  indent = #0
- line-width = #150
+ line-width = #100
  ragged-last = ##t
 }
 {
@@ -511,5 +513,6 @@ which I modified for this function.
  c' c' \o c'\f\<  c'
  c' c' c' c'
  c' c' c' c' \break
+ \repeat unfold 3  {c' c' c' c'} \break
  c' c'\! \> c' c'\p
 }
