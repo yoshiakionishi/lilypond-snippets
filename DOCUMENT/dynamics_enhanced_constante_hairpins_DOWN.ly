@@ -148,13 +148,13 @@ taken from output-lib.scm, and was revised to suit the need."
 
                (hairpin::print-part (scale-coords
                                      '((0 . 0) (1 . 0))
-                                     (+ lenx 2) (/ leny 2))
+                                     (+ lenx 1) (/ leny 2))
                                     decresc? grob)
                ;if not to barline
                (ly:stencil-translate
                 (hairpin::print-part
                  (scale-coords '((0 . 0) (1 . 0))
-                               (+ lenx 2.35)  (/ leny 2))
+                               (+ lenx 1.5)  (/ leny 2))
                  decresc? grob)
 
                 '(-0.5 . 0))
@@ -217,7 +217,7 @@ taken from output-lib.scm, and was revised to suit the need."
             1
             (hairpin::print-part (scale-coords
                                   '((0.01 . 0.15) (1 . 0.15))
-                                  (+ lenx 2)  (/ leny 2))
+                                  (+ lenx 1)  (/ leny 2))
                                  decresc? grob)
             -1.5
             )
