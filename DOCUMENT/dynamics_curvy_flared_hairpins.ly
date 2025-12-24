@@ -20,7 +20,8 @@ taken from output-lib.scm, and was revised to suit the need.
   (let ((sten (ly:hairpin::print grob)))
    (if (grob::is-live? grob)
        (let*
-        ((decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
+        ((decresc? (eqv?
+                    (ly:grob-property grob 'grow-direction) LEFT))
          (hairpinHeight (ly:grob-property grob 'height))
          (toBarline? (ly:grob-property grob 'to-barline))
          (orig (ly:grob-original grob))
@@ -54,7 +55,7 @@ taken from output-lib.scm, and was revised to suit the need.
                    (eqv? (not-first-broken-spanner? grob )         #f)
                    (eqv? (not-last-broken-spanner? grob )          #t)
                    (eqv? (unbroken-or-first-broken-spanner? grob ) #t)
-                   (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+                   (eqv? (unbroken-or-last-broken-spanner? grob )  #f)
                    (eqv? (unbroken-spanner? grob )                 #f)
                    )
               )) ;Hairpins that breaks into next line
@@ -65,7 +66,7 @@ taken from output-lib.scm, and was revised to suit the need.
                (eqv? (not-first-broken-spanner? grob )         #t)
                (eqv? (not-last-broken-spanner? grob )          #t)
                (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
-               (eqv? (unbroken-or-last-broken-spanner? grob )   #f)
+               (eqv? (unbroken-or-last-broken-spanner? grob )  #f)
                (eqv? (unbroken-spanner? grob )                 #f)
                )) ;Midway-through Hairpins
          (hairpinTypeD?
@@ -75,7 +76,7 @@ taken from output-lib.scm, and was revised to suit the need.
                (eqv? (not-first-broken-spanner? grob )         #t)
                (eqv? (not-last-broken-spanner? grob )          #f)
                (eqv? (unbroken-or-first-broken-spanner? grob ) #f)
-               (eqv? (unbroken-or-last-broken-spanner? grob )   #t)
+               (eqv? (unbroken-or-last-broken-spanner? grob )  #t)
                (eqv? (unbroken-spanner? grob )                 #f)
                )) ;multi-system Hairpin that terminates
          (xex (if decresc?
@@ -117,10 +118,12 @@ taken from output-lib.scm, and was revised to suit the need.
                1
                (make-path-stencil
                 (list
-                 'moveto 0 (* 0.2 (/ hairpinHeight 0.666) )
-                 'rcurveto 0 0 0.3 -0.05 0.4 0.3
-                 'moveto 0 (* -0.2 (/ hairpinHeight 0.666) )
-                 'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                 'moveto 0
+                 (+ (* 0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                 'rcurveto 0 0 0.3 -0.0 0.4 0.3
+                 'moveto 0
+                 (- (* -0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                 'rcurveto 0 0 0.3 0.0 0.4 -0.3
                  )
                 0.1
                 2
@@ -151,10 +154,12 @@ taken from output-lib.scm, and was revised to suit the need.
                (make-path-stencil
 
                 (list
-                 'moveto 0 (* 0.2 (/ hairpinHeight 0.666) )
-                 'rcurveto 0 0 0.3 -0.05 0.4 0.3
-                 'moveto 0 (* -0.2 (/ hairpinHeight 0.666) )
-                 'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                 'moveto 0
+                 (+ (* 0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                 'rcurveto 0 0 0.3 -0.0 0.4 0.3
+                 'moveto 0
+                 (- (* -0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                 'rcurveto 0 0 0.3 0.0 0.4 -0.3
                  )
                 0.1
                 2
@@ -192,10 +197,12 @@ taken from output-lib.scm, and was revised to suit the need.
                      1
                      (make-path-stencil
                       (list
-                       'moveto 0 (* 0.2 (/ hairpinHeight 0.666) )
-                       'rcurveto 0 0 0.3 -0.05 0.4 0.3
-                       'moveto 0 (* -0.2 (/ hairpinHeight 0.666) )
-                       'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                       'moveto 0
+                       (+ (* 0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                       'rcurveto 0 0 0.3 -0.0 0.4 0.3
+                       'moveto 0
+                       (- (* -0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                       'rcurveto 0 0 0.3 0.0 0.4 -0.3
                        )
                       0.1
                       2
@@ -308,10 +315,10 @@ taken from output-lib.scm, and was revised to suit the need.
                   1
                   (make-path-stencil
                    (list 'moveto 0 (* 0.15 (/ hairpinHeight 0.666) )
-                         'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                         'rcurveto 0 0 0.3 -0.0 0.4 0.3
                          'moveto 0
                          (- (* -0.15 (/ hairpinHeight 0.666) ) 0.1)
-                         'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                         'rcurveto 0 0 0.3 0.0 0.4 -0.3
                          )
                    0.1
                    2
@@ -343,10 +350,10 @@ taken from output-lib.scm, and was revised to suit the need.
                   1
                   (make-path-stencil
                    (list 'moveto 0 (* 0.133 (/ hairpinHeight 0.666) )
-                         'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                         'rcurveto 0 0 0.3 -0.0 0.4 0.3
                          'moveto 0
                          (- (* -0.133 (/ hairpinHeight 0.666) ) 0.1)
-                         'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                         'rcurveto 0 0 0.3 0.0 0.4 -0.3
                          )
                    0.1
                    2
@@ -375,10 +382,10 @@ taken from output-lib.scm, and was revised to suit the need.
                   1
                   (make-path-stencil
                    (list   'moveto 0 (* 0.133 (/ hairpinHeight 0.666) )
-                           'rcurveto 0 0 0.3 -0.05 0.4 0.3
+                           'rcurveto 0 0 0.3 -0.0 0.4 0.3
                            'moveto 0
                            (- (* -0.133 (/ hairpinHeight 0.666) ) 0.1)
-                           'rcurveto 0 0 0.3 0.05 0.4 -0.3
+                           'rcurveto 0 0 0.3 0.0 0.4 -0.3
                            )
                    0.1
                    2
@@ -412,10 +419,12 @@ taken from output-lib.scm, and was revised to suit the need.
                0
                -1
                (make-path-stencil
-                (list 'moveto 0 (* 0.19 (/ hairpinHeight 0.666) )
-                      'rcurveto 0 0 -0.3 -0.05 -0.4 0.3
-                      'moveto 0 (* -0.19 (/ hairpinHeight 0.666) )
-                      'rcurveto 0 0 -0.3 0.05 -0.4 -0.3
+                (list 'moveto 0
+                      (+ (* 0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                      'rcurveto 0 0 -0.3 -0.0 -0.4 0.3
+                      'moveto 0
+                      (- (* -0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                      'rcurveto 0 0 -0.3 0.0 -0.4 -0.3
                       )
                 0.1
                 2
@@ -445,10 +454,12 @@ taken from output-lib.scm, and was revised to suit the need.
                -1
                (make-path-stencil
                 (list
-                 'moveto 0 (* 0.2 (/ hairpinHeight 0.666) )
-                 'rcurveto 0 0 -0.3 -0.05 -0.4 0.3
-                 'moveto 0 (* -0.2 (/ hairpinHeight 0.666) )
-                 'rcurveto 0 0 -0.3 0.05 -0.4 -0.3
+                 'moveto 0
+                 (+ (* 0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                 'rcurveto 0 0 -0.3 -0.0 -0.4 0.3
+                 'moveto 0
+                 (- (* -0.1665 (/ hairpinHeight 0.666) ) 0.015)
+                 'rcurveto 0 0 -0.3 0.0 -0.4 -0.3
                  )
                 0.1
                 2
@@ -480,11 +491,12 @@ taken from output-lib.scm, and was revised to suit the need.
            0
            -1
            (make-path-stencil
-            (list 'moveto 0 (* 0.15 (/ hairpinHeight 0.666) )
-                  'rcurveto 0 0 -0.3 -0.05 -0.4 0.3
+            (list 'moveto 0
+                  (+ (* 0.135 (/ hairpinHeight 0.666) ) 0.01 )
+                  'rcurveto 0 0 -0.3 -0.0 -0.4 0.3
                   'moveto 0
-                  (- (* -0.15 (/ hairpinHeight 0.666) ) 0.1)
-                  'rcurveto 0 0 -0.3 0.05 -0.4 -0.3
+                  (- (* -0.135 (/ hairpinHeight 0.666) ) 0.11)
+                  'rcurveto 0 0 -0.3 0.0 -0.4 -0.3
                   )
             0.1
             2
@@ -698,9 +710,9 @@ nDecrescTweak =
 
 
 {
- % \override Hairpin.height = #0.5
+ \override Hairpin.height = #0.5
  \override Hairpin.stencil = #flared-hairpin-curvy
- \override Hairpin.to-barline = ##f
+ \override Hairpin.to-barline = ##t
  \override Hairpin.after-line-breaking = ##f
 
  c' \o \nCrescTweak   \< c' c' c' \f \nDecrescTweak \>
@@ -708,8 +720,8 @@ nDecrescTweak =
  \repeat unfold 3  {c' c' c' c'} \break
  c'\ff \nDecrescTweak \> c' c' c'
  c' \p \nCrescTweak \< c' c' \nDecrescTweak #-0.6 \> c'
- c' \p \< c' c' c'\ff \nDecrescTweak \> \break
+ c' \p \< c'  c'\ff \nDecrescTweak \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
  c' \f  \nDecrescTweak \> c' c' c'\o \nCrescTweak \<
- c' c' c' c' \!
+ c' c' c' c' \break c'\!
 }
