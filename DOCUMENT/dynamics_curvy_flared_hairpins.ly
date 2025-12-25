@@ -330,38 +330,7 @@ taken from output-lib.scm, and was revised to suit the need.
                 ((>= lenx 2)
                  ;if the normal ending flare crescendo
                  ;is applied...
-                 (ly:stencil-combine-at-edge
-                  (ly:stencil-combine-at-edge
-                   (hairpin::print-part
-                    (scale-coords
-                     coords
-                     (+ lenx 0.75) (/ leny 3))  decresc? grob)
-                   1
-                   -1
-                   (if mirrored?
-                       (hairpin::print-part
-                        (scale-coords
-                         coords
-                         (+ lenx 0.75) (/ leny -3)) decresc? grob)
-                       empty-stencil)
-                   0.1 ;vertical padding value here
-                   )
-                  0
-                  1
-                  (make-path-stencil
-                   (list 'moveto 0 (* 0.133 (/ hairpinHeight 0.666) )
-                         'rcurveto 0 0 0.3 -0.0 0.4 0.3
-                         'moveto 0
-                         (- (* -0.133 (/ hairpinHeight 0.666) ) 0.1)
-                         'rcurveto 0 0 0.3 0.0 0.4 -0.3
-                         )
-                   0.1
-                   2
-                   2
-                   #f
-                   )
-                  -0.075
-                  )
+
                  (ly:stencil-combine-at-edge
                   (ly:stencil-combine-at-edge
                    (hairpin::print-part
@@ -381,10 +350,11 @@ taken from output-lib.scm, and was revised to suit the need.
                   0
                   1
                   (make-path-stencil
-                   (list   'moveto 0 (* 0.133 (/ hairpinHeight 0.666) )
+                   (list   'moveto 0
+                           (+ (* 0.111 (/ hairpinHeight 0.666) ) 0.01 )
                            'rcurveto 0 0 0.3 -0.0 0.4 0.3
                            'moveto 0
-                           (- (* -0.133 (/ hairpinHeight 0.666) ) 0.1)
+                           (- (* -0.111 (/ hairpinHeight 0.666) ) 0.11)
                            'rcurveto 0 0 0.3 0.0 0.4 -0.3
                            )
                    0.1
@@ -615,7 +585,6 @@ taken from output-lib.scm, and was revised to suit the need.
                          #:musicglyph "scripts.flageolet"
                          ))
               ))
-
 nCrescTweak =
 #(define-music-function (num dyn) ((number? 0) ly:event? )
   (let* ((hOffset num))
@@ -631,12 +600,19 @@ nCrescTweak =
                              (ly:spanner-broken-into orig)
                              '())))
 
-         (if   (or (= (length siblings) 0)
-                   (and (>= (length siblings) 0)
-                        (eq? (first siblings) grob))
+         (cond
+          ((= (length siblings) 0)
+           (cons -0.6 hOffset)
+           )
+          ((and (>= (length siblings) 1)
+                (eq? (car siblings) grob)
+                )
+           (cons -0.6 0))
+          )
 
-                   )
-               (cons -0.6 num)))
+
+
+         )
         )
       \tweak Hairpin.after-line-breaking
       #(lambda (grob)
@@ -652,17 +628,32 @@ nCrescTweak =
 
                )
 
-         (if  (and (>= (length siblings) 2)
-                   (eq? (car (last-pair siblings)) grob))
-              (if toBarline?
-                  (ly:grob-set-property!
-                   grob 'shorten-pair
-                   (cons 0 (+ (* 0.6 -1) hOffset)))
-                  (ly:grob-set-property!
-                   grob 'shorten-pair
-                   (cons (+ -0.6 hOffset)  -0.6))
-                  )
-              )
+         (cond  ((< (length siblings) 2)
+                 (ly:grob-set-property!
+                  grob 'shorten-pair
+                  (cons -0.6 (* hOffset -1)))
+
+                 )
+
+                ((and (>= (length siblings) 2)
+                      (eq? (car (last-pair siblings)) grob)
+                      toBarline? )
+
+                 (ly:grob-set-property!
+                  grob 'shorten-pair
+                  (cons 0 (- -0.6 hOffset)))
+
+
+                 )
+                ((and (>= (length siblings) 2)
+                      (eq? (car (last-pair siblings)) grob)
+                      (not toBarline?) )
+                 (ly:grob-set-property!
+                  grob 'shorten-pair
+                  (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+                 )
+                )
 
          )
         ) #dyn  #}))
@@ -680,10 +671,24 @@ nDecrescTweak =
              ;; if yes, get the split pieces (our siblings)
              (siblings (if (ly:grob? orig)
                            (ly:spanner-broken-into orig)
-                           '())))
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
 
-       (if   (= (length siblings) 0)
-             (cons 0  (+ -0.6 (* hOffset -1)))))
+             )
+
+       (cond
+        ((and (zero? (length siblings)) (not toBarline?))
+         (cons hOffset -0.6)
+         )
+        ((and (zero? (length siblings)) toBarline?)
+         (cons hOffset -0.6)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+       )
       )
     \tweak Hairpin.after-line-breaking
     #(lambda (grob)
@@ -696,10 +701,45 @@ nDecrescTweak =
                            (ly:spanner-broken-into orig)
                            '())))
 
-       (if  (and (>= (length siblings) 1)
-                 (eq? (car (last-pair siblings)) grob))
+       (cond
+        ((and (>= (length siblings) 1)
+              (eq? (car (last-pair siblings)) grob))
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
 
-            (ly:grob-set-property! grob 'shorten-pair '(-0.6 . -0.6))))
+        ((zero? (length siblings)  )
+         #f
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              toBarline? )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons 0 (- -0.6 hOffset)))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car siblings) grob)
+              )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons   0 0))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              (not toBarline?) )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+        )
+
+
+       )
       ) #dyn #}))
 
 \layout {
@@ -709,19 +749,20 @@ nDecrescTweak =
 }
 
 
+
 {
  \override Hairpin.height = #0.5
  \override Hairpin.stencil = #flared-hairpin-curvy
- \override Hairpin.to-barline = ##t
+ \override Hairpin.to-barline = ##f
  \override Hairpin.after-line-breaking = ##f
 
- c' \o \nCrescTweak   \< c' c' c' \f \nDecrescTweak \>
- c' c'\o\nCrescTweak #-0.75 \< c' c' \break
+ c' \fff \nCrescTweak #0.25 \< c' c' c' \o \nDecrescTweak #0 \>
+ c' c'\o\nCrescTweak #-0.6  \< c' c' \break
  \repeat unfold 3  {c' c' c' c'} \break
  c'\ff \nDecrescTweak \> c' c' c'
- c' \p \nCrescTweak \< c' c' \nDecrescTweak #-0.6 \> c'
- c' \p \< c'  c'\ff \nDecrescTweak \> c' \break
+ c' \p \nCrescTweak \< c' c' \nDecrescTweak \> c'
+ c' \p \< c'  c'\! \nDecrescTweak \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c' \f  \nDecrescTweak \> c' c' c'\o \nCrescTweak \<
- c' c' c' c' \break c'\!
+ c' \f  \nDecrescTweak \> c' c' c'\o \nCrescTweak #-1 \<
+ c' c' c' c' \break c'\! \bar"."
 }
