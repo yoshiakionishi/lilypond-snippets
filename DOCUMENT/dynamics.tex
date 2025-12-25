@@ -1241,18 +1241,23 @@ In developing this enhanced flared hairpin, I have attempted to accommodate diff
 
 \subsection{Grammar}
 \begin{verbatim}
-\override Hairpin.stencil = #flared-hairpin-new
 \override Hairpin.to-barline = ##f OR ##t
-\override Hairpin.after-line-breaking = ##t OR ##g
+\override Hairpin.after-line-breaking = ##t OR ##f
+
+NOTE \DYNAMIC \flaredCresc \< NOTE(S) \DYNAMIC OR \!
+
+NOTE \DYNAMIC \flaredDecresc \> NOTE(S) \DYNAMIC OR \!
 \end{verbatim}
 
-If you wish to use circled tips, instead of using \verb|\override Hairpin.circled-tip = ##t|, do:
+If you wish to use circled tips, instead of using \verb|\override Hairpin.circled-tip = ##t|, write:
 
 \begin{verbatim}
-NOTE \o \nCrescTweak \< NOTE(S) \DYNAMIC OR \! \nDecrescTweak \> NOTE(S) \o
+NOTE \o \flaredCresc \< NOTE(S) \DYNAMIC OR \! \flaredDecresc \> NOTE(S) \o
 \end{verbatim}
 
-\textcolor{red}{Update: December 23-24, 2025 } \verb|\nCrescTweak| and \verb|\nDecrescTweak| accepts a number as an optional argument. This functionality has been added to allow the adjustment of flaring end of the hairpin, as well as the horizontal placement of the small piece of the arrival hairpin when \verb|\override to-barline| is set \verb|##f|. While I have striven to set the default setting in such a way that these micro-adjustments are not necessary, it seemed helpful to add this functionality when further refinement is needed. Think of this as an \verb|X-offset| for the arrival point. See \textbf{Code}. 
+Considering that flared hairpins are often used in tandem with ordinary hairpins, I have embedded \verb|\tweak Hairpin.stencil = #flared-hairpin-new| in \verb|\flaredCresc| and \verb|\flaredDecresc|. Therefore, it is not necessary to write an \verb|\override| command to change the stencil used.
+
+\textcolor{red}{Update: December 23-24, 2025 } \verb|\flaredCresc| and \verb|\flaredDecresc| accepts a number as an optional argument. This functionality has been added to allow the adjustment of flaring end of the hairpin, as well as the horizontal placement of the small piece of the arrival hairpin when \verb|\override to-barline| is set \verb|##f|. While I have striven to set the default setting in such a way that these micro-adjustments are not necessary, it seemed helpful to add this functionality when further refinement is needed. Think of this as an \verb|X-offset| for the arrival point. See \textbf{Code}. 
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
@@ -1830,83 +1835,84 @@ taken from output-lib.scm, and was revised to suit the need.
                          ))
               ))
 
-nCrescTweak =
-#(define-music-function (num dyn) ((number? 0) ly:event? )
-  (let* ((hOffset num))
-
-   #{ \tweak Hairpin.shorten-pair
-      #(lambda (grob)
-        (let* (
-               ;; have we been split?
-               (orig (ly:grob-original grob))
-
-               ;; if yes, get the split pieces (our siblings)
-               (siblings (if (ly:grob? orig)
-                             (ly:spanner-broken-into orig)
-                             '())))
-
-         (cond
-          ((= (length siblings) 0)
-           (cons -0.6 hOffset)
-           )
-          ((and (>= (length siblings) 1)
-                (eq? (car siblings) grob)
-                )
-           (cons -0.6 0))
-          )
-
-
-
-         )
-        )
-      \tweak Hairpin.after-line-breaking
-      #(lambda (grob)
-        (let* (
-               ;; have we been split?
-               (orig (ly:grob-original grob))
-
-               ;; if yes, get the split pieces (our siblings)
-               (siblings (if (ly:grob? orig)
-                             (ly:spanner-broken-into orig)
-                             '()))
-               (toBarline? (ly:grob-property grob 'to-barline))
-
-               )
-
-         (cond  ((< (length siblings) 2)
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons -0.6 (* hOffset -1)))
-
-                 )
-
-                ((and (>= (length siblings) 2)
-                      (eq? (car (last-pair siblings)) grob)
-                      toBarline? )
-
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons 0 (- -0.6 hOffset)))
-
-
-                 )
-                ((and (>= (length siblings) 2)
-                      (eq? (car (last-pair siblings)) grob)
-                      (not toBarline?) )
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
-
-                 )
-                )
-
-         )
-        ) #dyn  #}))
-
-nDecrescTweak =
+flaredCresc =
 #(define-music-function (num dyn) ((number? 0) ly:event? )
   (let* ((hOffset num))
    #{
+    \tweak Hairpin.stencil #flared-hairpin-new
+    \tweak Hairpin.shorten-pair
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((= (length siblings) 0)
+         (cons -0.6 hOffset)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+
+
+
+       )
+      )
+    \tweak Hairpin.after-line-breaking
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+             )
+
+       (cond  ((< (length siblings) 2)
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons -0.6 (* hOffset -1)))
+
+               )
+
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    toBarline? )
+
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons 0 (- -0.6 hOffset)))
+
+
+               )
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    (not toBarline?) )
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+               )
+              )
+
+       )
+      ) #dyn  #}))
+
+flaredDecresc =
+#(define-music-function (num dyn) ((number? 0) ly:event? )
+  (let* ((hOffset num))
+   #{
+    \tweak Hairpin.stencil #flared-hairpin-new
     \tweak Hairpin.shorten-pair
     #(lambda (grob)
       (let* (
@@ -1997,21 +2003,20 @@ nDecrescTweak =
 
 {
  \override Hairpin.height = #0.5
- \override Hairpin.stencil = #flared-hairpin-new
+ % \override Hairpin.stencil = #flared-hairpin-new
  \override Hairpin.to-barline = ##f
  \override Hairpin.after-line-breaking = ##f
 
- c' \fff \nCrescTweak \< c' c' c' \o \nDecrescTweak #-0.25 \>
- c' c'\o\nCrescTweak #-0.6  \< c' c' \break
+ c' \fff \flaredCresc \< c' c' c' \o \flaredDecresc #-0.25 \>
+ c' c'\o\flaredCresc #-0.6  \< c' c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c'\ff \nDecrescTweak \> c' c' c'
- c' \p \nCrescTweak \< c' c' \nDecrescTweak \> c'
- c' \p \< c'  c'\! \nDecrescTweak \> c' \break
+ c'\ff \flaredDecresc \> c' c' c'
+ c' \p \flaredCresc \< c' c' \flaredDecresc \> c'
+ c' \p \flaredCresc \< c'  c'\! \flaredDecresc \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c' \f  \nDecrescTweak \> c' c' c'\o \nCrescTweak #-1 \<
+ c' \f  \flaredDecresc \> c' c' c'\o \flaredCresc #-1 \<
  c' c' c' c' \break c'\! \bar"."
 }
-
 \end{Verbatim}
 \subsection{Discussion}
 
@@ -2040,19 +2045,23 @@ This version implements hairpins with flares that are curved. Initially Santiago
 
 \subsection{Grammar}
 \begin{verbatim}
-\override Hairpin.stencil = #flared-hairpin-curvy
 \override Hairpin.to-barline = ##f OR ##t
-\override Hairpin.after-line-breaking = ##t OR ##g
+\override Hairpin.after-line-breaking = ##t OR ##f
+
+NOTE \DYNAMIC \flaredCrescCurvy \< NOTE(S) \DYNAMIC OR \!
+
+NOTE \DYNAMIC \flaredDecrescCurvy \> NOTE(S) \DYNAMIC OR \!
 \end{verbatim}
 
-If you wish to use circled tips, instead of using \verb|\override Hairpin.circled-tip = ##t|, do:
+If you wish to use circled tips, instead of using \verb|\override Hairpin.circled-tip = ##t|, write:
 
 \begin{verbatim}
-NOTE \o \nCrescTweak \< NOTE(S) \DYNAMIC OR \! \nDecrescTweak \> NOTE(S) \o
+NOTE \o \flaredCrescCurvy \< NOTE(S) \DYNAMIC OR \! \flaredDecrescCurvy \> NOTE(S) \o
 \end{verbatim}
 
+Considering that flared hairpins are often used in tandem with ordinary hairpins, I have embedded \verb|\tweak Hairpin.stencil = #flared-hairpin-curvy| in \verb|\flaredCrescCurvy| and \verb|\flaredDecrescCurvy|. Therefore, it is not necessary to write an \verb|\override| command to change the stencil used.
 
-\textcolor{red}{Update: December 23-24, 2025 } \verb|\nCrescTweak| and \verb|\nDecrescTweak| accepts a number as an optional argument. This functionality has been added to allow the adjustment of flaring end of the hairpin, as well as the horizontal placement of the small piece of the arrival hairpin when \verb|\override to-barline| is set \verb|##f|. While I have striven to set the default setting in such a way that these micro-adjustments are not necessary, it seemed helpful to add this functionality when further refinement is needed. Think of this as an \verb|X-offset| for the arrival point. See \textbf{Code}. 
+\textcolor{red}{Update: December 23-24, 2025 } \verb|\flaredCresc| and \verb|\flaredDecresc| accepts a number as an optional argument. This functionality has been added to allow the adjustment of flaring end of the hairpin, as well as the horizontal placement of the small piece of the arrival hairpin when \verb|\override to-barline| is set \verb|##f|. While I have striven to set the default setting in such a way that these micro-adjustments are not necessary, it seemed helpful to add this functionality when further refinement is needed. Think of this as an \verb|X-offset| for the arrival point. See \textbf{Code}. 
 
 
 \subsection{Code}
@@ -2644,83 +2653,84 @@ taken from output-lib.scm, and was revised to suit the need.
                          #:musicglyph "scripts.flageolet"
                          ))
               ))
-nCrescTweak =
-#(define-music-function (num dyn) ((number? 0) ly:event? )
-  (let* ((hOffset num))
-
-   #{ \tweak Hairpin.shorten-pair
-      #(lambda (grob)
-        (let* (
-               ;; have we been split?
-               (orig (ly:grob-original grob))
-
-               ;; if yes, get the split pieces (our siblings)
-               (siblings (if (ly:grob? orig)
-                             (ly:spanner-broken-into orig)
-                             '())))
-
-         (cond
-          ((= (length siblings) 0)
-           (cons -0.6 hOffset)
-           )
-          ((and (>= (length siblings) 1)
-                (eq? (car siblings) grob)
-                )
-           (cons -0.6 0))
-          )
-
-
-
-         )
-        )
-      \tweak Hairpin.after-line-breaking
-      #(lambda (grob)
-        (let* (
-               ;; have we been split?
-               (orig (ly:grob-original grob))
-
-               ;; if yes, get the split pieces (our siblings)
-               (siblings (if (ly:grob? orig)
-                             (ly:spanner-broken-into orig)
-                             '()))
-               (toBarline? (ly:grob-property grob 'to-barline))
-
-               )
-
-         (cond  ((< (length siblings) 2)
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons -0.6 (* hOffset -1)))
-
-                 )
-
-                ((and (>= (length siblings) 2)
-                      (eq? (car (last-pair siblings)) grob)
-                      toBarline? )
-
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons 0 (- -0.6 hOffset)))
-
-
-                 )
-                ((and (>= (length siblings) 2)
-                      (eq? (car (last-pair siblings)) grob)
-                      (not toBarline?) )
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
-
-                 )
-                )
-
-         )
-        ) #dyn  #}))
-
-nDecrescTweak =
+flaredCrescCurvy =
 #(define-music-function (num dyn) ((number? 0) ly:event? )
   (let* ((hOffset num))
    #{
+    \tweak Hairpin.stencil #flared-hairpin-curvy
+    \tweak Hairpin.shorten-pair
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((= (length siblings) 0)
+         (cons -0.6 hOffset)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+
+
+
+       )
+      )
+    \tweak Hairpin.after-line-breaking
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+             )
+
+       (cond  ((< (length siblings) 2)
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons -0.6 (* hOffset -1)))
+
+               )
+
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    toBarline? )
+
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons 0 (- -0.6 hOffset)))
+
+
+               )
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    (not toBarline?) )
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+               )
+              )
+
+       )
+      ) #dyn  #}))
+
+flaredDecrescCurvy =
+#(define-music-function (num dyn) ((number? 0) ly:event? )
+  (let* ((hOffset num))
+   #{
+    \tweak Hairpin.stencil #flared-hairpin-curvy
     \tweak Hairpin.shorten-pair
     #(lambda (grob)
       (let* (
@@ -2811,18 +2821,18 @@ nDecrescTweak =
 
 {
  \override Hairpin.height = #0.5
- \override Hairpin.stencil = #flared-hairpin-curvy
+ % \override Hairpin.stencil = #flared-hairpin-curvy
  \override Hairpin.to-barline = ##f
  \override Hairpin.after-line-breaking = ##f
 
- c' \fff \nCrescTweak #0.25 \< c' c' c' \o \nDecrescTweak #0 \>
- c' c'\o\nCrescTweak #-0.6  \< c' c' \break
+ c' \fff \flaredCrescCurvy #0.25 \< c' c' c' \o \flaredDecrescCurvy #0 \>
+ c' c'\o\flaredCrescCurvy #-0.6  \< c' c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c'\ff \nDecrescTweak \> c' c' c'
- c' \p \nCrescTweak \< c' c' \nDecrescTweak \> c'
- c' \p \< c'  c'\! \nDecrescTweak \> c' \break
+ c'\ff \flaredDecrescCurvy \> c' c' c'
+ c' \p \flaredCrescCurvy \< c' c' \flaredDecrescCurvy \> c'
+ c' \p \flaredCrescCurvy \< c'  c'\! \flaredDecrescCurvy \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c' \f  \nDecrescTweak \> c' c' c'\o \nCrescTweak #-1 \<
+ c' \f  \flaredDecrescCurvy \> c' c' c'\o \flaredCrescCurvy #-1 \<
  c' c' c' c' \break c'\! \bar"."
 }
 \end{Verbatim}

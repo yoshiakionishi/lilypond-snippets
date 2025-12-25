@@ -572,83 +572,84 @@ taken from output-lib.scm, and was revised to suit the need.
                          ))
               ))
 
-nCrescTweak =
-#(define-music-function (num dyn) ((number? 0) ly:event? )
-  (let* ((hOffset num))
-
-   #{ \tweak Hairpin.shorten-pair
-      #(lambda (grob)
-        (let* (
-               ;; have we been split?
-               (orig (ly:grob-original grob))
-
-               ;; if yes, get the split pieces (our siblings)
-               (siblings (if (ly:grob? orig)
-                             (ly:spanner-broken-into orig)
-                             '())))
-
-         (cond
-          ((= (length siblings) 0)
-           (cons -0.6 hOffset)
-           )
-          ((and (>= (length siblings) 1)
-                (eq? (car siblings) grob)
-                )
-           (cons -0.6 0))
-          )
-
-
-
-         )
-        )
-      \tweak Hairpin.after-line-breaking
-      #(lambda (grob)
-        (let* (
-               ;; have we been split?
-               (orig (ly:grob-original grob))
-
-               ;; if yes, get the split pieces (our siblings)
-               (siblings (if (ly:grob? orig)
-                             (ly:spanner-broken-into orig)
-                             '()))
-               (toBarline? (ly:grob-property grob 'to-barline))
-
-               )
-
-         (cond  ((< (length siblings) 2)
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons -0.6 (* hOffset -1)))
-
-                 )
-
-                ((and (>= (length siblings) 2)
-                      (eq? (car (last-pair siblings)) grob)
-                      toBarline? )
-
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons 0 (- -0.6 hOffset)))
-
-
-                 )
-                ((and (>= (length siblings) 2)
-                      (eq? (car (last-pair siblings)) grob)
-                      (not toBarline?) )
-                 (ly:grob-set-property!
-                  grob 'shorten-pair
-                  (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
-
-                 )
-                )
-
-         )
-        ) #dyn  #}))
-
-nDecrescTweak =
+flaredCresc =
 #(define-music-function (num dyn) ((number? 0) ly:event? )
   (let* ((hOffset num))
    #{
+    \tweak Hairpin.stencil #flared-hairpin-new
+    \tweak Hairpin.shorten-pair
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((= (length siblings) 0)
+         (cons -0.6 hOffset)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+
+
+
+       )
+      )
+    \tweak Hairpin.after-line-breaking
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+             )
+
+       (cond  ((< (length siblings) 2)
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons -0.6 (* hOffset -1)))
+
+               )
+
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    toBarline? )
+
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons 0 (- -0.6 hOffset)))
+
+
+               )
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    (not toBarline?) )
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+               )
+              )
+
+       )
+      ) #dyn  #}))
+
+flaredDecresc =
+#(define-music-function (num dyn) ((number? 0) ly:event? )
+  (let* ((hOffset num))
+   #{
+    \tweak Hairpin.stencil #flared-hairpin-new
     \tweak Hairpin.shorten-pair
     #(lambda (grob)
       (let* (
@@ -739,17 +740,17 @@ nDecrescTweak =
 
 {
  \override Hairpin.height = #0.5
- \override Hairpin.stencil = #flared-hairpin-new
+ % \override Hairpin.stencil = #flared-hairpin-new
  \override Hairpin.to-barline = ##f
  \override Hairpin.after-line-breaking = ##f
 
- c' \fff \nCrescTweak \< c' c' c' \o \nDecrescTweak #-0.25 \>
- c' c'\o\nCrescTweak #-0.6  \< c' c' \break
+ c' \fff \flaredCresc \< c' c' c' \o \flaredDecresc #-0.25 \>
+ c' c'\o\flaredCresc #-0.6  \< c' c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c'\ff \nDecrescTweak \> c' c' c'
- c' \p \nCrescTweak \< c' c' \nDecrescTweak \> c'
- c' \p \< c'  c'\! \nDecrescTweak \> c' \break
+ c'\ff \flaredDecresc \> c' c' c'
+ c' \p \flaredCresc \< c' c' \flaredDecresc \> c'
+ c' \p \flaredCresc \< c'  c'\! \flaredDecresc \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
- c' \f  \nDecrescTweak \> c' c' c'\o \nCrescTweak #-1 \<
+ c' \f  \flaredDecresc \> c' c' c'\o \flaredCresc #-1 \<
  c' c' c' c' \break c'\! \bar"."
 }
