@@ -1219,7 +1219,7 @@ For the purpose of using it in my own musical typesetting, this constante hairpi
 
 \subsection{Description}
 
-\textcolor{red}{\textbf{NB: }Significantly updated on December 23 and 24, 2025}
+\textcolor{red}{\textbf{NB: }Significantly updated on December 23 and 24, 2025, with new commands being added on January 15 2026.}
 
 (See \hyperref[sec:enhanced_flared_hairpins_2]{\textbf{Enhanced Flared Hairpins II}} for the flared hairpins with curved flares.)
 
@@ -1255,9 +1255,20 @@ If you wish to use circled tips, instead of using \verb|\override Hairpin.circle
 NOTE \o \flaredCresc \< NOTE(S) \DYNAMIC OR \! \flaredDecresc \> NOTE(S) \o
 \end{verbatim}
 
+\textcolor{red}{Update: January 15, 2026 } If you are using the flared crescendo/diminuendo to a note that also has \verb|\after|, use:
+
+\begin{verbatim}
+\flaredCrescOverride NOTE \DYNAMIC \< 
+\flaredDecrescOverride NOTE \DYNAMIC \>
+\end{verbatim}
+
 Considering that flared hairpins are often used in tandem with ordinary hairpins, I have embedded \verb|\tweak Hairpin.stencil = #flared-hairpin-new| in \verb|\flaredCresc| and \verb|\flaredDecresc|. Therefore, it is not necessary to write an \verb|\override| command to change the stencil used.
 
 \textcolor{red}{Update: December 23-24, 2025 } \verb|\flaredCresc| and \verb|\flaredDecresc| accepts a number as an optional argument. This functionality has been added to allow the adjustment of flaring end of the hairpin, as well as the horizontal placement of the small piece of the arrival hairpin when \verb|\override to-barline| is set \verb|##f|. While I have striven to set the default setting in such a way that these micro-adjustments are not necessary, it seemed helpful to add this functionality when further refinement is needed. Think of this as an \verb|X-offset| for the arrival point. See \textbf{Code}. 
+
+
+\textcolor{red}{Update: January 15, 2026 } I have discovered that \verb|\flaredCresc| and \verb|\flaredDecresc| do not work when it is applied to a note that also has \verb|\after| preceding it, e.g. when the hairpin is terminated within the given note. In order to make such a case work, I have created additional commands \verb|\flaredCrescOverride| and  \verb|\flaredDecrescOverride|, which use \verb|\once \override| commands instead of \verb|\tweak|. These commands also accept an optional argument that behaves like \verb|X-offset|. 
+
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
@@ -1908,6 +1919,79 @@ flaredCresc =
        )
       ) #dyn  #}))
 
+flaredCrescOverride =
+#(define-music-function (num mus) ((number? 0) ly:music? )
+  (let* ((hOffset num))
+   #{
+    \once \override Hairpin.stencil = #flared-hairpin-new
+    \once \override Hairpin.shorten-pair =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((= (length siblings) 0)
+         (cons -0.6 hOffset)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+
+
+
+       )
+      )
+    \once \override  Hairpin.after-line-breaking =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+             )
+
+       (cond  ((< (length siblings) 2)
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons -0.6 (* hOffset -1)))
+
+               )
+
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    toBarline? )
+
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons 0 (- -0.6 hOffset)))
+
+
+               )
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    (not toBarline?) )
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+               )
+              )
+
+       )
+      ) #mus  #}))
+
 flaredDecresc =
 #(define-music-function (num dyn) ((number? 0) ly:event? )
   (let* ((hOffset num))
@@ -1993,10 +2077,95 @@ flaredDecresc =
        )
       ) #dyn #}))
 
+flaredDecrescOverride =
+#(define-music-function (num mus) ((number? 0) ly:music? )
+  (let* ((hOffset num))
+   #{
+    \once \override Hairpin.stencil = #flared-hairpin-new
+    \once \override  Hairpin.shorten-pair =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+
+             )
+
+       (cond
+        ((and (zero? (length siblings)) (not toBarline?))
+         (cons hOffset -0.6)
+         )
+        ((and (zero? (length siblings)) toBarline?)
+         (cons hOffset -0.6)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+       )
+      )
+    \once \override  Hairpin.after-line-breaking =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((and (>= (length siblings) 1)
+              (eq? (car (last-pair siblings)) grob))
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+
+        ((zero? (length siblings)  )
+         #f
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              toBarline? )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons 0 (- -0.6 hOffset)))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car siblings) grob)
+              )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons   0 0))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              (not toBarline?) )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+        )
+
+
+       )
+      ) #mus #}))
+
 \layout {
  indent = #0
  line-width = #100
- ragged-last = ##t
+ ragged-last = ##f
 }
 
 
@@ -2015,7 +2184,10 @@ flaredDecresc =
  c' \p \flaredCresc \< c'  c'\! \flaredDecresc \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
  c' \f  \flaredDecresc \> c' c' c'\o \flaredCresc #-1 \<
- c' c' c' c' \break c'\! \bar"."
+ c' c' c' c' \break c'\! s4 s4 s4 \bar"."
+ \once \override Hairpin.extra-offset = #'(1.5 . 0)
+ \flaredCrescOverride #1.5 \after 2. \f c'1 \<
+ \flaredDecrescOverride #1 \after 2. \p c'1  \> \bar"."
 }
 \end{Verbatim}
 \subsection{Discussion}
@@ -2037,7 +2209,7 @@ flaredDecresc =
 
 \subsection{Description}
 
-\textcolor{red}{\textbf{NB: }Significantly updated on December 23, 2025 and cosmetic alteration undertaken on December 24, 2025.}
+\textcolor{red}{\textbf{NB: }Significantly updated on December 23, 2025 and cosmetic alteration undertaken on December 24, 2025, as well as new commands being added on January 15 2026.}
 
 See \hyperref[sec:enhanced_flared_hairpins_1]{\textbf{Enhanced Flared Hairpins I}} for the flared hairpins similar to \href{https://lilypond.org/doc/v2.24/Documentation/snippets/expressive-marks#expressive-marks-printing-hairpins-in-various-styles}{\textbf{LilyPond's default flared hairpins.}}
 
@@ -2059,10 +2231,18 @@ If you wish to use circled tips, instead of using \verb|\override Hairpin.circle
 NOTE \o \flaredCrescCurvy \< NOTE(S) \DYNAMIC OR \! \flaredDecrescCurvy \> NOTE(S) \o
 \end{verbatim}
 
+\textcolor{red}{Update: January 15, 2026 } If you are using the flared crescendo/diminuendo to a note that also has \verb|\after|, use:
+\begin{verbatim}
+\flaredCrescCurvyOverride NOTE \DYNAMIC \< 
+\flaredDecrescCurvyOverride NOTE \DYNAMIC \>
+\end{verbatim}
+
 Considering that flared hairpins are often used in tandem with ordinary hairpins, I have embedded \verb|\tweak Hairpin.stencil = #flared-hairpin-curvy| in \verb|\flaredCrescCurvy| and \verb|\flaredDecrescCurvy|. Therefore, it is not necessary to write an \verb|\override| command to change the stencil used.
 
 \textcolor{red}{Update: December 23-24, 2025 } \verb|\flaredCresc| and \verb|\flaredDecresc| accepts a number as an optional argument. This functionality has been added to allow the adjustment of flaring end of the hairpin, as well as the horizontal placement of the small piece of the arrival hairpin when \verb|\override to-barline| is set \verb|##f|. While I have striven to set the default setting in such a way that these micro-adjustments are not necessary, it seemed helpful to add this functionality when further refinement is needed. Think of this as an \verb|X-offset| for the arrival point. See \textbf{Code}. 
 
+
+\textcolor{red}{Update: January 15, 2026 } I have discovered that \verb|\flaredCrescCurvy| and \verb|\flaredDecrescCurvy| do not work when it is applied to a note that also has \verb|\after| preceding it, e.g. when the hairpin is terminated within the given note. In order to make such a case work, I have created additional commands \verb|\flaredCrescCurvyOverride| and  \verb|\flaredDecrescCurvyOverride|, which use \verb|\once \override| commands instead of \verb|\tweak|. These commands also accept an optional argument that behaves like \verb|X-offset|.
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
@@ -2818,7 +2998,164 @@ flaredDecrescCurvy =
 }
 
 
+flaredCrescCurvyOverride =
+#(define-music-function (num mus) ((number? 0) ly:music? )
+  (let* ((hOffset num))
+   #{
+    \once \override Hairpin.stencil = #flared-hairpin-curvy
+    \once \override Hairpin.shorten-pair =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
 
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+       (cond
+        ((= (length siblings) 0)
+         (cons -0.6 hOffset)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+       )
+      )
+    \once \override Hairpin.after-line-breaking =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+             )
+
+       (cond  ((< (length siblings) 2)
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons -0.6 (* hOffset -1)))
+
+               )
+
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    toBarline? )
+
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons 0 (- -0.6 hOffset)))
+
+
+               )
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    (not toBarline?) )
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+               )
+              )
+
+       )
+      ) #mus  #}))
+
+
+
+flaredDecrescCurvyOverride =
+#(define-music-function (num mus) ((number? 0) ly:music? )
+  (let* ((hOffset num))
+   #{
+    \once \override Hairpin.stencil = #flared-hairpin-curvy
+    \once \override Hairpin.shorten-pair =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+
+             )
+
+       (cond
+        ((and (zero? (length siblings)) (not toBarline?))
+         (cons hOffset -0.6)
+         )
+        ((and (zero? (length siblings)) toBarline?)
+         (cons hOffset -0.6)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+       )
+      )
+    \once \override Hairpin.after-line-breaking =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((and (>= (length siblings) 1)
+              (eq? (car (last-pair siblings)) grob))
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+
+        ((zero? (length siblings)  )
+         #f
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              toBarline? )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons 0 (- -0.6 hOffset)))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car siblings) grob)
+              )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons   0 0))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              (not toBarline?) )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+        )
+
+
+       )
+      ) #mus #}))
+\layout {
+ragged-last = ##f
+}
 {
  \override Hairpin.height = #0.5
  % \override Hairpin.stencil = #flared-hairpin-curvy
@@ -2833,7 +3170,10 @@ flaredDecrescCurvy =
  c' \p \flaredCrescCurvy \< c'  c'\! \flaredDecrescCurvy \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
  c' \f  \flaredDecrescCurvy \> c' c' c'\o \flaredCrescCurvy #-1 \<
- c' c' c' c' \break c'\! \bar"."
+ c' c' c' c' \break c'\! s4 s4 s4  \bar "."
+  \once \override Hairpin.extra-offset = #'(1.5 . 0)
+ \flaredCrescCurvyOverride #1.5 \after 2. \f c'1 \< 
+ \flaredDecrescCurvyOverride #1 \after 2. \f c'1 \> \bar"."
 }
 \end{Verbatim}
 \subsection{Discussion}

@@ -750,7 +750,164 @@ flaredDecrescCurvy =
 }
 
 
+flaredCrescCurvyOverride =
+#(define-music-function (num mus) ((number? 0) ly:music? )
+  (let* ((hOffset num))
+   #{
+    \once \override Hairpin.stencil = #flared-hairpin-curvy
+    \once \override Hairpin.shorten-pair =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
 
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+       (cond
+        ((= (length siblings) 0)
+         (cons -0.6 hOffset)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+       )
+      )
+    \once \override Hairpin.after-line-breaking =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+             )
+
+       (cond  ((< (length siblings) 2)
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons -0.6 (* hOffset -1)))
+
+               )
+
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    toBarline? )
+
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons 0 (- -0.6 hOffset)))
+
+
+               )
+              ((and (>= (length siblings) 2)
+                    (eq? (car (last-pair siblings)) grob)
+                    (not toBarline?) )
+               (ly:grob-set-property!
+                grob 'shorten-pair
+                (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+
+               )
+              )
+
+       )
+      ) #mus  #}))
+
+
+
+flaredDecrescCurvyOverride =
+#(define-music-function (num mus) ((number? 0) ly:music? )
+  (let* ((hOffset num))
+   #{
+    \once \override Hairpin.stencil = #flared-hairpin-curvy
+    \once \override Hairpin.shorten-pair =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '()))
+             (toBarline? (ly:grob-property grob 'to-barline))
+
+             )
+
+       (cond
+        ((and (zero? (length siblings)) (not toBarline?))
+         (cons hOffset -0.6)
+         )
+        ((and (zero? (length siblings)) toBarline?)
+         (cons hOffset -0.6)
+         )
+        ((and (>= (length siblings) 1)
+              (eq? (car siblings) grob)
+              )
+         (cons -0.6 0))
+        )
+       )
+      )
+    \once \override Hairpin.after-line-breaking =
+    #(lambda (grob)
+      (let* (
+             ;; have we been split?
+             (orig (ly:grob-original grob))
+
+             ;; if yes, get the split pieces (our siblings)
+             (siblings (if (ly:grob? orig)
+                           (ly:spanner-broken-into orig)
+                           '())))
+
+       (cond
+        ((and (>= (length siblings) 1)
+              (eq? (car (last-pair siblings)) grob))
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+
+        ((zero? (length siblings)  )
+         #f
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              toBarline? )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons 0 (- -0.6 hOffset)))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car siblings) grob)
+              )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons   0 0))
+         )
+
+        ((and (>= (length siblings) 2)
+              (eq? (car (last-pair siblings)) grob)
+              (not toBarline?) )
+         (ly:grob-set-property!
+          grob 'shorten-pair
+          (cons  (+ -0.6 hOffset) (- -0.6 hOffset)))
+         )
+        )
+
+
+       )
+      ) #mus #}))
+\layout {
+ragged-last = ##f
+}
 {
  \override Hairpin.height = #0.5
  % \override Hairpin.stencil = #flared-hairpin-curvy
@@ -765,5 +922,8 @@ flaredDecrescCurvy =
  c' \p \flaredCrescCurvy \< c'  c'\! \flaredDecrescCurvy \> c' \break
  \repeat unfold 3  {c' c' c' c'} \break
  c' \f  \flaredDecrescCurvy \> c' c' c'\o \flaredCrescCurvy #-1 \<
- c' c' c' c' \break c'\! \bar"."
+ c' c' c' c' \break c'\! s4 s4 s4  \bar "."
+  \once \override Hairpin.extra-offset = #'(1.5 . 0)
+ \flaredCrescCurvyOverride #1.5 \after 2. \f c'1 \< 
+ \flaredDecrescCurvyOverride #1 \after 2. \f c'1 \> \bar"."
 }
