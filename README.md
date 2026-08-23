@@ -19,6 +19,11 @@ You may download the most recent version of the [[**PDF file housing all the sni
 You may explore the [[DOCUMENT](DOCUMENT/)] folder where you may build the LaTeX code to build the PDF file yourself. Within the folder you will also find individual snippets as separate files. 
 
 =================================
+## LilyPond Version 
+
+Currently, I use 2.26.0 to build these snippets. Cookbooks built with old versions of LilyPond are found in the folder [[Old Versions](Old Versions/)] 
+
+=================================
 ## License
 
 The document as well as included codes are available under the MIT License. Read [[LICENSE](https://github.com/yoshiakionishi/lilypond-snippets/blob/main/LICENSE)] for details.
