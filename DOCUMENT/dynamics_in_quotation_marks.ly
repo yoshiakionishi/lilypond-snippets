@@ -1,4 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 qmp = #(make-dynamic-script
         (markup
@@ -98,6 +99,6 @@ qfff = #(make-dynamic-script
 
 \layout {
  \context {
-  \Score    proportionalNotationDuration = #(ly:make-moment 1/9)
+  \Score    proportionalNotationDuration = #1/9
  }
 }

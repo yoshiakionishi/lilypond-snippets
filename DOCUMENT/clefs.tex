@@ -5,6 +5,159 @@
 
 \chapter {Clefs}
 
+\label{sec:pianoStringsClef}
+\section {Piano Strings Clef}
+\hfill
+\lilypondfile[staffsize=24,hpadding=4,voffset=4pt]{/pianoStringsClef.ly}
+\hfill
+
+\subsection{Description}
+In tandem with the customized staff lines, this clef indicates the position(s) of the piano strings to be manipulated by hand inside the piano. The clef shows two piano strings with grooves (intended for low piano strings), as well as their dampers, indicated by the filled rectangles. 
+
+
+\subsection{Grammar}
+\begin{verbatim}
+\stopStaff
+\pianoStringMutingChartClefStaff
+\startStaff
+...
+\stopStaff
+\pianoStaffRevert
+\startStaff
+\end{verbatim}
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
+
+pianoStrings = #(ly:make-stencil (list
+                                  'embedded-ps
+                                  "gsave
+
+/groove {
+0.1 setlinewidth
+0 0 0.5 -0.125 0 -0.25 rcurveto
+closepath
+fill
+} def
+
+/reversegroove {
+0.1 setlinewidth
+0 0 -0.5 -0.125 0 -0.25 rcurveto
+closepath
+fill
+
+} def
+
+/stringshape {
+currentpoint translate
+newpath
+0.15 setlinewidth
+0.5 5 moveto
+0 -10.5 rlineto
+stroke
+
+
+5 -0.25 -5.25 { /i exch def
+newpath
+0.5 i moveto 
+groove } for
+
+5 -0.25 -5.25 { /i exch def
+newpath
+0.5 i moveto
+reversegroove
+ } for
+
+newpath
+0 3 translate
+0 -5 moveto
+0	-2.5 rlineto
+1 0 rlineto
+0 2.5 rlineto
+closepath 
+fill
+} def
+
+stringshape
+0 0 moveto
+1.25 -3 rmoveto
+stringshape
+
+
+
+grestore
+")
+                                 (cons 2 0)
+                                 (cons 7.5 -7.5))
+
+clefSpace = #(ly:make-stencil "" (cons -0 0 ) (cons 0 3) )
+
+pianoStringMutingChartClefDesign =
+#(ly:stencil-add
+  (ly:stencil-translate pianoStrings (cons 0 0))
+  (ly:stencil-translate clefSpace (cons 2 0))
+  (ly:stencil-translate clefSpace (cons 0 -5)
+                        ;adjust the numbers for second 'space' to
+                        ;vertically adjust the alignment
+                        )
+  )
+
+
+
+
+pianoStringMutingChartClefStaff = {
+ \override Staff.Clef.stencil = \pianoStringMutingChartClefDesign
+ \override Staff.StaffSymbol.line-positions = #'(6 0  -6)
+ % \override Staff.Clef.show-horizontal-skylines = ##t
+ % \override Staff.Clef.show-vertical-skylines = ##t
+ \override Staff.NoteHead.no-ledgers = ##t
+}
+
+pianoStaffRevert = {
+ \revert Staff.Clef.stencil
+ \revert Staff.StaffSymbol.line-positions
+ % \override Staff.Clef.show-horizontal-skylines = ##t
+ % \override Staff.Clef.show-vertical-skylines = ##t
+ \revert Staff.NoteHead.no-ledgers
+}
+
+
+
+\new Staff {
+
+ \stopStaff
+ \pianoStringMutingChartClefStaff
+ \startStaff
+ s1
+
+}
+
+
+
+\new PianoStaff <<
+ \new Staff {
+  \stopStaff
+  \pianoStringMutingChartClefStaff
+  \startStaff
+  s1
+ }
+ \new Staff {
+  \clef "F" s1
+ }
+>>
+
+\end{Verbatim}
+
+
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
+
 \label{sec:stringPositionClef}
 \section {String Position Clef}
 \hfill
@@ -20,8 +173,12 @@ String position clef to indicate bowing position. See Discussion for the associa
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-stringPositionClefDesign = #(ly:make-stencil (list 'embedded-ps
-"gsave
+\version "2.26.0"
+
+\pointAndClickOff
+stringPositionClefDesign =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -96,31 +253,39 @@ newpath
 1.5 -3.5 0.85 0 360 arc
 stroke
 grestore")
-	(cons 0 3)
-	(cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClefSize =
 #(lambda (grob)
-   (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
-          (mult (magstep sPCS)))
-     (ly:stencil-scale
-      stringPositionClef
-      mult mult)))
+  (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
+         (mult (magstep sPCS)))
+   (ly:stencil-scale
+    stringPositionClef
+    mult mult)))
 
 stringPositionClef = {
-  \override Staff.Clef.stencil = \stringPositionClefDesign
+ \override Staff.Clef.stencil = \stringPositionClefDesign
 }
 
 normalClef = {
-  \revert Staff.Clef.stencil
+ \revert Staff.Clef.stencil
 }
 
 {
-  \override Staff.StaffSymbol.line-positions = #'(6  -6)
-  \override Staff.LedgerLineSpanner.stencil = ##f
-  \override Staff.TimeSignature.stencil = ##f
-  \override Staff.BarLine.stencil = ##f
-  \stringPositionClef c'4 e' g' b' d'' f'' a''
+ \override Staff.StaffSymbol.line-positions = #'(6  -6)
+ \override Staff.LedgerLineSpanner.stencil = ##f
+ \override Staff.TimeSignature.stencil = ##f
+ \override Staff.BarLine.stencil = ##f
+ \stringPositionClef c'4^\markup {
+  \translate #'(-3 . 2)
+  \musicglyph "space"
+ }
+ _\markup {
+  \translate #'(-3 . -3)
+  \musicglyph "space"
+ }
+ e' g' b' d'' f'' a''
 }
 \end{Verbatim}
 
@@ -168,11 +333,13 @@ This is a revised version of the \hyperref[sec:stringPositionClef]{String Positi
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
 
-% revision june 24 2025
+% revision june 16 2026
 
-stringPositionClefDesignRev = #(ly:make-stencil (list 'embedded-ps
-                                                      "gsave
+stringPositionClefDesignRev =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -266,19 +433,14 @@ newpath
 stroke
 
 grestore")
-                                                (cons 0 3)
-                                                (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
-strPosClefSize =
-#(lambda (grob)
-  (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
-         (mult (magstep sPCS)))
-   (ly:stencil-scale
-    strPosClef
-    mult mult)))
+
 
 stringPositionClefDesignRev = {
- \override Staff.Clef.stencil = \stringPositionClefDesignRev
+ \override Staff.Clef.stencil =
+ \stringPositionClefDesignRev
 }
 
 normalClef = {
@@ -290,7 +452,15 @@ normalClef = {
  \override Staff.LedgerLineSpanner.stencil = ##f
  \override Staff.TimeSignature.stencil = ##f
  \override Staff.BarLine.stencil = ##f
- \stringPositionClefDesignRev c'4 e' g' b' d'' f'' a''
+ \stringPositionClefDesignRev c'4^\markup {
+  \translate #'(-3 . 2)
+  \musicglyph "space"
+ }
+ _\markup {
+  \translate #'(-3 . -3)
+  \musicglyph "space"
+ }
+ e' g' b' d'' f'' a''
 }
 \end{Verbatim}
 
@@ -316,10 +486,12 @@ String position clef to indicate bowing position, but this one provides more spa
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
-stringPositionClefDesign_two = #(ly:make-stencil (list 'embedded-ps
-                                                       "gsave
+\pointAndClickOff
+stringPositionClefDesign_two =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -367,11 +539,12 @@ newpath
 stroke
 
 grestore")
-	(cons 0 3)
-	(cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClef_two = {
- \override Staff.Clef.stencil = \stringPositionClefDesign_two
+ \override Staff.Clef.stencil =
+ \stringPositionClefDesign_two
 }
 
 normalClef = {
@@ -425,9 +598,11 @@ In contrast to the two types of String Position Clefs introduced earlier, this c
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
 
-stringPositionClef_three_Design = #(ly:make-stencil (list 'embedded-ps
-                                                          "gsave
+stringPositionClef_three_Design =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -524,8 +699,8 @@ stroke
 grestore
 
 ")
-                                                    (cons 0 3)
-                                                    (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClefSize =
 #(lambda (grob)
@@ -536,14 +711,25 @@ stringPositionClefSize =
     mult mult)))
 
 stringPositionClef_three = {
- \override Staff.Clef.stencil = \stringPositionClef_three_Design
+ \override Staff.Clef.stencil =
+ \stringPositionClef_three_Design
 }
 
 {
  \override Staff.StaffSymbol.line-positions = #'(4 0  -4)
  \stringPositionClef_three
- c'4 e' g' b' d'' f'' a''
+ c'4^\markup {
+  \translate #'(-3 . 2)
+  \musicglyph "space"
+ }
+ _\markup {
+  \translate #'(-3 . -3)
+  \musicglyph "space"
+ }
+ e' g' b' d'' f'' a''
 }
+
+
 \end{Verbatim}
 
 \subsection{Discussion}
@@ -591,9 +777,11 @@ The design of this clef is similar to \hyperref[sec:StringPositionClef3a]{String
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
 
-stringPositionClef_three_longer_Design = #(ly:make-stencil (list 'embedded-ps
-                                                          "gsave
+stringPositionClef_three_longer_Design =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -672,7 +860,7 @@ stroke
 -0 -0  -0.65 0.75 -1.55 0  rcurveto
 closepath
 stroke
-
+%{
 %%% mute sign; commentify if not needed %%%
 newpath
 0.2 setlinewidth
@@ -686,12 +874,12 @@ newpath
 1.5 -4.5 0.85 0 360 arc
 stroke
 %%% end of mute sign for commenting/uncommenting %%%
-
+%}
 grestore
 
 ")
-                                                    (cons 0 3)
-                                                    (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClefSize =
 #(lambda (grob)
@@ -702,14 +890,25 @@ stringPositionClefSize =
     mult mult)))
 
 stringPositionClef_three_longer = {
- \override Staff.Clef.stencil = \stringPositionClef_three_longer_Design
+ \override Staff.Clef.stencil =
+ \stringPositionClef_three_longer_Design
 }
 
 {
  \override Staff.StaffSymbol.line-positions = #'(6 0  -6)
  \stringPositionClef_three_longer
- c'4 e' g' b' d'' f'' a''
+ c'4^\markup {
+  \translate #'(-3 . 2)
+  \musicglyph "space"
+ }
+ _\markup {
+  \translate #'(-3 . -3)
+  \musicglyph "space"
+ }
+ e' g' b' d'' f'' a''
 }
+
+
 \end{Verbatim}
 
 \subsection{Discussion}

@@ -1,4 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 % See also: https://lsr.di.unimi.it/LSR/Item?id=516
 % UPDATED June 13 2025
@@ -15,13 +16,13 @@ squareHollowNoteheadDesign =
 
 squareHollowNotehead =
 #(define-music-function (note) (ly:music?)
-   #{\once \override Voice.NoteHead.stencil =
-     \squareHollowNoteheadDesign $note #})
+  #{\once \override Voice.NoteHead.stencil =
+    \squareHollowNoteheadDesign $note #})
 
 squareHollowNoteheadOn =
 #(define-music-function (note) (ly:music?)
-   #{\override Voice.NoteHead.stencil =
-     \squareHollowNoteheadDesign $note #})
+  #{\override Voice.NoteHead.stencil =
+    \squareHollowNoteheadDesign $note #})
 
 squareHollowNoteheadOff = \revert Voice.NoteHead.stencil
 
@@ -40,26 +41,26 @@ squareFilledNoteheadDesign =
 
 squareFilledNotehead =
 #(define-music-function (note) (ly:music?)
-   #{\once \override Voice.NoteHead.stencil =
-     \squareFilledNoteheadDesign $note #})
+  #{\once \override Voice.NoteHead.stencil =
+    \squareFilledNoteheadDesign $note #})
 squareFilledNoteheadOn =
 #(define-music-function (note) (ly:music?)
-   #{\override Voice.NoteHead.stencil =
-     \squareFilledNoteheadDesign $note #})
+  #{\override Voice.NoteHead.stencil =
+    \squareFilledNoteheadDesign $note #})
 
 squareFilledNoteheadOff = \revert Voice.NoteHead.stencil
 
 {
-  \squareHollowNotehead c'8
-  \squareHollowNoteheadOn d' e' f'
-  \squareHollowNoteheadOff
-  \squareFilledNotehead c'8
-  \squareFilledNoteheadOn d' e' f'
-  \squareFilledNoteheadOff
-  \squareHollowNotehead a''8
-  \squareHollowNoteheadOn g'' f'' e''
-  \squareHollowNoteheadOff
-  \squareFilledNotehead a''8
-  \squareFilledNoteheadOn g'' f'' e''
-  \squareFilledNoteheadOff
+ \squareHollowNotehead c'8
+ \squareHollowNoteheadOn d' e' f'
+ \squareHollowNoteheadOff
+ \squareFilledNotehead c'8
+ \squareFilledNoteheadOn d' e' f'
+ \squareFilledNoteheadOff
+ \squareHollowNotehead a''8
+ \squareHollowNoteheadOn g'' f'' e''
+ \squareHollowNoteheadOff
+ \squareFilledNotehead a''8
+ \squareFilledNoteheadOn g'' f'' e''
+ \squareFilledNoteheadOff
 }

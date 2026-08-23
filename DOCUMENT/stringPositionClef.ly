@@ -1,7 +1,9 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
-stringPositionClefDesign = #(ly:make-stencil (list 'embedded-ps
-"gsave
+stringPositionClefDesign =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -76,37 +78,37 @@ newpath
 1.5 -3.5 0.85 0 360 arc
 stroke
 grestore")
-	(cons 0 3)
-	(cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClefSize =
 #(lambda (grob)
-   (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
-          (mult (magstep sPCS)))
-     (ly:stencil-scale
-      stringPositionClef
-      mult mult)))
+  (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
+         (mult (magstep sPCS)))
+   (ly:stencil-scale
+    stringPositionClef
+    mult mult)))
 
 stringPositionClef = {
-  \override Staff.Clef.stencil = \stringPositionClefDesign
+ \override Staff.Clef.stencil = \stringPositionClefDesign
 }
 
 normalClef = {
-  \revert Staff.Clef.stencil
+ \revert Staff.Clef.stencil
 }
 
 {
-  \override Staff.StaffSymbol.line-positions = #'(6  -6)
-  \override Staff.LedgerLineSpanner.stencil = ##f
-  \override Staff.TimeSignature.stencil = ##f
-  \override Staff.BarLine.stencil = ##f
-  \stringPositionClef c'4^\markup {
-    \translate #'(-3 . 2)
-    \musicglyph "space"
-  }
-  _\markup {
-    \translate #'(-3 . -3)
-    \musicglyph "space"
-  }
+ \override Staff.StaffSymbol.line-positions = #'(6  -6)
+ \override Staff.LedgerLineSpanner.stencil = ##f
+ \override Staff.TimeSignature.stencil = ##f
+ \override Staff.BarLine.stencil = ##f
+ \stringPositionClef c'4^\markup {
+  \translate #'(-3 . 2)
+  \musicglyph "space"
+ }
+ _\markup {
+  \translate #'(-3 . -3)
+  \musicglyph "space"
+ }
  e' g' b' d'' f'' a''
 }

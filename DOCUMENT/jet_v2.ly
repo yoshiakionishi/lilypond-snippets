@@ -1,4 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 jet =  #(define-music-function (pitchthing height width) (ly:music? number? number?)
          (define p1 (ly:music-property pitchthing 'pitch))
@@ -50,7 +51,7 @@ grestore
 
  \layout {
   \context {
-   \Score proportionalNotationDuration = #(ly:make-moment 1/10)
+   \Score proportionalNotationDuration = #1/10
    \override SpacingSpanner.uniform-stretching = ##t
   }
  }

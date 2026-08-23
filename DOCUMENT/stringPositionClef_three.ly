@@ -1,7 +1,9 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
-stringPositionClef_three_Design = #(ly:make-stencil (list 'embedded-ps
-                                                          "gsave
+stringPositionClef_three_Design =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -98,8 +100,8 @@ stroke
 grestore
 
 ")
-                                                    (cons 0 3)
-                                                    (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClefSize =
 #(lambda (grob)
@@ -110,7 +112,8 @@ stringPositionClefSize =
     mult mult)))
 
 stringPositionClef_three = {
- \override Staff.Clef.stencil = \stringPositionClef_three_Design
+ \override Staff.Clef.stencil =
+ \stringPositionClef_three_Design
 }
 
 {

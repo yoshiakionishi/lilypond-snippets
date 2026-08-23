@@ -29,8 +29,9 @@ NOTE \qfff
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
+\pointAndClickOff
 qmp = #(make-dynamic-script
         (markup
          #:pad-x -1
@@ -115,22 +116,22 @@ qfff = #(make-dynamic-script
 
 {
 
-  c'4\qppp
-  c'4\qpp
-  c'4\qp
-  c'4\qmp
+ c'4\qppp
+ c'4\qpp
+ c'4\qp
+ c'4\qmp
 
-  c'4\qmf
-  c'4\qf
-  c'4\qff
-  c'4\qfff
+ c'4\qmf
+ c'4\qf
+ c'4\qff
+ c'4\qfff
 
 }
 
 \layout {
-  \context {
-    \Score    proportionalNotationDuration = #(ly:make-moment 1/9)
-  }
+ \context {
+  \Score    proportionalNotationDuration = #1/9
+ }
 }
 \end{Verbatim}
 \subsection{Discussion}
@@ -179,7 +180,7 @@ This \verb|\constante| accepts three optional arguments:
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 
 qf = #(make-dynamic-script
@@ -685,7 +686,8 @@ For the purpose of using it in my own musical typesetting, this constante hairpi
 
 \subsection{Description}
 
-\textcolor{red}{\textbf{NB: } Slight revision (December 23, 2025) has been carried out to make sure the hairpin terminates at the end of the staff line when it breaks out to the next system. }
+\textcolor{red}{\textbf{NB: } Revision (August 19, 2026) has been carried out in modifying where the default parenthesized dynamics will be placed. Before, the parenthesized dynamics with whiteout would be placed on top of the constante line after the line break, but at a position that exposes the beginning part of the constante line. I fixed it so that the dynamics would hide the beginning part of the constante line.  
+- Slight revision (December 23, 2025) has been carried out to make sure the hairpin terminates at the end of the staff line when it breaks out to the next system. }
 
 The motivation for creating an enhancement to the default constante hairpin provided by LilyPond was that it would not allow the hook to be inverted when placed over the staff. 
 
@@ -710,7 +712,7 @@ Furthermore, when using the dynamic \textit{\textbf{p}}, \textbf{\textit{pp}}, e
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 
 qf = #(make-dynamic-script
@@ -760,7 +762,6 @@ taken from output-lib.scm, and was revised to suit the need."
           ;I've left decresc? function but removed all the if clause
           ;associated with it, to simplify the code a little bit
           (verticalOffset vOff)
-          (useCautionary? cautionary)
           (moreOffset moreOff)
           (hairpinHeight (ly:grob-property grob 'height))
           (decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
@@ -1015,7 +1016,7 @@ taken from output-lib.scm, and was revised to suit the need."
                       (grob-interpret-markup
                        grob
                        (markup
-                        #:hspace 2
+                        #:hspace 1.5
                         #:whiteout
                         #:center-align
                         #:concat
@@ -1035,7 +1036,7 @@ taken from output-lib.scm, and was revised to suit the need."
                       (grob-interpret-markup
                        grob
                        (markup
-                        #:hspace 2
+                        #:hspace 1.5
                         #:whiteout
                         #:center-align
                         #:concat
@@ -1272,7 +1273,8 @@ Considering that flared hairpins are often used in tandem with ordinary hairpins
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
+
 
 % similar to the original version
 
@@ -2246,7 +2248,7 @@ Considering that flared hairpins are often used in tandem with ordinary hairpins
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 % curvy version
 
@@ -3154,7 +3156,7 @@ flaredDecrescCurvyOverride =
        )
       ) #mus #}))
 \layout {
-ragged-last = ##f
+ ragged-last = ##f
 }
 {
  \override Hairpin.height = #0.5
@@ -3171,10 +3173,11 @@ ragged-last = ##f
  \repeat unfold 3  {c' c' c' c'} \break
  c' \f  \flaredDecrescCurvy \> c' c' c'\o \flaredCrescCurvy #-1 \<
  c' c' c' c' \break c'\! s4 s4 s4  \bar "."
-  \once \override Hairpin.extra-offset = #'(1.5 . 0)
- \flaredCrescCurvyOverride #1.5 \after 2. \f c'1 \< 
+ \once \override Hairpin.extra-offset = #'(1.5 . 0)
+ \flaredCrescCurvyOverride #1.5 \after 2. \f c'1 \<
  \flaredDecrescCurvyOverride #1 \after 2. \f c'1 \> \bar"."
 }
+
 \end{Verbatim}
 \subsection{Discussion}
 

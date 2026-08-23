@@ -1,4 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 arrowLineOn =
 #(define-music-function (note)(ly:music?)
@@ -136,7 +137,7 @@ arrowLineOff =
 
   \context {
    \Score
-   proportionalNotationDuration = #(ly:make-moment 1/7)
+   proportionalNotationDuration = #1/7
   }
  }
 }

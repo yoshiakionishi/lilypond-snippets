@@ -1,7 +1,9 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
-stringPositionClefDesign_two = #(ly:make-stencil (list 'embedded-ps
-                                                       "gsave
+stringPositionClefDesign_two =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -49,11 +51,12 @@ newpath
 stroke
 
 grestore")
-                                                 (cons 0 3)
-                                                 (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClef_two = {
- \override Staff.Clef.stencil = \stringPositionClefDesign_two
+ \override Staff.Clef.stencil =
+ \stringPositionClefDesign_two
 }
 
 normalClef = {

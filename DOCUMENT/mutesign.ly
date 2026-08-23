@@ -1,10 +1,12 @@
-\version "2.24.4"
-\pointAndClickOff
-mutesign = \markup {
-  \translate #'(0.5 . 0)
-  \postscript
+\version "2.26.0"
 
-  "newpath
+\pointAndClickOff
+
+mutesign = \markup {
+ \translate #'(0.5 . 0)
+ \postscript
+
+ "newpath
 0.2 setlinewidth
 1 setlinecap
 0 0 moveto
@@ -19,9 +21,9 @@ stroke"
 }
 
 {
-  c'2. r4^\mutesign^\markup {
-    \translate #'(-3 . 2)
-    \musicglyph "space"
-  }
+ c'2. r4^\mutesign^\markup {
+  \translate #'(-3 . 2)
+  \musicglyph "space"
+ }
 
 }

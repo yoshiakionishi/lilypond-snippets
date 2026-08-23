@@ -1,7 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
 \pointAndClickOff
-\language "english"
-
 % Revised Aug 10 2025 to include the function to revert to a
 % regular time signature
 

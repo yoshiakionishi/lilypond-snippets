@@ -1,7 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
 \pointAndClickOff
-
-
 
 #(append! default-script-alist
           (list
@@ -19,6 +17,8 @@
                 (outside-staff-priority . #t)
                 (padding . 0.5)
                 (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
                 (direction . ,UP))))
 
           (list
@@ -33,6 +33,8 @@
                 (outside-staff-priority . #t)
                 (padding . 0.5)
                 (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
                 (direction . ,DOWN)))))
 
 accentTenuto =  #(make-articulation 'accentTenutoUp)

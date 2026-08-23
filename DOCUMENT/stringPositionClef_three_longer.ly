@@ -1,8 +1,10 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 
-stringPositionClef_three_longer_Design = #(ly:make-stencil (list 'embedded-ps
-                                                                 "gsave
+stringPositionClef_three_longer_Design =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -81,7 +83,7 @@ stroke
 -0 -0  -0.65 0.75 -1.55 0  rcurveto
 closepath
 stroke
-
+%{
 %%% mute sign; commentify if not needed %%%
 newpath
 0.2 setlinewidth
@@ -95,12 +97,12 @@ newpath
 1.5 -4.5 0.85 0 360 arc
 stroke
 %%% end of mute sign for commenting/uncommenting %%%
-
+%}
 grestore
 
 ")
-                                                           (cons 0 3)
-                                                           (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
 stringPositionClefSize =
 #(lambda (grob)
@@ -111,7 +113,8 @@ stringPositionClefSize =
     mult mult)))
 
 stringPositionClef_three_longer = {
- \override Staff.Clef.stencil = \stringPositionClef_three_longer_Design
+ \override Staff.Clef.stencil =
+ \stringPositionClef_three_longer_Design
 }
 
 {

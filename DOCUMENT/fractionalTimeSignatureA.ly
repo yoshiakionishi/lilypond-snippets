@@ -1,13 +1,14 @@
-% !TEX TS-program = LilyPond
-\pointAndClickOff
+
+
 % Inspired by:
 % https://lists.gnu.org/archive/html/lilypond-user/2014-06/msg00209.html
 
 % Revised Aug 10 2025 to include the function to revert to a
 % regular time signature
 
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
+
+\pointAndClickOff
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)

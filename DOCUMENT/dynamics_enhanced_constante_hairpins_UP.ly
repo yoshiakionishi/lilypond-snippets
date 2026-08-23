@@ -1,4 +1,4 @@
-\version "2.24.4"
+\version "2.26.0"
 
 
 qf = #(make-dynamic-script
@@ -48,7 +48,6 @@ taken from output-lib.scm, and was revised to suit the need."
           ;I've left decresc? function but removed all the if clause
           ;associated with it, to simplify the code a little bit
           (verticalOffset vOff)
-          (useCautionary? cautionary)
           (moreOffset moreOff)
           (hairpinHeight (ly:grob-property grob 'height))
           (decresc? (eqv? (ly:grob-property grob 'grow-direction) LEFT))
@@ -303,7 +302,7 @@ taken from output-lib.scm, and was revised to suit the need."
                       (grob-interpret-markup
                        grob
                        (markup
-                        #:hspace 2
+                        #:hspace 1.5
                         #:whiteout
                         #:center-align
                         #:concat
@@ -323,7 +322,7 @@ taken from output-lib.scm, and was revised to suit the need."
                       (grob-interpret-markup
                        grob
                        (markup
-                        #:hspace 2
+                        #:hspace 1.5
                         #:whiteout
                         #:center-align
                         #:concat

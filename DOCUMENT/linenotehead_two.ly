@@ -1,4 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 % revised on January 25 2025
 
@@ -143,7 +144,7 @@ lineNoteheadOff =
  }
  \layout {
   \context{
-   \Score   proportionalNotationDuration = #(ly:make-moment 1/8)
+   \Score   proportionalNotationDuration = #1/8
   }
  }
 }

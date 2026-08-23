@@ -33,7 +33,7 @@ NOTE \accentStaccatoDown
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 #(append! default-script-alist
           (list
@@ -46,12 +46,15 @@ NOTE \accentStaccatoDown
                             \center-align
                             \combine \musicglyph "scripts.sforzato"
                             \translate #'(0 . -0.75) 
-                            \musicglyph "scripts.staccato" #})
+                            \musicglyph "scripts.staccato" 
+                            #})
                 ; any other properties
                 (toward-stem-shift-in-column . 1.0)
                 (outside-staff-priority . #t)
                 (padding . 0.5)
                 (avoid-slur . around)
+                (side-axis . ,RIGHT) 
+                ; new in 2.26.0, side-axis value needs to be specified
                 (direction . ,UP))))
 
           (list
@@ -61,12 +64,15 @@ NOTE \accentStaccatoDown
                 (text . ,#{ \markup \center-align
                             \combine \musicglyph "scripts.staccato"
                             \translate #'(0 . -0.75) 
-                            \musicglyph "scripts.sforzato" #})
+                            \musicglyph "scripts.sforzato"
+                            #})
                 ; any other properties
                 (toward-stem-shift-in-column . 1.0)
                 (outside-staff-priority . #t)
                 (padding . 0.5)
                 (avoid-slur . around)
+                (side-axis . ,RIGHT) 
+                ; new in 2.26.0, side-axis value needs to be specified
                 (direction . ,DOWN)))))
 
 accentStaccato =  #(make-articulation 'accentStaccatoUp)
@@ -109,7 +115,7 @@ NOTE \accentTenutoDown
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 #(append! default-script-alist
           (list
@@ -122,12 +128,15 @@ NOTE \accentTenutoDown
                             \center-align
                             \combine \musicglyph "scripts.sforzato"
                             \translate #'(0 . -0.75) 
-                            \musicglyph "scripts.tenuto" #})
+                            \musicglyph "scripts.tenuto" 
+                            #})
                 ; any other properties
                 (toward-stem-shift-in-column . 1.0)
                 (outside-staff-priority . #t)
                 (padding . 0.5)
                 (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
                 (direction . ,UP))))
 
           (list
@@ -137,12 +146,15 @@ NOTE \accentTenutoDown
                 (text . ,#{ \markup \center-align
                             \combine \musicglyph "scripts.tenuto"
                             \translate #'(0 . -0.75) 
-                            \musicglyph "scripts.sforzato" #})
+                            \musicglyph "scripts.sforzato" 
+                            #})
                 ; any other properties
                 (toward-stem-shift-in-column . 1.0)
                 (outside-staff-priority . #t)
                 (padding . 0.5)
                 (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
                 (direction . ,DOWN)))))
 
 accentTenuto =  #(make-articulation 'accentTenutoUp)
@@ -186,7 +198,7 @@ NOTE \jeteDown
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 jeteDesign =
 \markup
@@ -202,29 +214,33 @@ jeteDesign =
 \translate #'(0.6 . 0) \draw-circle #0.2 #0 ##t
 \translate #'(1.2 . 0)\draw-circle #0.2 #0 ##t
 #(append! default-script-alist
-    (list
-     `(jetelistUp
-       . (
-           (stencil . ,ly:text-interface::print)
-           (text . ,#{ \markup \jeteDesign #})
-           ; any other properties
-           (toward-stem-shift-in-column . 1.0)
-           (outside-staff-priority . #t)
-           (padding . 0.5)
-           (avoid-slur . around)
-           (direction . ,UP))))
+          (list
+           `(jetelistUp
+             . (
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup \jeteDesign #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
+                (direction . ,UP))))
 
-    (list
-     `(jetelistDown
-       . (
-           (stencil . ,ly:text-interface::print)
-           (text . ,#{ \markup \rotate #180 \jeteDesign #})
-           ; any other properties
-           (toward-stem-shift-in-column . 1.0)
-           (outside-staff-priority . #t)
-           (padding . 0.5)
-           (avoid-slur . around)
-           (direction . ,DOWN)))))
+          (list
+           `(jetelistDown
+             . (
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup \rotate #180 \jeteDesign #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
+                (direction . ,DOWN)))))
 
 jete =  #(make-articulation 'jetelistUp)
 jeteUp = #(make-articulation 'jetelistUp)
@@ -232,6 +248,7 @@ jeteDown = #(make-articulation 'jetelistDown)
 
 
 {c'4\jete c'4 \jeteDown c''\jeteUp }
+
 \end{Verbatim}
 \hyperref[sec:toc]{\textbf{Table of Contents}}
 \vfill \break

@@ -1,4 +1,4 @@
-\version "2.24.4"
+\version "2.26.0"
 \pointAndClickOff
 
 jeteDesign =
@@ -18,26 +18,30 @@ jeteDesign =
           (list
            `(jetelistUp
              . (
-                 (stencil . ,ly:text-interface::print)
-                 (text . ,#{ \markup \jeteDesign #})
-                 ; any other properties
-                 (toward-stem-shift-in-column . 1.0)
-                 (outside-staff-priority . #t)
-                 (padding . 0.5)
-                 (avoid-slur . around)
-                 (direction . ,UP))))
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup \jeteDesign #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
+                (direction . ,UP))))
 
           (list
            `(jetelistDown
              . (
-                 (stencil . ,ly:text-interface::print)
-                 (text . ,#{ \markup \rotate #180 \jeteDesign #})
-                 ; any other properties
-                 (toward-stem-shift-in-column . 1.0)
-                 (outside-staff-priority . #t)
-                 (padding . 0.5)
-                 (avoid-slur . around)
-                 (direction . ,DOWN)))))
+                (stencil . ,ly:text-interface::print)
+                (text . ,#{ \markup \rotate #180 \jeteDesign #})
+                ; any other properties
+                (toward-stem-shift-in-column . 1.0)
+                (outside-staff-priority . #t)
+                (padding . 0.5)
+                (avoid-slur . around)
+                (side-axis . ,RIGHT)
+                ; new in 2.26.0, side-axis value needs to be specified
+                (direction . ,DOWN)))))
 
 jete =  #(make-articulation 'jetelistUp)
 jeteUp = #(make-articulation 'jetelistUp)

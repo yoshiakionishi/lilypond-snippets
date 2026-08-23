@@ -6,6 +6,263 @@
 This chapter covers snippets that take advantages of spanners (text, line, etc.) in one way or another. Because functions such as \verb|\startTextSpan| and \verb|\stopTextSpan| activate and deactivate these snippets, caution must be paid when using more than one of them at the same time. See \hyperref[sec:comb_spanners]{Example in \textbf{Combinations}} to avoid conflicts between or among the spanner snippets.
 \clearpage
 
+
+
+\section {Arpeggio with Arrowhead and Vertical Hairpins}
+\label{sec:arpeggioArrowheadVerticalHairpin}
+\lilypondfile[staffsize=20,hpadding=4,voffset=4pt]{/arpeggioArrowheadVerticalHairpin.ly}
+\hfill
+
+\subsection{Description}
+Implementation of vertical hairpins associated with the directional arpeggios. LilyPond already provides functionality for the arpeggios with arrowheads.\footnote{\url{https://lilypond.org/doc/v2.26/Documentation/internals/arpeggio_002dinterface}} However, I could not find a convenient snippet for the vertical hairpins to be used in tandem with such arpeggios. 
+
+In fact, I decided to take the route of drawing vertical hairpin with \verb|\path| function within \verb|\markup|. Should you so desire, you could tweak the value within it to further customize the opening width of the hairpin, for example. 
+
+Note that there are two functions, one to be used for single-staff arpeggios, another one for arpeggio that spans over multiple staves. This is because for the latter, the context must be set to \Verb|Score| instead of \Verb|Staff|. 
+
+\subsection{Grammar}
+
+\begin{verbatim}
+ \arpeggioWithVerticalHairpinSingleStaff 
+ 	#ARPEGGIO_DIRECTION #CRESCENDO_DIRECTION "DYNAMIC_TOP" "DYNAMIC_BOTTOM" #HAIRPIN_X-OFFSET
+ \arpeggioWithVerticalHairpinMultipleStaves 
+ 	#ARPEGGIO_DIRECTION #CRESCENDO_DIRECTION "DYNAMIC_TOP" "DYNAMIC_BOTTOM" #HAIRPIN_X-OFFSET 
+\end{verbatim}
+
+\textbf{NB} 
+\begin{itemize}
+\item \Verb|#ARPEGGIO_DIRECTION| sets the direction of the arrowhead. \Verb|#UP| places an arrowhead at the top of the arpeggio, while \Verb|#DOWN| at the bottom.
+\item \Verb|#CRESCENDO_DIRECTION| defines the direction of the \textit{crescendo as a shape}. To avoid any confusion, it is encouraged to think of this argument independently from the arpeggio direction you previously declared, and to think in a purely visual way (i.e. \say{How does this crescendo look on the paper, is it looking like \Verb|V| or \rotatebox[origin=c]{180}{\Verb|V|}?}).  For example, \Verb|#UP| places a hairpin that looks like \Verb|V| while \Verb|#DOWN| will place a hairpin that looks like \rotatebox[origin=c]{180}{\Verb|V|}.
+\item \Verb|"DYNAMIC_TOP"| and \verb|"DYNAMIC_BOTTOM"| determine which dynamic indications to place at the top and the bottom of the hairpin, respectively. Note that you have to put the dynamics in quotation marks. If you desire no dynamic marking, for either end or both of the hairpin, use \verb|" "|, i.e. surround a space with quotation marks. Declaring \verb|""| will result in warning messages.
+\item \Verb|#HAIRPIN_X-OFFSET| determines the distance between the hairpin and the arpeggio. Normally setting this argument to \Verb|#0| should pose no problem.
+\end{itemize}
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
+
+\language "english"
+
+arpeggioWithVerticalHairpinSingleStaff =
+#(define-music-function
+  (arpeggioDirection hairpinType dynamicUP dynamicDOWN hairpinOffset )
+  (ly:dir? ly:dir? string? string? number? )
+  #{
+   \once \override Staff.Arpeggio.X-extent =
+   #'(-2 . 0.75)
+   % NB: Override this value if you wish to adjust
+   % the general placement of arpeggio and hairpin
+   % as a pair
+   \once \override Staff.Arpeggio.stencil =
+   #(grob-transformer
+     'stencil
+     (lambda (grob original)
+      (let* ((pos (ly:grob-property grob 'positions))
+             (arpeggioArrowStencil
+              (if  (eq? arpeggioDirection UP )
+                   ;FOR UPWARD ARROW
+                   (cons 0.4 (+ (cdr pos) 1.45))
+                   ;FOR DOWNWARD ARROW
+                   (cons 0.4 (- (car pos) 1.75))
+                   )
+              )
+             (added-markup-one
+              (markup
+               #:overlay
+               (
+                #:translate  arpeggioArrowStencil
+                #:scale  (cons 1.25 1.25)
+                #:arrow-head 1 (if (eq? arpeggioDirection UP ) 1 -1) #t
+                )
+               ))
+             (hairpinStencil
+              (if (eq? hairpinType UP )
+                  ; UNCOMMENT THIS FOR UPWARD CRESCENDO
+                  (list (list 'moveto -1  (car pos))
+                        (list 'rlineto -0.5   (- (cdr pos) (car pos)))
+                        (list 'moveto -1 (car pos))
+                        (list 'rlineto 0.5   (- (cdr pos) (car pos)))
+                        )
+                  ; UNCOMMENT THIS FOR DOWNWARD CRESCENDO
+                  (list (list 'moveto -0.5 (car pos))
+                        (list 'rlineto -0.5   (- (cdr pos) (car pos)))
+                        (list 'moveto -1.5 (car pos))
+                        (list 'rlineto 0.5   (- (cdr pos) (car pos)))
+                        )
+                  ))
+             (added-markup-two
+              (markup
+               #:overlay
+               (
+                #:general-align X CENTER
+                #:translate-scaled (cons -1.5  (+ (cdr pos) 1))
+                #:whiteout
+                #:dynamic
+                dynamicUP
+
+                #:general-align X CENTER
+                #:path 0.15 hairpinStencil
+
+                #:general-align X CENTER
+                #:translate-scaled (cons  -1.5  (- (car pos) 1.5))
+
+                #:whiteout
+                #:dynamic
+                dynamicDOWN
+                )
+               )
+              )
+             (added-stencil-one
+              (ly:stencil-add original
+                              (grob-interpret-markup
+                               grob added-markup-one)))
+             (added-stencil-two
+              (grob-interpret-markup grob added-markup-two))
+             )
+
+       (if (ly:stencil? original)
+           (ly:stencil-combine-at-edge added-stencil-one
+                                       X -1
+                                       added-stencil-two
+                                       hairpinOffset)
+           added-stencil
+           ))))
+  #})
+
+arpeggioWithVerticalHairpinMultipleStaves =
+#(define-music-function
+  (arpeggioDirection hairpinType dynamicUP dynamicDOWN hairpinOffset )
+  (ly:dir? ly:dir? string? string? number? )
+  #{
+   \once \override Score.Arpeggio.X-extent =
+   #'(-2 . 0.75)
+   \once \override Score.Arpeggio.stencil =
+   #(grob-transformer
+     'stencil
+     (lambda (grob original)
+      (let* ((pos (ly:grob-property grob 'positions))
+             (arpeggioArrowStencil
+              (if  (eq? arpeggioDirection UP )
+                   ;FOR UPWARD ARROW
+                   (cons 0.4 (+ (cdr pos) 1.45))
+                   ;FOR DOWNWARD ARROW
+                   (cons 0.4 (- (car pos) 1.75))
+                   )
+              )
+             (added-markup-one
+              (markup
+               #:overlay
+               (
+                #:translate  arpeggioArrowStencil
+                #:scale  (cons 1.25 1.25)
+                #:arrow-head 1 (if (eq? arpeggioDirection UP ) 1 -1) #t
+                )
+               ))
+             (hairpinStencil
+              (if (eq? hairpinType UP )
+                  ; UNCOMMENT THIS FOR UPWARD CRESCENDO
+                  (list (list 'moveto -1  (car pos))
+                        (list 'rlineto -0.5   (- (cdr pos) (car pos)))
+                        (list 'moveto -1 (car pos))
+                        (list 'rlineto 0.5   (- (cdr pos) (car pos)))
+                        )
+                  ; UNCOMMENT THIS FOR DOWNWARD CRESCENDO
+                  (list (list 'moveto -0.5 (car pos))
+                        (list 'rlineto -0.5   (- (cdr pos) (car pos)))
+                        (list 'moveto -1.5 (car pos))
+                        (list 'rlineto 0.5   (- (cdr pos) (car pos)))
+                        )
+                  ))
+             (added-markup-two
+              (markup
+               #:overlay
+               (
+                #:general-align X CENTER
+                #:translate-scaled (cons -1.5  (+ (cdr pos) 1))
+                #:whiteout
+                #:dynamic
+                dynamicUP
+
+                #:general-align X CENTER
+                #:path 0.15 hairpinStencil
+
+                #:general-align X CENTER
+                #:translate-scaled (cons  -1.5  (- (car pos) 1.5))
+
+                #:whiteout
+                #:dynamic
+                dynamicDOWN
+                )
+               )
+              )
+             (added-stencil-one
+              (ly:stencil-add original
+                              (grob-interpret-markup
+                               grob added-markup-one)))
+             (added-stencil-two
+              (grob-interpret-markup grob added-markup-two))
+             )
+
+       (if (ly:stencil? original)
+           (ly:stencil-combine-at-edge added-stencil-one
+                                       X -1
+                                       added-stencil-two
+                                       hairpinOffset)
+           added-stencil
+           ))))
+  #})
+
+
+
+
+{
+ \arpeggioWithVerticalHairpinSingleStaff #UP #UP "f" "p" #0
+ <c e g cs' e'>2 \arpeggio \laissezVibrer
+}
+{
+ \arpeggioWithVerticalHairpinSingleStaff #DOWN #DOWN "pp" "ff" #0
+ \transpose c' c'' { <c! e! g! cs' e' g' c'' e'' g''>8. }
+ \arpeggio \laissezVibrer
+}
+
+\score {
+ \new PianoStaff \with {
+
+ } <<
+  \new Staff = "right" \with {  }
+  {
+   \arpeggioWithVerticalHairpinMultipleStaves #DOWN #UP "ff" "p" #0.25
+   \once \set Score.connectArpeggios = ##t
+   <c' e' g' bf' d'' fs'' a''>1 \arpeggio |
+   \arpeggioWithVerticalHairpinSingleStaff #UP #UP "f" " " #0
+   % NB: When you wish to place no dynamic,
+   % make sure you include an empty space between quotation marks,
+   % otherwise 'warning: Found infinity or nan in output.  Substituting 0.0'
+   % message will result.
+   <c' e' g' bf' d'' fs'' a''>1 \arpeggio
+   \tweak extra-offset #'(-5.25 . -0.75) \p
+  }
+
+  \new Staff = "left" \with {
+  } {
+   \clef bass <c, c g >1 \arpeggio
+   \arpeggioWithVerticalHairpinSingleStaff #DOWN #DOWN " " "f" #0.5
+   \once \override Staff.Arpeggio.extra-offset = #'(-1.75 . 1)
+   % NB: in order to align the hairpin applied to the right hand staff,
+   % extra-offset has been applied to offset the arpeggio and hairpin.
+   <c, c g >1 \arpeggio
+  }
+ >>
+}
+\end{Verbatim}
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+%%%%%%%%%%%%%%%%%%%
+
+
+
 \section {Arrow Lines}
 \label{sec:arrow_lines}
 \lilypondfile[staffsize=20,hpadding=4,voffset=4pt]{/arrow_lines.ly}
@@ -23,7 +280,8 @@ Implementation of arrow lines. It takes advantage of the \verb|\glissando| funct
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+
+\version "2.26.0"
 
 arrowLineOn =
 #(define-music-function (note)(ly:music?)
@@ -161,10 +419,11 @@ arrowLineOff =
 
   \context {
    \Score
-   proportionalNotationDuration = #(ly:make-moment 1/7)
+   proportionalNotationDuration = #1/7
   }
  }
 }
+
 \end{Verbatim}
 \subsection{Discussion}
 \label{sec:arrow_lines_discussion}
@@ -199,11 +458,7 @@ Implementation of ties seen in Movement 5 \textit{Tombeau} of \textit{Pli selon 
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-
-\language "english"
-
-\pointAndClickOff
+\version "2.26.0"
 
 boulezTie =
 #(lambda (grob)
@@ -249,9 +504,7 @@ boulezTie =
  c'1 ~ c'1
  c''' ~ c'''
  <a' d'' g''> ~ <a' d'' g''>
-}}
-
-
+}
 \end{Verbatim}
 \subsection{Discussion}
 \label{sec:boulez_tie_discussion}
@@ -279,7 +532,7 @@ Implementation of dashed arrow lines. Its design is nearly identical to that of 
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 dashedArrowLineOn =
 #(define-music-function (note)(ly:music?)
@@ -418,7 +671,7 @@ dashedArrowLineOff =
 
   \context {
    \Score
-   proportionalNotationDuration = #(ly:make-moment 1/7)
+   proportionalNotationDuration = #1/7
   }
  }
 }
@@ -453,11 +706,7 @@ See \hyperref[sec:flat_slurs]{\textbf{Flat Slurs}} for the ordinary non-dashed v
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-
-\language "english"
-
-\pointAndClickOff
+\version "2.26.0"
 
 dashedFlatSlur =
 #(lambda (grob)
@@ -558,7 +807,7 @@ dashedFlatSlur =
 
  \shape #'(
            (( 0 . 0) (0 . 0) (0 . 0) (0 . 0))
-           ( (-1.25 . 3.5) (-1.25 . 3.75)(0 . 3.75)(0 . 2.5) )
+           ((-1.25 . 3.5) (-1.25 . 3.75)(0 . 3.75)(0 . 2.5))
            ) Slur
  c''4 ( b' a' g' ~ | \break
 
@@ -567,7 +816,7 @@ dashedFlatSlur =
  \shape #'(
            (0 . 0)
            (0 . 0.2)
-           (0.75 . 2.5)
+           (0.75 . 2.45)
            (0 . 3)
            ) Slur
 
@@ -576,7 +825,6 @@ dashedFlatSlur =
 
 
 }
-
 \end{Verbatim}
 
 
@@ -611,11 +859,7 @@ See also \hyperref[sec:dashed_flat_slurs]{\textbf{Dashed Flat Slurs}}.
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-
-\language "english"
-
-\pointAndClickOff
+\version "2.26.0"
 
 flatSlur =
 #(lambda (grob)
@@ -772,25 +1016,23 @@ Replication of grace note brackets seen in scores by Pierre Boulez (e.g. \textit
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
-\language "english"
-
-% This code includes snippet for grace note 
+% This code includes snippet for grace note
 % slashes, which has been taken from:
 % https://lsr.di.unimi.it/LSR/Item?id=1048
 
 
 graceNoteBeforeBeatOn =
 #(define-music-function (starting_note) (ly:music?)
-   #{
-     \once \override TextSpanner.style = #'line
-     \once \override TextSpanner.bound-details.left.text =
-     \markup { \draw-line #'(0 . -1) }
-     \once \override TextSpanner.bound-details.right.text =
-     \markup {
-       \postscript
-       "newpath 0 0 moveto 
+  #{
+   \once \override TextSpanner.style = #'line
+   \once \override TextSpanner.bound-details.left.text =
+   \markup { \draw-line #'(0 . -1) }
+   \once \override TextSpanner.bound-details.right.text =
+   \markup {
+    \postscript
+    "newpath 0 0 moveto 
 0 -2.5 rlineto 
 stroke 
 newpath 
@@ -800,39 +1042,39 @@ newpath
 -0.275 -0.2 rlineto 
 closepath 
 fill"
-     }
-     \once \override TextSpanner.Y-offset = #5
-     \once \override TextSpanner.bound-details.left.padding = #0.5
-     \once \override TextSpanner.bound-details.right.padding = #-0.25
-     #starting_note
-     \startTextSpan
-   #})
+   }
+   \once \override TextSpanner.Y-offset = #5
+   \once \override TextSpanner.bound-details.left.padding = #0.5
+   \once \override TextSpanner.bound-details.right.padding = #-0.25
+   #starting_note
+   \startTextSpan
+  #})
 
 
 graceNoteBeforeBeatOff =
 #(define-music-function (ending_note) (ly:music?)
-   #{
-     #ending_note
-     \stopTextSpan
-   #})
+  #{
+   #ending_note
+   \stopTextSpan
+  #})
 
 
 graceNoteAfterBeatOn =
 #(define-music-function (starting_note) (ly:music?)
-   #{
-     \once \override TextSpanner.style = #'line
-     \once \override TextSpanner.bound-details.right.text =
-     \markup {
-       \combine \draw-line #'(0 . -1)
-       \postscript "newpath 
+  #{
+   \once \override TextSpanner.style = #'line
+   \once \override TextSpanner.bound-details.right.text =
+   \markup {
+    \combine \draw-line #'(0 . -1)
+    \postscript "newpath 
 0 -1 moveto 
 0 -1 rlineto 
 stroke"
-     }
-     \once \override TextSpanner.bound-details.left.text =
-     \markup {
-       \postscript
-       "newpath 0 0 moveto 
+   }
+   \once \override TextSpanner.bound-details.left.text =
+   \markup {
+    \postscript
+    "newpath 0 0 moveto 
 0 -1 rlineto 
 stroke 
 newpath 
@@ -842,115 +1084,116 @@ newpath
 -0.275 -0.2 rlineto 
 closepath 
 fill"
-     }
-     \once \override TextSpanner.Y-offset = #2
-     \once \override TextSpanner.bound-details.left.padding = #0.5
-     \once \override TextSpanner.bound-details.right.padding = #-0.25
-     #starting_note
-     \startTextSpan
-   #})
+   }
+   \once \override TextSpanner.Y-offset = #2
+   \once \override TextSpanner.bound-details.left.padding = #0.5
+   \once \override TextSpanner.bound-details.right.padding = #-0.25
+   #starting_note
+   \startTextSpan
+  #})
 
 
 graceNoteAfterBeatOff =
 #(define-music-function (ending_note) (ly:music?)
-   #{
-     #ending_note
-     \stopTextSpan
-   #})
+  #{
+   #ending_note
+   \stopTextSpan
+  #})
 
 %%%%%%%%%%%%%%%%%%%LSR SNIPPET START%%%%%%%%%%%%%%%%%%
 
 #(define (degrees->radians deg)
-   (* PI (/ deg 180.0)))
+  (* PI (/ deg 180.0)))
 
 slash =
 #(define-music-function (ang stem-fraction protrusion)
-   (number? number? number?)
-   (remove-grace-property 'Voice 'Stem 'direction)
-   #{
-     \once \override Stem.stencil =
-     #(lambda (grob)
-        (let* ((x-parent (ly:grob-parent grob X))
-               (is-rest? (ly:grob?
-                          (ly:grob-object x-parent 'rest)))
-               (beam (ly:grob-object grob 'beam))
-               (stil (ly:stem::print grob)))
-          (cond
-           (is-rest? empty-stencil)
-           ((ly:grob? beam)
-            (let* ((refp (ly:grob-system grob))
-                 (stem-y-ext (ly:grob-extent grob grob Y))
-                 (stem-length
-                  (- (cdr stem-y-ext) (car stem-y-ext)))
-                 (beam-X-pos (ly:grob-property beam 'X-positions))
-                 (beam-Y-pos (ly:grob-property beam 'positions))
-                 (beam-slope (/ (- (cdr beam-Y-pos) (car beam-Y-pos))
+  (number? number? number?)
+  (remove-grace-property 'Voice 'Stem 'direction)
+  #{
+   \once \override Stem.stencil =
+   #(lambda (grob)
+     (let* ((x-parent (ly:grob-parent grob X))
+            (is-rest? (ly:grob?
+                       (ly:grob-object x-parent 'rest)))
+            (beam (ly:grob-object grob 'beam))
+            (stil (ly:stem::print grob)))
+      (cond
+       (is-rest? empty-stencil)
+       ((ly:grob? beam)
+        (let* ((refp (ly:grob-system grob))
+               (stem-y-ext (ly:grob-extent grob grob Y))
+               (stem-length
+                (- (cdr stem-y-ext) (car stem-y-ext)))
+               (beam-X-pos (ly:grob-property beam 'X-positions))
+               (beam-Y-pos (ly:grob-property beam 'positions))
+               (beam-slope (/ (- (cdr beam-Y-pos) (car beam-Y-pos))
                               (- (cdr beam-X-pos) (car beam-X-pos))))
-                 (beam-angle (atan beam-slope))
-                 (dir (ly:grob-property grob 'direction))
-                 (line-dy (* stem-length stem-fraction))
-                 (line-dy-with-protrusions (if (= dir 1)
-                              (+ (* 4 protrusion) beam-angle)
-                              (- (* 4 protrusion) beam-angle)))
-                 (ang (if (> beam-slope 0)
-                          (if (= dir 1)
-                              (+ (degrees->radians ang) (* beam-angle 0.7))
-                              (degrees->radians ang))
-                          (if (= dir 1)
-                              (degrees->radians ang)
-                              (- (degrees->radians ang) (* beam-angle 0.7)))))
-                 (line-dx (/ line-dy-with-protrusions (tan ang)))
-                 (protrusion-dx (/ protrusion (tan ang)))
-                 (corr (if (= dir 1) (car stem-y-ext) (cdr stem-y-ext))))
-            (ly:stencil-add
-             stil
-             (grob-interpret-markup grob
-                               (markup
-                                 #:translate
-                                 (cons (- protrusion-dx)
-                                 (+ corr
-                                    (* dir
-                                       (- stem-length
-                                          (+ stem-fraction protrusion)))))
-                                 #:override '(thickness . 1.7)
-                                 #:draw-line
-                                 (cons line-dx
-                                  (* dir line-dy-with-protrusions)))))))
-           (else stil))))
-   #})
+               (beam-angle (atan beam-slope))
+               (dir (ly:grob-property grob 'direction))
+               (line-dy (* stem-length stem-fraction))
+               (line-dy-with-protrusions (if (= dir 1)
+                                             (+ (* 4 protrusion) beam-angle)
+                                             (- (* 4 protrusion) beam-angle)))
+               (ang (if (> beam-slope 0)
+                        (if (= dir 1)
+                            (+ (degrees->radians ang) (* beam-angle 0.7))
+                            (degrees->radians ang))
+                        (if (= dir 1)
+                            (degrees->radians ang)
+                            (- (degrees->radians ang) (* beam-angle 0.7)))))
+               (line-dx (/ line-dy-with-protrusions (tan ang)))
+               (protrusion-dx (/ protrusion (tan ang)))
+               (corr (if (= dir 1) (car stem-y-ext) (cdr stem-y-ext))))
+         (ly:stencil-add
+          stil
+          (grob-interpret-markup grob
+                                 (markup
+                                  #:translate
+                                  (cons (- protrusion-dx)
+                                        (+ corr
+                                           (* dir
+                                              (- stem-length
+                                                 (+ stem-fraction protrusion)))))
+                                  #:override '(thickness . 1.7)
+                                  #:draw-line
+                                  (cons line-dx
+                                        (* dir line-dy-with-protrusions)))))))
+       (else stil))))
+  #})
 
 startSlashedGraceMusic = {
-  \slash 40 1 0.5
-  \override Flag.stroke-style = #"grace"
+ \slash 40 1 0.5
+ \override Flag.stroke-style = #"grace"
 }
 stopSlashedGraceMusic = {
-  \revert Flag.stroke-style
+ \revert Flag.stroke-style
 }
 
 startAcciaccaturaMusic = {
-  \slash 40 1 0.5
-  s1*0(
-  \override Flag.stroke-style = #"grace"
+ \slash 40 1 0.5
+ s1*0(
+ \override Flag.stroke-style = #"grace"
 }
 stopAcciaccaturaMusic = {
-  \revert Flag.stroke-style
-  s1*0)
+ \revert Flag.stroke-style
+ s1*0)
 }
 %%%%%%%%%%%%%%%%%%% LSR SNIPPET END %%%%%%%%%%%%%%%%%%
 
-
 {
-  \grace {
-    \startSlashedGraceMusic
-    \graceNoteBeforeBeatOn d''8^\markup{\box A} e' f'' g' e'' c'
-  }
-  \graceNoteBeforeBeatOff d'2
-  \grace {
-    \startSlashedGraceMusic
-    \graceNoteAfterBeatOn d''8^\markup{\box B} e' f'' g' e'' c'
-  }
-  \graceNoteAfterBeatOff d'2
+ \grace {
+  \startSlashedGraceMusic
+  \graceNoteBeforeBeatOn d''8^\markup{\box A} e' f'' g' e'' c'
+ }
+ \graceNoteBeforeBeatOff d'2
+ \grace {
+  \startSlashedGraceMusic
+  \graceNoteAfterBeatOn d''8^\markup{\box B} e' f'' g' e'' c'
+ }
+ \graceNoteAfterBeatOff d'2
 }
+
+
 \end{Verbatim}
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
@@ -984,8 +1227,7 @@ The list accepts three integers as parameters, i.e.:
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
 
 % This code includes snippet for grace note
 % slashes, which has been taken from:
@@ -1077,7 +1319,7 @@ graceNoteAfterBeatOff =
    #ending_note
    \stopTextSpan
   #})
-  
+
 %%%%%%%%%%%%%%%%%%%LSR SNIPPET START%%%%%%%%%%%%%%%%%%
 
 #(define (degrees->radians deg)
@@ -1161,7 +1403,7 @@ stopAcciaccaturaMusic = {
 {
  \grace {
   \startSlashedGraceMusic
-  \graceNoteBeforeBeatOn #'(1 -2 -1) d'8^\markup{\translate #'(0 . 3) \box A} 
+  \graceNoteBeforeBeatOn #'(1 -2 -1) d'8^\markup{\translate #'(0 . 3) \box A}
   e f g e' c'
  }
  \graceNoteBeforeBeatOff d''2
@@ -1171,6 +1413,7 @@ stopAcciaccaturaMusic = {
  }
  \graceNoteAfterBeatOff d'2
 }
+
 \end{Verbatim}
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
@@ -1204,7 +1447,7 @@ Replication of accelerando and rallentando arrows chiefly seen in scores by Tōr
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 % freely modified from: https://lsr.di.unimi.it/LSR/Item?id=1168
 % as well as http://lsr.di.unimi.it/LSR/Item?id=1023
@@ -1213,119 +1456,116 @@ Replication of accelerando and rallentando arrows chiefly seen in scores by Tōr
 accelArrow =
 #(define-music-function (line_angle) (number?)
 
-   (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
-   (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
-   #{
-     \tweak direction #up
-     \tweak style  #'line
-     \tweak thickness  #1
-     \tweak to-barline ##t
-     \tweak rotation #(list line_angle -1 0 )
-     \tweak bound-details.left.stencil #ly:text-interface::print
-     \tweak bound-details.left.text \markup \postscript
-     #(string-append
-       "gsave newpath 
+  (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  #{
+   \tweak direction #up
+   \tweak style  #'line
+   \tweak thickness  #1
+   \tweak to-barline ##t
+   \tweak rotation #(list line_angle -1 0 )
+   \tweak bound-details.left.stencil #ly:text-interface::print
+   \tweak bound-details.left.text \markup \postscript
+   #(string-append
+     "gsave newpath 
 0 0 moveto "
-       (number->string x_value) " "
-       (number->string y_value)
-       " rlineto 
+     (number->string x_value) " "
+     (number->string y_value)
+     " rlineto 
 stroke 
 grestore")
-     \tweak bound-details.left-broken.stencil #ly:text-interface::print
-     \tweak bound-details.left-broken.text ##f
+   \tweak bound-details.left-broken.stencil #ly:text-interface::print
+   \tweak bound-details.left-broken.text ##f
 
-     \tweak bound-details.right.stencil #ly:text-interface::print
-     \tweak bound-details.right.text \markup \postscript
-     "newpath 
+   \tweak bound-details.right.stencil #ly:text-interface::print
+   \tweak bound-details.right.text \markup \postscript
+   "newpath 
 0 0 moveto 
 -1 -0.3 rlineto 
 stroke"
-     \tweak bound-details.right-broken.stencil #ly:text-interface::print
-     \tweak bound-details.right-broken.text ##f
-     \tweak font-shape  #'upright
-     \tweak bound-details.left.padding  #0
-     \tweak bound-details.right.padding  #0
-     \tweak breakable ##t
-     \tweak after-line-breaking ##t
+   \tweak bound-details.right-broken.stencil #ly:text-interface::print
+   \tweak bound-details.right-broken.text ##f
+   \tweak font-shape  #'upright
+   \tweak bound-details.left.padding  #0
+   \tweak bound-details.right.padding  #0
+   \tweak breakable ##t
+   \tweak after-line-breaking ##t
 
-     \startTextSpan
-   #})
+   \startTextSpan
+  #})
 
 rallArrow =
 #(define-music-function (line_angle) (number?)
 
-   (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
-   (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
-   #{
-     \tweak direction #up
-     \tweak style  #'line
-     \tweak thickness  #1
-     \tweak to-barline ##t
-     \tweak rotation #(list (* -1 line_angle) 1 0 )
-     \tweak bound-details.left.stencil #ly:text-interface::print
-     \tweak bound-details.left.text \markup \postscript
-     #(string-append
-       "gsave 
+  (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  #{
+   \tweak direction #up
+   \tweak style  #'line
+   \tweak thickness  #1
+   \tweak to-barline ##t
+   \tweak rotation #(list (* -1 line_angle) 1 0 )
+   \tweak bound-details.left.stencil #ly:text-interface::print
+   \tweak bound-details.left.text \markup \postscript
+   #(string-append
+     "gsave 
 newpath 
 0 0 moveto "
-       (number->string x_value) " "
-       (number->string (* -1 y_value))
-       " rlineto 
+     (number->string x_value) " "
+     (number->string (* -1 y_value))
+     " rlineto 
 stroke 
 grestore")
-     \tweak bound-details.left-broken.stencil #ly:text-interface::print
-     \tweak bound-details.left-broken.text ##f
+   \tweak bound-details.left-broken.stencil #ly:text-interface::print
+   \tweak bound-details.left-broken.text ##f
 
-     \tweak bound-details.right.stencil #ly:text-interface::print
-     \tweak bound-details.right.text \markup \postscript
-     "newpath 
+   \tweak bound-details.right.stencil #ly:text-interface::print
+   \tweak bound-details.right.text \markup \postscript
+   "newpath 
 0 0 moveto 
 -1 -0.3 rlineto 
 stroke"
-     \tweak bound-details.right-broken.stencil #ly:text-interface::print
-     \tweak bound-details.right-broken.text ##f
-     \tweak font-shape  #'upright
-     \tweak bound-details.left.padding  #0
-     \tweak bound-details.right.padding  #0
-     \tweak breakable ##t
-     \tweak after-line-breaking ##t
+   \tweak bound-details.right-broken.stencil #ly:text-interface::print
+   \tweak bound-details.right-broken.text ##f
+   \tweak font-shape  #'upright
+   \tweak bound-details.left.padding  #0
+   \tweak bound-details.right.padding  #0
+   \tweak breakable ##t
+   \tweak after-line-breaking ##t
 
-     \startTextSpan
-   #})
+   \startTextSpan
+  #})
 
 \score {
-  \layout {
-    indent = 0
-  }
-  {
-    c'2^\markup{\translate #'(-4 . 2) \box "A"}
-    ^\markup {\translate #'(0 . 1.5) \tiny \bold "accel."} 
-    	\accelArrow #5   c'2
-    c'2 \after 2 \stopTextSpan c'2
-    c'2 ^\markup {\translate #'(0 . 1.5) \tiny \bold "rit."}  
-    	\rallArrow #3   c'2
-    c'2 \after 2 \stopTextSpan c'2 \bar "||"
-  }
+ \layout {
+  indent = 0
+ }
+ {
+  c'2^\markup{\translate #'(-4 . 2) \box "A"}
+  ^\markup {\translate #'(0 . 1.5) \tiny \bold "accel."} \accelArrow #5   c'2
+  c'2 \after 2 \stopTextSpan c'2
+  c'2 ^\markup {\translate #'(0 . 1.5) \tiny \bold "rit."}  \rallArrow #3   c'2
+  c'2 \after 2 \stopTextSpan c'2 \bar "||"
+ }
 }
 
 \score {
-  \layout {
-    indent = 0
-    line-width = 40
-  }
-  {
-    c'2^\markup{\translate #'(-4 . 2) \box "B"}
-    ^\markup {\translate #'(0 . 1.5) \tiny \bold "accel."} 
-    	\accelArrow #5 c'2
-    c'2 c'2
-    c'2^\markup {\translate #'(0 . 1.5) \teeny \bold "(accel.)"} 
-    	\after 2 \stopTextSpan c'2
-    c'2 ^\markup {\translate #'(0 . 1.5) \tiny \bold "rit."}  
-    	\rallArrow #2 c'2 \break
-    c'2^\markup {\translate #'(0 . 1.5) \teeny \bold "(rit.)"} c'2
-    c'2 \after 2 \stopTextSpan c'2 \bar "||"
-  }
+ \layout {
+  indent = 0
+  line-width = 50
+ }
+ {
+  c'2^\markup{\translate #'(-4 . 2) \box "B"}
+  ^\markup {\translate #'(0 . 1.5) \tiny \bold "accel."} \accelArrow #5 c'2
+  c'2 c'2
+  c'2^\markup {\translate #'(0 . 1.5) \teeny \bold "(accel.)"} \after 2 \stopTextSpan c'2
+  c'2 ^\markup {\translate #'(0 . 1.5) \tiny \bold "rit."}  \rallArrow #2 c'2 \break
+  c'2^\markup {\translate #'(0 . 1.5) \teeny \bold "(rit.)"} c'2
+  c'2 \after 2 \stopTextSpan c'2 \bar "||"
+ }
 }
+
+%^\markup{\translate #'(0 . 2) \bold "accel."}
 \end{Verbatim}
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}

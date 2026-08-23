@@ -1,4 +1,5 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
 
 condOnePattern =
@@ -52,57 +53,57 @@ condDoubleThreePattern =
 
 
 condOne = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condOnePattern
+ \override #'(line-join-style . round)
+ \path #0.25 #condOnePattern
 }
 
 condTwoA = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condTwoPatternA
+ \override #'(line-join-style . round)
+ \path #0.25 #condTwoPatternA
 }
 condTwoB = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condTwoPatternB
+ \override #'(line-join-style . round)
+ \path #0.25 #condTwoPatternB
 }
 condDoubleTwoA = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condDoubleTwoPatternA
+ \override #'(line-join-style . round)
+ \path #0.25 #condDoubleTwoPatternA
 }
 
 condDoubleTwoB = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condDoubleTwoPatternB
+ \override #'(line-join-style . round)
+ \path #0.25 #condDoubleTwoPatternB
 }
 
 condThree = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condThreePattern
+ \override #'(line-join-style . round)
+ \path #0.25 #condThreePattern
 }
 
 condDoubleThree = ^\markup {
-  \override #'(line-join-style . round)
-  \path #0.25 #condDoubleThreePattern
+ \override #'(line-join-style . round)
+ \path #0.25 #condDoubleThreePattern
 }
 
 %% Source inspired by
 %% and adapted from: http://lsr.di.unimi.it/LSR/Item?id=629
 spacerVoice = \new Voice {
-  \override MultiMeasureRest.transparent = ##t
-  \override MultiMeasureRest.minimum-length = #14
-  R16*5
+ \override MultiMeasureRest.transparent = ##t
+ \override MultiMeasureRest.minimum-length = #14
+ R16*5
 }
 
 
 \score {
-  {
-    \time 5/8
-    b'4 \condTwoA b'4. \condThree \bar "||"
-    b'4 \condTwoB b'4. \condThree \bar "||"
-    b'8 \condOne b'4 \condTwoA b'4 \condTwoA \bar "||"
-    \time 5/16
-    << {b'8 \condDoubleTwoA b'8. \condDoubleThree} \spacerVoice >> \bar "||"
-    << {b'8 \condDoubleTwoB b'8. \condDoubleThree} \spacerVoice >> \bar "||"
-  }
+ {
+  \time 5/8
+  b'4 \condTwoA b'4. \condThree \bar "||"
+  b'4 \condTwoB b'4. \condThree \bar "||"
+  b'8 \condOne b'4 \condTwoA b'4 \condTwoA \bar "||"
+  \time 5/16
+  << {b'8 \condDoubleTwoA b'8. \condDoubleThree} \spacerVoice >> \bar "||"
+  << {b'8 \condDoubleTwoB b'8. \condDoubleThree} \spacerVoice >> \bar "||"
+ }
 
 }
 

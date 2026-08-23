@@ -1,6 +1,4 @@
-\version "2.24.4"
-
-\language "english"
+\version "2.26.0"
 
 \pointAndClickOff
 

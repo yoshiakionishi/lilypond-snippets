@@ -27,7 +27,7 @@ While it is still prudent to spend a paragraph explaining the nature of the irra
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 %% "suppressWarning" function comes from:
 %% http://lsr.di.unimi.it/LSR/Item?id=552
@@ -72,15 +72,17 @@ incompleteSmallTupletBracket =  {
 
 
 {
-  \compoundMeter #'((2 4) (4 12))
+
+  \timeAbbrev #'((2 4) (4 12))
   f'4 f'
   \tuplet 3/2 {g'8[ g' g']}
   \incompleteSmallTupletBracket
   \tuplet 3/2 {a'8 }|
-
+   \set Score.proportionalNotationDuration = #1/16
   \time 4/20
   \incompleteTupletBracket
   \tuplet 5/4 {b'16[ b' b' b']} |
+
   \time 4/12
   \tuplet 3/2 {c''8[ g' e']}
   \incompleteSmallTupletBracket
@@ -89,6 +91,9 @@ incompleteSmallTupletBracket =  {
   \incompleteSmallTupletBracket
   \tuplet 3/2 {c''8} |
 }
+
+
+
 \end{Verbatim}
 \subsection{Discussion}
 
@@ -168,7 +173,7 @@ You may set another tuplet instance \textit{above} the initial tuplet, so the fo
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
+\version "2.26.0"
 
 MModEquation =
 #(define-music-function
@@ -984,8 +989,7 @@ You may set another tuplet instance \textit{above} the initial tuplet, so the fo
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-
+\version "2.26.0"
 
 MModEquationSTR =
 #(define-music-function
@@ -1760,6 +1764,7 @@ MModEquationBeginSTR =
 
  }
 }
+
 
 \end{Verbatim}
 

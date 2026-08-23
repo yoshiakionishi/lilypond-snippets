@@ -1,11 +1,14 @@
-\version "2.24.4"
+\version "2.26.0"
+
+
 
 \pointAndClickOff
 
-% revision june 24 2025
+% revision june 16 2026
 
-stringPositionClefDesignRev = #(ly:make-stencil (list 'embedded-ps
-                                                      "gsave
+stringPositionClefDesignRev =
+#(ly:make-stencil (list 'embedded-ps
+                        "gsave
 currentpoint translate
 /fingboardpath
 {
@@ -99,19 +102,14 @@ newpath
 stroke
 
 grestore")
-                                                (cons 0 3)
-                                                (cons 0 1))
+                  (cons 0 3)
+                  (cons 0 1))
 
-strPosClefSize =
-#(lambda (grob)
-  (let* ((sPCS (ly:grob-property grob 'font-size 0.0))
-         (mult (magstep sPCS)))
-   (ly:stencil-scale
-    strPosClef
-    mult mult)))
+
 
 stringPositionClefDesignRev = {
- \override Staff.Clef.stencil = \stringPositionClefDesignRev
+ \override Staff.Clef.stencil =
+ \stringPositionClefDesignRev
 }
 
 normalClef = {

@@ -1,17 +1,12 @@
-%% TO BE REVISED
-%% MUST ADD 0.1125 setlinewidth to the extension line to make the bracket seemless!!!!
+\version "2.26.0"
 
-
-\version "2.24.4"
 \pointAndClickOff
-\language "english"
 
 % This code includes snippet for grace note
 % slashes, which has been taken from:
 % https://lsr.di.unimi.it/LSR/Item?id=1048
 
-% Slightly revised, Jan. 19 2025 - YO
-
+% Slightly revised, Jan. 19/22 2025 - YO
 
 graceNoteBeforeBeatOn =
 #(define-music-function (setting-list starting_note) (list? ly:music? )
@@ -181,7 +176,8 @@ stopAcciaccaturaMusic = {
 {
  \grace {
   \startSlashedGraceMusic
-  \graceNoteBeforeBeatOn #'(1 -2 -1) d'8^\markup{\translate #'(0 . 3) \box A} e f g e' c'
+  \graceNoteBeforeBeatOn #'(1 -2 -1) d'8^\markup{\translate #'(0 . 3) \box A}
+  e f g e' c'
  }
  \graceNoteBeforeBeatOff d''2
  \grace {

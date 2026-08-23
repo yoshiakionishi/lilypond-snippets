@@ -4,12 +4,15 @@
 
 \chapter {Time Signatures}
 
+\textcolor{blue}{\textbf{New to \Verb|2.26.0|: }LilyPond's \Verb|\textbackslash time| command accepts fractional time signatures, making the relevant codes discussed in the first nine entries of this chapter obsolete.\footnote{\url{https://lilypond.org/doc/v2.26/Documentation/changes/rhythm-improvements} and \url{https://lilypond.org/doc/v2.26/Documentation/notation/displaying-rhythms\#time-signature}} However, for the time being I will continue to keep the codes current, for they may offer good case studies of how custom Scheme codes interact with overriding stencil functions.}
+
 First nine entries of this chapter discuss fractional time signatures (variants of the irrational time signatures) and their compound forms. I have been inspired to create these implementations after chancing upon the email exchanges on \verb|lilypond-user| dated from 2014.\footnote{See: \url{https://lists.gnu.org/archive/html/lilypond-user/2014-06/msg00209.html}. However, in the process of writing this documentation I have come across another email thread on the same mailing list: \url{https://mail.gnu.org/archive/html/lilypond-user/2020-04/msg00423.html} }
 
 While Gould discourages the use of time signatures with numerators as fractions,\autocite[180]{RN1741} there are cases where the use of such time signatures seems justified, particularly when the fractions deal with some form of tuplets. This is a form of time signature notation widely seen in works by Chaya Czernowin, Stefan Beyer, myself, and so many others.
 
 I present the implementation of fractional time signatures in three different styles, A, B, and C. There are implementations for compound meters for each of the styles, in two and three time signatures. 
 
+\newpage
 
 \section {Fractional Time Signatures, Style A}
 \label{sec:time_signatures}
@@ -59,8 +62,7 @@ where \verb|NUM1| is optional. The code has \verb|cond| clause, which adjusts th
 % Revised Aug 10 2025 to include the function to revert to a
 % regular time signature
 
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
 
 suppressWarning =
 #(define-void-function (amount message)(number? string?)
@@ -295,8 +297,7 @@ Style B differs from Style A, as the fraction has a bigger font size. This is si
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
 
 % Revised Jan 2 2025 for improving the appearance of fractions
 % Revised Aug 10 2025 to include the function to revert to a
@@ -576,6 +577,7 @@ backToNormalTimeSignature =
  \time 3/4
  c'2.
 }
+
 \end{Verbatim}
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
@@ -613,9 +615,7 @@ Style C of the fractional time signatures offers the largest font size for displ
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
-
+\version "2.26.0"
 
 % Revised Jan 2 2025 for improving the appearance of fractions
 % Revised Aug 10 2025 to include the function to revert to a
@@ -780,10 +780,11 @@ backToNormalTimeSignature =
  \tuplet 3/2 { c'8 c' c'} \tuplet 3/2 {c' c' c'}
  \tuplet 3/2 {c' c' c'}
  \incompleteTupletBracket \tuplet 3/2 {c' c'}
-  \backToNormalTimeSignature
+ \backToNormalTimeSignature
  \time 3/4
  c'2.
 }
+
 \end{Verbatim}
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}
@@ -825,8 +826,7 @@ See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractio
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
 
 % Revised Aug 10 2025 to include the function to revert to a
 % regular time signature
@@ -1067,6 +1067,7 @@ backToNormalTimeSignature =
  \time 3/4
  c'2.
 }
+
 \end{Verbatim}
 \label{sec:compoundfractionalmeter_discussion}
 \subsection{Discussion}
@@ -1107,9 +1108,7 @@ This is an implementation of a compound meter with two fractional time signature
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
-
+\version "2.26.0"
 
 % Revised Jan 2 2025 for improving the appearance of fractions
 % Revised Aug 10 2025 to include the function to revert to a
@@ -1449,8 +1448,7 @@ This is an implementation of a compound meter with two fractional time signature
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
 
 
 % Revised Jan 2 2025 for improving the appearance of fractions
@@ -1728,6 +1726,7 @@ backToNormalTimeSignature =
  \time 3/4
  c'2.
 }
+
 \end{Verbatim}
 \subsection{Discussion}
 See \hyperref[sec:compoundfractionalmeter_discussion]{\textbf{Discussion}} of the entry \textit{Compound Meter with Two Fractional Time Signatures, Style A.} \par
@@ -1777,8 +1776,9 @@ See \hyperref[sec:time_signatures_styleA_convention]{\textit{Grammar} of Fractio
 \end{enumerate}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
+
+
 
 % Revised Aug 10 2025 to include the function to revert to a
 % regular time signature
@@ -2106,6 +2106,7 @@ backToNormalTimeSignature =
  \time 3/4
  c'2.
 }
+
 \end{Verbatim}
 
 
@@ -2155,8 +2156,9 @@ This is an implementation of a compound meter with three fractional time signatu
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
+
+
 
 % Revised Jan 2 2025 for improving the appearance of fractions
 % Revised Aug 10 2025 to include the function to revert to a
@@ -2623,8 +2625,8 @@ This is an implementation of a compound meter with three fractional time signatu
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
+
 
 
 % Revised Jan 2 2025 for improving the appearance of fractions
@@ -3055,8 +3057,9 @@ This is an implementation of a time signature with decimals. This function allow
 
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
-\version "2.24.4"
-\language "english"
+\version "2.26.0"
+
+
 
 decimalPointTimeSignature =
 #(define-music-function
@@ -3191,7 +3194,6 @@ backToNormalTimeSignature =
  \time 3/4
  c'2.
 }
-
 \end{Verbatim}
 
 \subsection{Discussion}

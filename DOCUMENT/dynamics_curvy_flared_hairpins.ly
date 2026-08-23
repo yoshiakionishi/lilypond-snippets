@@ -1,4 +1,4 @@
-\version "2.24.4"
+\version "2.26.0"
 
 % curvy version
 
@@ -906,7 +906,7 @@ flaredDecrescCurvyOverride =
        )
       ) #mus #}))
 \layout {
-ragged-last = ##f
+ ragged-last = ##f
 }
 {
  \override Hairpin.height = #0.5
@@ -923,7 +923,7 @@ ragged-last = ##f
  \repeat unfold 3  {c' c' c' c'} \break
  c' \f  \flaredDecrescCurvy \> c' c' c'\o \flaredCrescCurvy #-1 \<
  c' c' c' c' \break c'\! s4 s4 s4  \bar "."
-  \once \override Hairpin.extra-offset = #'(1.5 . 0)
- \flaredCrescCurvyOverride #1.5 \after 2. \f c'1 \< 
+ \once \override Hairpin.extra-offset = #'(1.5 . 0)
+ \flaredCrescCurvyOverride #1.5 \after 2. \f c'1 \<
  \flaredDecrescCurvyOverride #1 \after 2. \f c'1 \> \bar"."
 }

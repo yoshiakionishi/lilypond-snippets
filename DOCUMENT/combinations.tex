@@ -24,46 +24,235 @@ An example of a prescriptive notation for a string instrument. Vertical placemen
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
+
+strPosClefDesign = #(ly:make-stencil (list 'embedded-ps
+                                           "gsave
+currentpoint translate
+/fingboardpath
+{
+
+newpath 
+
+-0.55 7.5 moveto
+0 -3 rlineto
+1 -6.5 rlineto
+-1 -1 rlineto
+0 -3 rlineto
+4.1 0 rlineto
+0 3 rlineto
+-1 1 rlineto
+1 6.5 rlineto
+0 3 rlineto
+closepath
+
+} def
+
+fingboardpath clip
+newpath 
+0.15 setlinewidth
+0.5 4.75 moveto
+0 -6.8 rlineto
+-0.75 5 rlineto
+3.5 0 rlineto
+-0.75 -5 rlineto
+0. 6.8 rlineto
+stroke
+0.35 setlinewidth
+-0.4 2.75 moveto
+3.75 0 rlineto
+stroke
+
+%inner two line
+newpath
+0.15 setlinewidth
+1.16 4.75 moveto
+0. -6.8 rlineto
+1.8 4.75 moveto
+0. -6.8 rlineto
+stroke
+
+%bridge
+newpath
+-0.4 3.6 moveto
+0.3 0.4 rlineto
+3.2 0 rlineto
+0.3 -0.4 rlineto
+stroke
+
+%tailpiece
+0.15 4.75 moveto 
+1 setlinecap
+1 setlinejoin
+2.75 0 rlineto
+-0.65 1.75 rlineto
+-0 -0  -0.6 0.55 -1.45 0  rcurveto
+closepath
+stroke
+
+newpath
+0.2 setlinewidth
+1 setlinecap
+1.5 -2.25 moveto
+0 -2.5 rlineto
+0.25 -3.5 moveto
+2.5 0 rlineto
+stroke
+newpath
+1.5 -3.5 0.85 0 360 arc
+stroke
+grestore")
+                                     (cons 0 3)
+                                     (cons 0 1))
+
+strPosClefSize =
+#(lambda (grob)
+  (let* ((bCS (ly:grob-property grob 'font-size 0.0))
+         (mult (magstep bCS)))
+   (ly:stencil-scale
+    strPosClef
+    mult mult)))
+
+strPosClef = {
+ \override Staff.Clef.stencil = \strPosClefDesign
+}
+
+
+dashedLineNotehead =
+#(define-music-function
+  (beginning end x-distance) (ly:music? ly:music? number?)
+  (let*
+   (
+    (p1 (ly:music-property beginning 'pitch))
+    (p2 (ly:music-property end 'pitch))
+    (steps
+     (-
+      (+ (* 7 (ly:pitch-octave p2)) (ly:pitch-notename p2))
+      (+ (* 7 (ly:pitch-octave p1)) (ly:pitch-notename p1))
+      )
+     )
+    )
+   #{
+    {
+
+     \once \override Voice.NoteHead.stencil = #ly:text-interface::print
+     \once \override Voice.NoteHead.stem-attachment = #'(0 . 0)
+     \once \override Staff.LedgerLineSpanner.stencil = ##f
+     \once \override Voice.NoteHead.text = \markup 	{
+      % \translate #(cons 0 0)
+      \postscript
+      #(string-append
+        "newpath 1 setlinecap 
+              0.15 setlinewidth 
+              0 0 moveto 
+              [.4 .4 .4 .4] 3 setdash "
+        (number->string x-distance)  " " (number->string (* steps 0.5))
+        " rlineto stroke"
+        )
+     }
+     #beginning
+     \revert Voice.NoteHead.stencil
+     \revert Staff.LedgerLineSpanner.stencil
+    }
+   #})
+  )
+
+modularLineNotehead =
+#(define-music-function
+  (beginning end beginningThickness endingThickness x-distance)
+  (ly:music? ly:music? number? number? number?)
+  (let*
+   (
+    (p1 (ly:music-property beginning 'pitch))
+    (p2 (ly:music-property end 'pitch))
+    (steps
+     (-
+      (+ (* 7 (ly:pitch-octave p2)) (ly:pitch-notename p2))
+      (+ (* 7 (ly:pitch-octave p1)) (ly:pitch-notename p1))
+      )
+     )
+    )
+   #{
+    {
+
+     \once \override Voice.NoteHead.stencil = #ly:text-interface::print
+     \once \override Voice.NoteHead.stem-attachment = #'(0 . 0)
+     \once \override Voice.LedgerLineSpanner.transparent = ##t
+     \once \override Voice.NoteHead.text = \markup 	{
+      \postscript
+      #(string-append
+        "newpath 1 setlinecap 0.1 setlinewidth -0.05 0 moveto 0 "
+        (number->string (* beginningThickness 0.005)) " rlineto "
+        (number->string x-distance) " "
+        (number->string (+ (- (* endingThickness 0.005)
+                              (* beginningThickness 0.005) )
+                           (* steps 0.5)))
+        " rlineto 0 "
+        (number->string  (* endingThickness -0.01))  " rlineto "
+        (number->string (* -1 x-distance))  " "
+        (number->string (- (* endingThickness 0.005)
+                           (* beginningThickness 0.005)
+                           (* steps 0.5)))
+        " rlineto 
+              closepath 
+              fill"
+        )
+     }
+     #beginning
+     \revert Voice.NoteHead.stencil
+     \revert Staff.LedgerLineSpanner.stencil
+    }
+   #})
+  )
+
+noteheadless = \once \override Voice.NoteHead.stencil = ##f
+
+#(define-public ((tuplet-number::append-note-wrapper function note) grob)
+  (let ((txt (function grob)))
+   (markup txt #:fontsize -5 #:note note UP)))
+
+
 
 \score {
-  {
-    \override Staff.StaffSymbol.line-positions = #'(6  -6)
-    \stringPositionClef 
-    \dashedLineNotehead g'4
-    	^\markup {\fontsize #-4 \italic flaut.}
-    	^\markup \translate #'(-2.5 . -0) \center-column 
-			{\translate #'(0 . -1.5) \fontsize #-4 II 
-			\fontsize #-4 III} 
-		a' #6
-    \modularLineNotehead a'
-    	^\markup \column {\translate #'(0 . -1.5) 
-			\fontsize #-4 \italic apply \fontsize #-4 
-			\italic pressure} 
-		d'' #15 #150 #6
-    \override TupletNumber.text = #tuplet-number::calc-fraction-text
-    \stemUp  \tuplet 5/4 {
-      \modularLineNotehead d''8 b' #150 #50 #2.5
-      \modularLineNotehead b' f'' #50 #175 #2.5
-      \modularLineNotehead f'' a' #175 #70 #2.5
-      \modularLineNotehead a' c'' #70 #120 #2.5
-      \modularLineNotehead c'' e' #120 #15 #3.5
-    }
-    |
-    \modularLineNotehead e'4
-    	^\markup {\fontsize #-4 \italic ord.} 
-		e' #15 #15 #12
-    \noteheadless e'
-    \dashedLineNotehead e'
-    	^\markup {\fontsize #-4 \italic (flaut.)} 
-		e' #5
+ {
+  \override Staff.StaffSymbol.line-positions = #'(6  -6)
+  \strPosClef \dashedLineNotehead g'4
+  ^\markup {\fontsize #-4 \italic flaut.}
+  ^\markup \translate #'(-2.5 . -0)
+  \center-column {
+   \translate #'(0 . -1.5)
+   \fontsize #-4 II \fontsize #-4 III
   }
+  a' #6
+  \modularLineNotehead a'
+  ^\markup \column {
+   \translate #'(0 . -1.5)
+   \fontsize #-4 \italic apply
+   \fontsize #-4 \italic pressure
+  }
+  d'' #15 #150 #6
+  \override TupletNumber.text = #tuplet-number::calc-fraction-text
+  \stemUp  \tuplet 5/4 {
+   \modularLineNotehead d''8 b' #150 #50 #2.5
+   \modularLineNotehead b' f'' #50 #175 #2.5
+   \modularLineNotehead f'' a' #175 #70 #2.5
+   \modularLineNotehead a' c'' #70 #120 #2.5
+   \modularLineNotehead c'' e' #120 #15 #3.5
+  }
+  |
+  \modularLineNotehead e'4
+  ^\markup {\fontsize #-4 \italic ord.} e' #15 #15 #12
+  \noteheadless e'
+  \dashedLineNotehead e'
+  ^\markup {\fontsize #-4 \italic (flaut.)} e' #5
+ }
 
-  \layout {
-    \context {
-      \Score proportionalNotationDuration = #(ly:make-moment 1/10)    
-      		\override SpacingSpanner.uniform-stretching = ##t
-    }
+ \layout {
+  \context {
+   \Score proportionalNotationDuration = #1/10
+   \override SpacingSpanner.uniform-stretching = ##t
   }
+ }
 }
 
 \end{Verbatim}
@@ -96,86 +285,336 @@ Invoking two or more Text Spanners (that require \verb|\stopTextSpan| for them t
 \end{verbatim}
 \subsection{Code}
 \begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
+
+
+
+accelArrow =
+#(define-music-function (line_angle) (number?)
+
+  (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  #{
+   \tweak direction #up
+   \tweak style  #'line
+   \tweak thickness  #1
+   \tweak to-barline ##t
+   \tweak rotation #(list line_angle -1 0 )
+   \tweak bound-details.left.stencil #ly:text-interface::print
+   \tweak bound-details.left.text \markup \postscript
+   #(string-append
+     "gsave newpath 
+0 0 moveto "
+     (number->string x_value) " "
+     (number->string y_value)
+     " rlineto 
+stroke 
+grestore")
+   \tweak bound-details.left-broken.stencil #ly:text-interface::print
+   \tweak bound-details.left-broken.text ##f
+
+   \tweak bound-details.right.stencil #ly:text-interface::print
+   \tweak bound-details.right.text \markup \postscript
+   "newpath 
+0 0 moveto 
+-1 -0.3 rlineto 
+stroke"
+   \tweak bound-details.right-broken.stencil #ly:text-interface::print
+   \tweak bound-details.right-broken.text ##f
+   \tweak font-shape  #'upright
+   \tweak bound-details.left.padding  #0
+   \tweak bound-details.right.padding  #0
+   \tweak breakable ##t
+   \tweak after-line-breaking ##t
+
+   \startTextSpan
+  #})
+
+rallArrow =
+#(define-music-function (line_angle) (number?)
+
+  (define x_value (cos (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  (define y_value (sin (* (/ 3.14159265358979 180) (- 90 line_angle))))
+  #{
+   \tweak direction #up
+   \tweak style  #'line
+   \tweak thickness  #1
+   \tweak to-barline ##t
+   \tweak rotation #(list (* -1 line_angle) 1 0 )
+
+   \tweak bound-details.left.stencil #ly:text-interface::print
+   \tweak bound-details.left.text \markup \postscript
+   #(string-append
+     "gsave 
+newpath 
+0 0 moveto "
+     (number->string x_value) " "
+     (number->string (* -1 y_value))
+     " rlineto 
+stroke 
+grestore")
+   \tweak bound-details.left-broken.stencil #ly:text-interface::print
+   \tweak bound-details.left-broken.text ##f
+
+   \tweak bound-details.right.stencil #ly:text-interface::print
+   \tweak bound-details.right.text \markup \postscript
+   "newpath 
+0 0 moveto 
+-1 -0.3 rlineto 
+stroke"
+   \tweak bound-details.right-broken.stencil #ly:text-interface::print
+   \tweak bound-details.right-broken.text ##f
+   \tweak font-shape  #'upright
+   \tweak bound-details.left.padding  #0
+   \tweak bound-details.right.padding  #0
+   \tweak breakable ##t
+   \tweak after-line-breaking ##t
+   \startTextSpan
+  #})
+
+
+graceNoteBeforeBeatOn =
+#(define-music-function (starting_note) (ly:music?)
+  #{
+   \once \override TextSpanner.style = #'line
+   \once \override TextSpanner.bound-details.left.text =
+   \markup { \draw-line #'(0 . -1) }
+   \once \override TextSpanner.bound-details.right.text =
+   \markup {
+    \postscript
+    "newpath 0 0 moveto 
+0 -2.5 rlineto 
+stroke 
+newpath 
+-0.275 -2 moveto 
+0.275 -0.75 rlineto 
+0.275 0.75 rlineto 
+-0.275 -0.2 rlineto 
+closepath 
+fill"
+   }
+   \once \override TextSpanner.Y-offset = #5
+   \once \override TextSpanner.bound-details.left.padding = #0.5
+   \once \override TextSpanner.bound-details.right.padding = #-0.25
+   #starting_note
+   \startTextSpan
+  #})
+
+
+graceNoteBeforeBeatOff =
+#(define-music-function (ending_note) (ly:music?)
+  #{
+   #ending_note
+   \stopTextSpan
+  #})
+
+
+graceNoteAfterBeatOn =
+#(define-music-function (starting_note) (ly:music?)
+  #{
+   \once \override TextSpanner.style = #'line
+   \once \override TextSpanner.bound-details.right.text =
+   \markup {
+    \combine \draw-line #'(0 . -1)
+    \postscript "newpath 
+0 -1 moveto 
+0 -1 rlineto 
+stroke"
+   }
+   \once \override TextSpanner.bound-details.left.text =
+   \markup {
+    \postscript
+    "newpath 0 0 moveto 
+0 -1 rlineto 
+stroke 
+newpath 
+-0.275 -0.75 moveto 
+0.275 -0.75 rlineto 
+0.275 0.75 rlineto 
+-0.275 -0.2 rlineto 
+closepath 
+fill"
+   }
+   \once \override TextSpanner.Y-offset = #2
+   \once \override TextSpanner.bound-details.left.padding = #0.5
+   \once \override TextSpanner.bound-details.right.padding = #-0.25
+
+   #starting_note
+   \startTextSpan
+  #})
+
+
+graceNoteAfterBeatOff =
+#(define-music-function (ending_note) (ly:music?)
+  #{
+   #ending_note
+   \stopTextSpan
+  #})
+
+%%%%%%%%%%%%%%%%%%%LSR SNIPPET START%%%%%%%%%%%%%%%%%%
+
+#(define (degrees->radians deg)
+  (* PI (/ deg 180.0)))
+
+
+slash =
+#(define-music-function (ang stem-fraction protrusion)
+  (number? number? number?)
+  (remove-grace-property 'Voice 'Stem 'direction)
+  #{
+   \once \override Stem.stencil =
+   #(lambda (grob)
+     (let* ((x-parent (ly:grob-parent grob X))
+            (is-rest? (ly:grob?
+                       (ly:grob-object x-parent 'rest)))
+            (beam (ly:grob-object grob 'beam))
+            (stil (ly:stem::print grob)))
+      (cond
+       (is-rest? empty-stencil)
+       ((ly:grob? beam)
+        (let* ((refp (ly:grob-system grob))
+               (stem-y-ext (ly:grob-extent grob grob Y))
+               (stem-length
+                (- (cdr stem-y-ext) (car stem-y-ext)))
+               (beam-X-pos (ly:grob-property beam 'X-positions))
+               (beam-Y-pos (ly:grob-property beam 'positions))
+               (beam-slope (/ (- (cdr beam-Y-pos) (car beam-Y-pos))
+                              (- (cdr beam-X-pos) (car beam-X-pos))))
+               (beam-angle (atan beam-slope))
+               (dir (ly:grob-property grob 'direction))
+               (line-dy (* stem-length stem-fraction))
+               (line-dy-with-protrusions (if (= dir 1)
+                                             (+ (* 4 protrusion) beam-angle)
+                                             (- (* 4 protrusion) beam-angle)))
+               (ang (if (> beam-slope 0)
+                        (if (= dir 1)
+                            (+ (degrees->radians ang) (* beam-angle 0.7))
+                            (degrees->radians ang))
+                        (if (= dir 1)
+                            (degrees->radians ang)
+                            (- (degrees->radians ang) (* beam-angle 0.7)))))
+               (line-dx (/ line-dy-with-protrusions (tan ang)))
+               (protrusion-dx (/ protrusion (tan ang)))
+               (corr (if (= dir 1) (car stem-y-ext) (cdr stem-y-ext))))
+         (ly:stencil-add
+          stil
+          (grob-interpret-markup grob
+                                 (markup
+                                  #:translate
+                                  (cons (- protrusion-dx)
+                                        (+ corr
+                                           (* dir
+                                              (- stem-length
+                                                 (+ stem-fraction protrusion)))))
+                                  #:override '(thickness . 1.7)
+                                  #:draw-line
+                                  (cons line-dx
+                                        (* dir line-dy-with-protrusions)))))))
+       (else stil))))
+  #})
+
+startSlashedGraceMusic = {
+ \slash 40 1 0.5
+ \override Flag.stroke-style = #"grace"
+}
+stopSlashedGraceMusic = {
+ \revert Flag.stroke-style
+}
+
+startAcciaccaturaMusic = {
+ \slash 40 1 0.5
+ s1*0(
+ \override Flag.stroke-style = #"grace"
+}
+stopAcciaccaturaMusic = {
+ \revert Flag.stroke-style
+ s1*0)
+}
+%%%%%%%%%%%%%%%%%%% LSR SNIPPET END %%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%% A %%%%%%%%%%%%%%%%%%
+
 \score {
-  \new Staff = "allElementsCombined"
-  \with {instrumentName = \markup {\fontsize #4 \box "A"}}  {
-    \numericTimeSignature
-    \override Score.MetronomeMark.Y-offset = #5.75
-    \tempo 4 = 100
-    \time 5/4
-    <<
-      {
-        \tieNeutral \stemNeutral d'4~
-        \tuplet 3/2 {d'8 d'4}
-        \stemUp \grace  {
-          \startSlashedGraceMusic \graceNoteBeforeBeatOn e'8 f''
-          \stopSlashedGraceMusic
-        } \graceNoteBeforeBeatOff g'4~
-        \stemNeutral g'8.[ \grace { 
-        \startSlashedGraceMusic \graceNoteAfterBeatOn
-          e''16 c'' e' c' \stopSlashedGraceMusic
-        }
-        \graceNoteAfterBeatOff d''16]~
-        \tuplet 3/2 {d''8 d'8 d'8~} |
-        \time 4/4
-        d'1 \bar"||"
-      }
-      \\
-      {
-        s4  \tuplet 3/2 {
-          s8 \override Voice.TextSpanner.Y-offset = #6.5
-          s4^\markup {\translate #'(0 . 6.5) \bold "rall."}
-          \rallArrow #4
-        } s2. \tempo 4 = 50 s4*4 \stopTextSpan
-      }
-    >>
-  }
+
+ \new Staff = "allElementsCombined"
+ \with {instrumentName = \markup {\fontsize #4 \box "A"}}  {
+  \numericTimeSignature
+  \override Score.MetronomeMark.Y-offset = #5.75
+  \tempo 4 = 100
+  \time 5/4
+
+  <<
+   {
+    \tieNeutral \stemNeutral
+    d'4~
+    \tuplet 3/2 {d'8 d'4}
+    \stemUp \grace  {
+     \startSlashedGraceMusic \graceNoteBeforeBeatOn e'8 f''
+     \stopSlashedGraceMusic
+    } \graceNoteBeforeBeatOff g'4~
+    \stemNeutral g'8.[ \grace {
+     \startSlashedGraceMusic \graceNoteAfterBeatOn
+     e''16 c'' e' c' \stopSlashedGraceMusic
+    }
+    \graceNoteAfterBeatOff d''16]~
+    \tuplet 3/2 {d''8 d'8 d'8~} |
+    \time 4/4
+    d'1 \bar"||"
+   }
+   \\
+   {
+    s4  \tuplet 3/2 {
+     s8 \override Voice.TextSpanner.Y-offset = #6.5
+     s4^\markup {\translate #'(0 . 6.5) \bold "rall."}
+     \rallArrow #4
+    } s2. \tempo 4 = 50 s4*4 \stopTextSpan
+   }
+  >>
+ }
 }
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%% B %%%%%%%%%%%%%%%%%%
 \score {
-  <<
-    \new Staff = "tempoLine" \with {
-      \remove Clef_engraver
-      \remove Staff_symbol_engraver
-      \remove Time_signature_engraver
-    }
-    {
-      \numericTimeSignature
-      \override Score.MetronomeMark.Y-offset = #6
-      \tempo 4 = 100
-      \time 5/4
-      s4  \tuplet 3/2 {
-        s8 \override Voice.TextSpanner.Y-offset = #-2.25
-        s4^\markup {\translate #'(0 . 0) \bold "rall."}
-        \rallArrow #4} s2 \after 64*15 \stopTextSpan s8*2 |
-      \tempo 4 = 50  s4*4
-    }
-    \new Staff = "music"
-    \with { instrumentName = \markup {\fontsize #4 \box "B"}}
-    {
-      \tieNeutral \stemNeutral d'4~
-      \tuplet 3/2 {d'8 d'4}
-      \grace {
-        \startSlashedGraceMusic \graceNoteBeforeBeatOn e'8 f''
-        \stopSlashedGraceMusic
-      } \graceNoteBeforeBeatOff g'4~
-      g'8.[ \grace { \startSlashedGraceMusic \graceNoteAfterBeatOn
-        e''16 c'' e' c' \stopSlashedGraceMusic
-      }
-      \graceNoteAfterBeatOff d''16]~
-      \tuplet 3/2 {d''8 d'8 d'8~} |
-      \time 4/4
-      d'1 \bar"||"
-    }
-  >>
+ <<
+  \new Staff = "tempoLine" \with {
+   \remove Clef_engraver
+   \remove Staff_symbol_engraver
+   \remove Time_signature_engraver
+  }
+  {
+   \numericTimeSignature
+   \override Score.MetronomeMark.Y-offset = #6
+   \tempo 4 = 100
+   \time 5/4
+   s4  \tuplet 3/2 {
+    s8 \override Voice.TextSpanner.Y-offset = #-2.25
+    s4^\markup {\translate #'(0 . 0) \bold "rall."}
+    \rallArrow #4
+   } s2 \after 64*15 \stopTextSpan s8*2 |
+   \tempo 4 = 50  s4*4
+  }
+
+  \new Staff = "music"
+  \with { instrumentName = \markup {\fontsize #4 \box "B"}}
+  {
+   \tieNeutral \stemNeutral
+   d'4~
+   \tuplet 3/2 {d'8 d'4}
+   \grace {
+    \startSlashedGraceMusic \graceNoteBeforeBeatOn e'8 f''
+    \stopSlashedGraceMusic
+   } \graceNoteBeforeBeatOff g'4~
+   g'8.[ \grace {
+    \startSlashedGraceMusic \graceNoteAfterBeatOn
+    e''16 c'' e' c' \stopSlashedGraceMusic
+   }
+   \graceNoteAfterBeatOff d''16]~
+   \tuplet 3/2 {d''8 d'8 d'8~} |
+   \time 4/4
+   d'1 \bar"||"
+  }
+ >>
 }
+
 \end{Verbatim}
 
 \hyperref[sec:toc]{\textbf{Table of Contents}}

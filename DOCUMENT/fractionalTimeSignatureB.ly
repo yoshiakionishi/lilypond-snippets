@@ -1,6 +1,6 @@
-\version "2.24.4"
+\version "2.26.0"
+
 \pointAndClickOff
-\language "english"
 
 % Revised Jan 2 2025 for improving the appearance of fractions
 % Revised Aug 10 2025 to include the function to revert to a
