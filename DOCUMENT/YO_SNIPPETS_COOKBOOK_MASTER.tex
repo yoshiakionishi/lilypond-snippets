@@ -25,7 +25,8 @@
 \usepackage{subcaption}
 \captionsetup{font=small, labelfont=bf}
 \captionsetup[sub]{labelsep=period, subrefformat=brace}
-
+\usepackage{xparse,nameref}
+\NewDocumentCommand{\chapref}{s m}{Chapter~\ref{#2}\IfBooleanF{#1}{ \nameref{#2}}}
     
 \usepackage{geometry}           % See geometry.pdf to learn the layout options. There are lots.
 \geometry{letterpaper,

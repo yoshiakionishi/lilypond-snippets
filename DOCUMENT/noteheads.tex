@@ -580,6 +580,192 @@ There is also another special stencil, namely \Verb|#empty-stencil|, but this ap
 
 
 %%%%%%%%%%%%%%%%%%%
+
+\section {Parenthesized Group of Noteheads with Arrowed Arcs}
+\lilypondfile[staffsize=24]{/parenthesis_arcarrow.ly}
+\hfill
+
+\subsection{Description}
+	Implementation of parentheses enclosing a group of noteheads, accompanied by arrowed arcs. This function takes advantage of manipulating the \verb|\parenthesize| function, and can be applied to both regular and grace notes. \par
+	There are two options that can be set: 
+	\begin{enumerate}
+	\item The arrowed arcs can be adjusted \`a la \verb|extra-offset| (i.e., inputting the values using a pair of values)
+	\item You can choose the parentheses not to be printed, so that only arrowed arcs are displayed.
+	\end{enumerate}
+	A group of small noteheads, accompanied by arrowed arcs, suggests that such a group of notes are to be repeatedly played as fast as possible. This notation can be found in pieces such as \textit{Sequenza II} for harp by Luciano Berio. \par
+	In addition to the examples seen above, see \hyperref[sec:repeat_notepatterns_afap]{\textbf{Repeat Note Patterns As Fast As Possible}} in \chapref*{ch:combinations}.
+	
+\subsection{Grammar}
+\begin{verbatim}
+\parenthesisBeginWithArrow WIDTH HEIGHT ARCANGLE OFFSET PARENTHESIS? NOTE
+\parenthesisEndWithArrow WIDTH HEIGHT ARCANGLE OFFSET PARENTHESIS? NOTE
+\end{verbatim}
+\textbf{NB} \par
+\begin{itemize}
+\item \verb|WIDTH| specifies the width of the arrowed arc.
+\item \verb|HEIGHT| specifies the height of the arrowed arc, i.e. how tall the arc will be in the middle of the line.
+\item \verb|ARCANGLE| specifies how much the arrowed arc should be rotated. A positive value will rotate the arc counterclockwise, while a negative value will rotate it clockwise.
+\item \textbf{OPTIONAL:} \verb|OFFSET| can be used to offset the arrowed arc. If you opt to specify this argument, enter a value in a pair of numbers, e.g. \verb|#'(3 . -2)|. 
+\item \textbf{OPTIONAL:} \verb|PARENTHESIS?| can be specified if you opt to make the parenthesis disappear. \verb|##f| will cause only the arrowed arc to be shown. 
+\item Importantly, when there are other objects (markups and spanners shown alongside the arrowed arcs) being in place alongside this object, it may cause the other objects to appear farther from the staff line. Setting \verb|outside-staff-property| to \verb|##f| for these other objects, either via \verb|\tweak| or \verb|\override| should help avoid the problem, but if the problem persists, moving them using \verb|extra-offset| is always an option. 
+\end{itemize}
+
+
+\subsection{Code}
+\begin{Verbatim}[numbers=left,xleftmargin=5mm]
+\version "2.26.0"
+
+parenthesisBeginWithArrow =
+#(define-music-function
+  (width height arcAngle offset parenthesis? pitchthing)
+  (number? number? number? (pair? (cons 0 0)) (boolean? #t) ly:music?)
+  (define p1 (ly:music-property pitchthing 'pitch))
+  (define steps (+ -6 (ly:pitch-steps p1)))
+  (define radToDeg (* 180 (/ 1 3.141592653589793)))
+  #{
+   \once \override Parentheses.font-size = #2
+   \once \override Parentheses.stencils =
+   #(lambda (grob)
+     (let ((par-list
+            (parentheses-interface::calc-parenthesis-stencils grob)))
+      (if parenthesis?
+          (list (car par-list) point-stencil)
+          (list point-stencil point-stencil)
+          )
+      )
+     )
+   \parenthesize
+   #pitchthing
+   -\tweak ignore-collision ##t
+   -\tweak TextScript.outside-staff-priority ##f
+   -\tweak TextScript.parent-alignment-X #1
+   -\tweak TextScript.extra-offset
+   #(cons  (+ -0.5 (car offset)) (+ -1.25 (* steps 0.5) (cdr offset)))
+   -\tweak TextScript.rotation #`(,arcAngle -1 -1)
+   ^\markup {
+    \rotate #3.5
+    \concat {
+     \path #0.15
+     #`((curveto ,(* width 0.25) ,height ,(* width 0.75)
+                 ,height ,width 0))
+     \hspace #-0.1 \vcenter \postscript
+     #(string-append
+       "
+/arrowhead {
+gsave
+"  (number->string
+       (+ (* radToDeg (atan (/ (* height -1)  (* width 0.25)))) -90))
+       " rotate 
+0 0.5 rlineto
+-0.35 -1 rlineto
+0.7 0 rlineto
+-0.35 1 rlineto
+ closepath
+fill 
+grestore } def
+
+0 0 moveto
+arrowhead
+")
+    }
+  } #})
+
+
+
+parenthesisEndWithArrow =
+#(define-music-function
+  (width height arcAngle offset parenthesis? pitchthing)
+  (number? number? number? (pair? (cons 0 0)) (boolean? #t) ly:music?)
+  (define p1 (ly:music-property pitchthing 'pitch))
+  (define steps (+ -6 (ly:pitch-steps p1)))
+  (define radToDeg (* 180 (/ 1 3.141592653589793)))
+  #{
+   \once  \override Parentheses.font-size = #2
+   \once \override Parentheses.stencils =
+   #(lambda (grob)
+     (let ((par-list
+            (parentheses-interface::calc-parenthesis-stencils grob)))
+      (if parenthesis?
+          (list  point-stencil (cadr par-list))
+          (list point-stencil point-stencil)
+          )
+      )
+     )
+   \parenthesize
+   #pitchthing
+   -\tweak ignore-collision ##t
+   -\tweak TextScript.outside-staff-priority ##f
+   -\tweak TextScript.parent-alignment-X #-1
+   -\tweak TextScript.extra-offset
+   #(cons  (+ 0.75 (car offset)) (+ 1.75 (* steps 0.5) (cdr offset)))
+   -\tweak TextScript.rotation #`(,arcAngle -1 0)
+   _\markup \right-align {
+    \rotate #3.5
+    \concat  {
+
+     \postscript
+     #(string-append
+       "
+/arrowhead {
+gsave
+"  (number->string
+       (+ (* radToDeg (atan (/ (* height -1)  (* width 0.25)))) 270))
+       " rotate 
+" (if (< height 0) (number->string 0.1) (number->string -0.1)) "
+ -0.3 rmoveto
+-0.35 1 rlineto
+0.7 0 rlineto
+-0.35 -1 rlineto
+closepath
+fill 
+grestore } def
+
+0 0 moveto
+arrowhead
+")
+     \center-align
+     \path #0.15
+     #`((curveto ,(* width 0.25) ,(* height -1) ,(* width 0.75)
+                 ,(* height -1) ,width 0))
+
+    }
+  } #})
+
+
+{
+ \omit Stem
+ \omit Beam
+ \omit Flag
+
+ \once \override Hairpin.outside-staff-priority = ##f
+ \parenthesisBeginWithArrow #9.75 #3 #-18.5 #'(0 . -2.75)
+ g''16  d''  f'' c''
+ \parenthesisEndWithArrow #10 #2.75 #-18.5 #'(0 . 2.75) a'
+
+}
+
+
+{
+ \afterGrace 1/16 d'4 {
+  \omit Stem
+  \omit Beam
+  \parenthesisBeginWithArrow #5.5 #-2 #3 #'(0 . -3) ##f c'16
+  d' e' f'
+  \parenthesisEndWithArrow #5.75 #-2 #2  #'(-0.2 . 2.5) ##f e'
+ }
+}
+\end{Verbatim} 
+\subsection{Discussion}
+See \hyperref[sec:repeat_notepatterns_afap]{\textbf{Repeat Note Patterns As Fast As Possible}} in \chapref*{ch:combinations} for an applied use of this function. \par
+\hyperref[sec:toc]{\textbf{Table of Contents}}
+
+\vfill \break
+
+
+
+
+%%%%%%%%%%%%%%%%%%%
+
 \section {Slap Tongue, Type A}
 \lilypondfile[staffsize=24]{/slapA.ly}
 \hfill
