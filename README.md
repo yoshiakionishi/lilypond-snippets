@@ -18,6 +18,14 @@ You may download the most recent version of the [[**PDF file housing all the sni
 
 You may explore the [[DOCUMENT](DOCUMENT/)] folder where you may build the LaTeX code to build the PDF file yourself. Within the folder you will also find individual snippets as separate files. 
 
+**or...**
+
+You can clone the repository and save it on your computer. From your terminal, type:
+
+```
+git clone --recursive https://github.com/yoshiakionishi/lilypond-snippets
+```
+
 =================================
 ## LilyPond Version 
 
