@@ -21,7 +21,7 @@ You may explore the [[DOCUMENT](DOCUMENT/)] folder where you may build the LaTeX
 =================================
 ## LilyPond Version 
 
-Currently, I use 2.26.0 to build these snippets. Cookbooks built with old versions of LilyPond are found in the folder [[OLD](OLD/)]. 
+Currently, I use `2.26.0` to build these snippets. Cookbooks built with old versions of LilyPond are found in the folder [[OLD](OLD/)]. 
 
 =================================
 ## License
