@@ -14,7 +14,6 @@ currentpoint translate
 {
 
 newpath 
-%0 1 .7 0 setcmykcolor 
 -0.5 7.5 moveto
 0 -3 rlineto
 1 -6.5 rlineto

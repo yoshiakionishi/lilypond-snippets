@@ -8,7 +8,6 @@ currentpoint translate
 /fingboardpath
 {
 newpath 
-0 1 .7 0 setcmykcolor 
 0.3 4.75 moveto
 0 -4.5 rlineto
 -0.2 -0.5 rlineto
@@ -23,7 +22,6 @@ newpath
 0 4.5 rlineto
 closepath
 %stroke
-.1 .4 .5 .9 setcmykcolor
 } def
 
 %fingboardpath 
